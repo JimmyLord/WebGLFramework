@@ -30,7 +30,7 @@ class Mesh
         //log( "Freed mesh." );
     }
 
-    draw(shader)
+    draw(shader, world)
     {
         var gl = this.m_gl;
 
@@ -43,6 +43,9 @@ class Mesh
 
         // Setup shader and uniforms.
         gl.useProgram( shader.program );
+
+        var u_WorldMatrix = gl.getUniformLocation( shader.program, "u_WorldMatrix" );
+        gl.uniformMatrix4fv( u_WorldMatrix, false, world.values )
 
         // Draw.
         gl.drawArrays( gl.TRIANGLES, 0, 3 );

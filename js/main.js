@@ -21,38 +21,64 @@ function main()
     //log( "WebGL set up" );
 
     var vertShaderSource = `
-        attribute vec4 a_Position;   
+        attribute vec4 a_Position;
+        uniform mat4 u_WorldMatrix;
         void main()
-        {           
-            gl_Position = a_Position;
-        }           
+        {
+            gl_Position = u_WorldMatrix * a_Position;
+        }
     `;
    
     var fragShaderSource = `
-        precision mediump float;    
+        precision mediump float;
         void main()
         {
             gl_FragColor = vec4( 0, 1, 0, 1 );
-        }           
+        }
     `;
 
     var shader = new Shader( gl, vertShaderSource, fragShaderSource );
     var mesh = new Mesh( gl );
 
-    gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
-    gl.clearColor( 0, 0, 0.4, 1 );
-    gl.clear( gl.COLOR_BUFFER_BIT );
+    var lastTime = null;
+    var position = -1.0;
 
-    //log( "Screen cleared" );
+    requestAnimationFrame( draw );
 
-    mesh.draw( shader );
+    function update(currentTime)
+    {
+        if( lastTime == null )
+            lastTime = currentTime;
+        deltaTime = (currentTime - lastTime) / 1000.0;
+        lastTime = currentTime;
 
-    //log( "Triangle drawn" );
+        position += deltaTime;
 
-    mesh.free()
-    shader.free();
+        draw();
+    }
 
-    log( "Done!" );
+    function draw()
+    {
+        gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
+        gl.clearColor( 0, 0, 0.4, 1 );
+        gl.clear( gl.COLOR_BUFFER_BIT );
+
+        var world = new mat4;
+        world.setIdentity();
+        world.translate( Math.sin( position ), Math.cos(position), 0 );
+
+        mesh.draw( shader, world );
+
+        requestAnimationFrame( update );
+    }
+
+    function shutdown()
+    {
+        mesh.free()
+        shader.free();
+
+        log( "Done!" );
+    }
 }
 
 main()
