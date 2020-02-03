@@ -13,10 +13,19 @@ class mat4
         this.values[12] = 0; this.values[13] = 0; this.values[14] = 0; this.values[15] = 1;
     }
 
-    translate(x, y, z)
+    translate(xOrVec3, y, z)
     {
-        this.values[12] += x;
-        this.values[13] += y;
-        this.values[14] += z;
+        if( xOrVec3 instanceof vec3 )
+        {
+            this.values[12] += xOrVec3.x;
+            this.values[13] += xOrVec3.y;
+            this.values[14] += xOrVec3.z;
+        }
+        else
+        {
+            this.values[12] += xOrVec3;
+            this.values[13] += y;
+            this.values[14] += z;
+        }
     }
 }
