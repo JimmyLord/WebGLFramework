@@ -5,6 +5,11 @@ class mat4
         this.values = new Float32Array(16);
     }
 
+    free()
+    {
+        this.value = null;
+    }
+
     setIdentity()
     {
         this.values[ 0] = 1; this.values[ 1] = 0; this.values[ 2] = 0; this.values[ 3] = 0;

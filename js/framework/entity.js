@@ -7,12 +7,19 @@ class Entity
         this.m_material = material;
     }
 
+    free()
+    {
+        this.m_position = null;
+        this.m_mesh = null;
+        this.m_material = null;
+    }
+
     draw()
     {
         var worldMat = new mat4;
         worldMat.setIdentity();
         worldMat.translate( this.m_position );
 
-        this.m_mesh.draw( this.m_material.m_shader, worldMat );
+        this.m_mesh.draw( this.m_material, worldMat );
     }
 }

@@ -22,7 +22,11 @@ class Shader
         gl.deleteShader( this.m_vertShader );
         gl.deleteShader( this.m_fragShader );
         gl.deleteProgram( this.m_program );
-        //log( "Freed shader." );
+
+        this.m_gl = null;
+        this.m_vertShader = null;
+        this.m_fragShader = null;
+        this.m_program = null;
     }
 
     createShader(type, source)
