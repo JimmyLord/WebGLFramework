@@ -39,17 +39,19 @@ function main()
 
     // Setup our resources.
     var resources = new ResourceManager( gl );
-    resources.m_Meshes["Triangle"] = new Mesh( gl );
-    resources.m_Meshes["Triangle"].createTriangle( new vec3( 0.5, 0.5 ) );
-    resources.m_Materials["red"]   = new Material( resources.m_Shaders["color"], new color( 1, 0, 0, 1 ) );
-    resources.m_Materials["green"] = new Material( resources.m_Shaders["color"], new color( 0, 1, 0, 1 ) );
-    resources.m_Materials["blue"]  = new Material( resources.m_Shaders["color"], new color( 0, 0, 1, 1 ) );
+    resources.m_meshes["Triangle"] = new Mesh( gl );
+    resources.m_meshes["Triangle"].createTriangle( new vec3( 0.5, 0.5 ) );
+    resources.m_textures["test"] = new Texture( gl, "data/textures/test.png" );
+    resources.m_materials["red"]   = new Material( resources.m_shaders["color"],   new color( 1, 0, 0, 1 ), null );
+    resources.m_materials["green"] = new Material( resources.m_shaders["color"],   new color( 0, 1, 0, 1 ), null );
+    resources.m_materials["blue"]  = new Material( resources.m_shaders["color"],   new color( 0, 0, 1, 1 ), null );
+    resources.m_materials["test"]  = new Material( resources.m_shaders["texture"], new color( 0, 0, 0, 1 ), resources.m_textures["test"] );
 
     // Setup some entities.
     var entities = [];
-    entities.push( new Entity( new vec3(0), resources.m_Meshes["Triangle"], resources.m_Materials["red"] ) );
-    entities.push( new Entity( new vec3(0), resources.m_Meshes["Triangle"], resources.m_Materials["green"] ) );
-    entities.push( new Entity( new vec3(0), resources.m_Meshes["Triangle"], resources.m_Materials["blue"] ) );
+    entities.push( new Entity( new vec3(0), resources.m_meshes["Triangle"], resources.m_materials["test"] ) );
+    entities.push( new Entity( new vec3(0), resources.m_meshes["Triangle"], resources.m_materials["green"] ) );
+    entities.push( new Entity( new vec3(0), resources.m_meshes["Triangle"], resources.m_materials["blue"] ) );
 
     // Start the update/draw cycle.
     requestAnimationFrame( update );
