@@ -6,8 +6,6 @@ class Shader
         this.m_vertShader = this.createShader( gl.VERTEX_SHADER, vertSource );
         this.m_fragShader = this.createShader( gl.FRAGMENT_SHADER, fragSource );
         this.m_program = this.createProgram( this.m_vertShader, this.m_fragShader );
-
-        //log( "Shader created: program = " + shader.program );
     }
 
     get program()

@@ -25,6 +25,16 @@ class Texture
         this.m_image.addEventListener( 'load', this );
     }
 
+    free()
+    {
+        var gl = this.m_gl;
+
+        gl.deleteTexture( this.m_textureID );
+        this.m_textureID = null;
+        this.m_image = null;
+        this.m_gl = null;
+    }
+
     handleEvent(event)
     {
         var gl = this.m_gl;
@@ -37,15 +47,5 @@ class Texture
             this.m_image.removeEventListener( 'load', this );
             this.m_image = null;
         }
-    }
-
-    free()
-    {
-        var gl = this.m_gl;
-
-        gl.deleteTexture( this.m_textureID );
-        this.m_textureID = null;
-        this.m_image = null;
-        this.m_gl = null;
     }
 }

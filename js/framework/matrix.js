@@ -12,10 +12,10 @@ class mat4
 
     setIdentity()
     {
-        this.values[ 0] = 1; this.values[ 1] = 0; this.values[ 2] = 0; this.values[ 3] = 0;
-        this.values[ 4] = 0; this.values[ 5] = 1; this.values[ 6] = 0; this.values[ 7] = 0;
-        this.values[ 8] = 0; this.values[ 9] = 0; this.values[10] = 1; this.values[11] = 0;
-        this.values[12] = 0; this.values[13] = 0; this.values[14] = 0; this.values[15] = 1;
+        this.values[ 0] = 1; this.values[ 4] = 0; this.values[ 8] = 0; this.values[12] = 0;
+        this.values[ 1] = 0; this.values[ 5] = 1; this.values[ 9] = 0; this.values[13] = 0;
+        this.values[ 2] = 0; this.values[ 6] = 0; this.values[10] = 1; this.values[14] = 0;
+        this.values[ 3] = 0; this.values[ 7] = 0; this.values[11] = 0; this.values[15] = 1;
     }
 
     translate(xOrVec3, y, z)
@@ -32,5 +32,23 @@ class mat4
             this.values[13] += y;
             this.values[14] += z;
         }
+    }
+
+    createView2D(cameraPosition)
+    {
+        this.setIdentity();
+
+        this.values[12] = -cameraPosition.x;
+        this.values[13] = -cameraPosition.y;
+    }
+
+    createOrthoInfiniteZ(left, right, bottom, top)
+    {
+        this.values[ 0] = 2 / (right-left);
+                             this.values[ 4] = 0; this.values[ 8] = 0; this.values[12] = -((right+left)/(right-left));
+        this.values[ 1] = 0; this.values[ 5] = 2 / (top-bottom);
+                                                  this.values[ 9] = 0; this.values[13] = -((top+bottom)/(top-bottom));
+        this.values[ 2] = 0; this.values[ 6] = 0; this.values[10] = 0; this.values[14] = 0;
+        this.values[ 3] = 0; this.values[ 7] = 0; this.values[11] = 0; this.values[15] = 1;
     }
 }

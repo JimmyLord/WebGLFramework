@@ -14,12 +14,12 @@ class Entity
         this.m_material = null;
     }
 
-    draw()
+    draw(camera)
     {
-        var worldMat = new mat4;
-        worldMat.setIdentity();
-        worldMat.translate( this.m_position );
+        var matWorld = new mat4;
+        matWorld.setIdentity();
+        matWorld.translate( this.m_position );
 
-        this.m_mesh.draw( this.m_material, worldMat );
+        this.m_mesh.draw( camera, matWorld, this.m_material );
     }
 }

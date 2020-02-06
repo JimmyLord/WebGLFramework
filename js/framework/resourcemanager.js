@@ -35,13 +35,15 @@ class ResourceManager
             attribute vec4 a_Position;
             attribute vec2 a_UV;
 
-            uniform mat4 u_WorldMatrix;
+            uniform mat4 u_MatWorld;
+            uniform mat4 u_MatView;
+            uniform mat4 u_MatProj;
 
             varying vec2 v_UV;
 
             void main()
             {
-                gl_Position = u_WorldMatrix * a_Position;
+                gl_Position = u_MatProj * u_MatView * u_MatWorld * a_Position;
                 v_UV = a_UV;
             }
         `;

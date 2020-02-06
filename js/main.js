@@ -39,8 +39,11 @@ function main()
 
     // Setup our resources.
     var resources = new ResourceManager( gl );
-    resources.m_meshes["Triangle"] = new Mesh( gl );
-    resources.m_meshes["Triangle"].createTriangle( new vec3( 0.5, 0.5 ) );
+    resources.m_meshes["triangle"] = new Mesh( gl );
+    resources.m_meshes["triangle"].createTriangle( new vec3( 0.5, 0.5 ) );
+    resources.m_meshes["circle"] = new Mesh( gl );
+    resources.m_meshes["circle"].createCircle( 200, 0.2 );
+
     resources.m_textures["test"] = new Texture( gl, "data/textures/test.png" );
     resources.m_materials["red"]   = new Material( resources.m_shaders["color"],   new color( 1, 0, 0, 1 ), null );
     resources.m_materials["green"] = new Material( resources.m_shaders["color"],   new color( 0, 1, 0, 1 ), null );
@@ -49,9 +52,11 @@ function main()
 
     // Setup some entities.
     var entities = [];
-    entities.push( new Entity( new vec3(0), resources.m_meshes["Triangle"], resources.m_materials["test"] ) );
-    entities.push( new Entity( new vec3(0), resources.m_meshes["Triangle"], resources.m_materials["green"] ) );
-    entities.push( new Entity( new vec3(0), resources.m_meshes["Triangle"], resources.m_materials["blue"] ) );
+    entities.push( new Entity( new vec3(0), resources.m_meshes["circle"], resources.m_materials["test"] ) );
+    entities.push( new Entity( new vec3(0), resources.m_meshes["triangle"], resources.m_materials["green"] ) );
+    entities.push( new Entity( new vec3(0), resources.m_meshes["triangle"], resources.m_materials["blue"] ) );
+
+    var camera = new Camera( new vec3(0), 2 );
 
     // Start the update/draw cycle.
     requestAnimationFrame( update );
@@ -69,17 +74,19 @@ function main()
         entities[1].m_position.y = Math.sin( currentTime/1000.0 );
 
         dir = new vec3(0);
-        if( this.m_KeyStates[65] )
-            dir.x = -1;
-        if( this.m_KeyStates[68] )
-            dir.x = 1;
-        if( this.m_KeyStates[83] )
-            dir.y = -1;
-        if( this.m_KeyStates[87] )
-            dir.y = 1;
+        if( this.m_KeyStates['a'] || this.m_KeyStates['ArrowLeft'] )
+            dir.x += -1;
+        if( this.m_KeyStates['d'] || this.m_KeyStates['ArrowRight'] )
+            dir.x += 1;
+        if( this.m_KeyStates['s'] || this.m_KeyStates['ArrowDown'] )
+            dir.y += -1;
+        if( this.m_KeyStates['w'] || this.m_KeyStates['ArrowUp'] )
+            dir.y += 1;
 
         entities[2].m_position.x += dir.x * deltaTime;
         entities[2].m_position.y += dir.y * deltaTime;
+
+        camera.update( canvas );
 
         draw();
     }
@@ -90,7 +97,7 @@ function main()
         gl.clearColor( 0, 0, 0.4, 1 );
         gl.clear( gl.COLOR_BUFFER_BIT );
 
-        entities.forEach( entity => entity.draw() );
+        entities.forEach( entity => entity.draw( camera ) );
 
         requestAnimationFrame( update );
     }
@@ -104,6 +111,13 @@ function main()
 
         gl.canvas.width = 1;
         gl.canvas.height = 1;
+
+        entities.forEach( entity => entity.free() );
+        entities.length = 0;
+        entities = null;
+
+        camera.free();
+        camera = null;
 
         log( "Shutdown!" );
     }
@@ -120,8 +134,13 @@ function main()
         var x = event.layerX - canvas.offsetLeft;
         var y = event.layerY - canvas.offsetTop;
 
-        entities[0].m_position.x = x / canvas.width * 2 - 1;
-        entities[0].m_position.y = (canvas.height - y) / canvas.height * 2 - 1;
+        var orthoScaleX = camera.m_matProj.values[0];
+        var orthoOffsetX = camera.m_matProj.values[12];
+        var orthoScaleY = camera.m_matProj.values[5];
+        var orthoOffsetY = camera.m_matProj.values[13];
+
+        entities[0].m_position.x = ((x / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
+        entities[0].m_position.y = (((canvas.height - y) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
     }
 
     function onMouseDown(event)
@@ -138,12 +157,12 @@ function main()
 
     function onKeyDown(event)
     {
-        m_KeyStates[event.keyCode] = 1;
+        m_KeyStates[event.key] = 1;
     }
 
     function onKeyUp(event)
     {
-        m_KeyStates[event.keyCode] = 0;
+        m_KeyStates[event.key] = 0;
     }
 
     // Setup document events.

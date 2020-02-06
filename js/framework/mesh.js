@@ -6,31 +6,6 @@ class Mesh
         this.m_VBO = null;
     }
 
-    createTriangle(size)
-    {
-        var gl = this.m_gl;
-
-        var numVerts = 3;
-        var sizeofFloat32 = 4;
-        var vertexPositions = [ -size.x/2,-size.y/2,0,   0,size.y/2,0,   size.x/2,-size.y/2,0, ];
-        var vertexUVs = [ 0,0,   0.5,1,   1,0, ];
-
-        var vertexAttributes = new ArrayBuffer( numVerts * 5 * sizeofFloat32 );
-        var vertexAttributesAsFloats = new Float32Array( vertexAttributes );
-        for( var i=0; i<numVerts; i++ )
-        {
-            vertexAttributesAsFloats[i*5 + 0] = vertexPositions[i*3 + 0];
-            vertexAttributesAsFloats[i*5 + 1] = vertexPositions[i*3 + 1];
-            vertexAttributesAsFloats[i*5 + 2] = vertexPositions[i*3 + 2];
-            vertexAttributesAsFloats[i*5 + 3] = vertexUVs[i*2 + 0];
-            vertexAttributesAsFloats[i*5 + 4] = vertexUVs[i*2 + 1];
-        }
-
-        this.m_VBO = gl.createBuffer();
-        gl.bindBuffer( gl.ARRAY_BUFFER, this.m_VBO );
-        gl.bufferData( gl.ARRAY_BUFFER, vertexAttributes, gl.STATIC_DRAW );
-    }
-
     free()
     {
         var gl = this.m_gl;
@@ -46,11 +21,66 @@ class Mesh
 
         this.m_VBO = null;
         this.m_gl = null;
-
-        //log( "Freed mesh." );
     }
 
-    draw(material, world)
+    createTriangle(size)
+    {
+        var gl = this.m_gl;
+
+        var numVerts = 3;
+        var sizeofFloat32 = 4;
+        var vertexPositions = [ -size.x/2,-size.y/2,0,   0,size.y/2,0,   size.x/2,-size.y/2,0, ];
+        var vertexUVs = [ 0,0,   0.5,1,   1,0, ];
+
+        // VertexFormat: XYZ UV.
+        var vertexAttributes = new ArrayBuffer( numVerts * 5 * sizeofFloat32 );
+        var vertexAttributesAsFloats = new Float32Array( vertexAttributes );
+        for( var i=0; i<numVerts; i++ )
+        {
+            vertexAttributesAsFloats[i*5 + 0] = vertexPositions[i*3 + 0];
+            vertexAttributesAsFloats[i*5 + 1] = vertexPositions[i*3 + 1];
+            vertexAttributesAsFloats[i*5 + 2] = vertexPositions[i*3 + 2];
+            vertexAttributesAsFloats[i*5 + 3] = vertexUVs[i*2 + 0];
+            vertexAttributesAsFloats[i*5 + 4] = vertexUVs[i*2 + 1];
+        }
+
+        this.m_VBO = gl.createBuffer();
+        gl.bindBuffer( gl.ARRAY_BUFFER, this.m_VBO );
+        gl.bufferData( gl.ARRAY_BUFFER, vertexAttributes, gl.STATIC_DRAW );
+
+        this.m_numVerts = 3;
+        this.m_primitiveType = gl.TRIANGLES;
+    }
+
+    createCircle(numSides, radius)
+    {
+        var gl = this.m_gl;
+
+        var numVerts = numSides;
+        var sizeofFloat32 = 4;
+
+        // VertexFormat: XYZ UV.
+        var vertexAttributes = new ArrayBuffer( numVerts * 5 * sizeofFloat32 );
+        var vertexAttributesAsFloats = new Float32Array( vertexAttributes );
+        var sliceRadians = 2 * Math.PI / numSides;
+        for( var i=0; i<numVerts; i++ )
+        {
+            vertexAttributesAsFloats[i*5 + 0] = Math.cos( sliceRadians * i ) * radius;
+            vertexAttributesAsFloats[i*5 + 1] = Math.sin( sliceRadians * i ) * radius;
+            vertexAttributesAsFloats[i*5 + 2] = 0;
+            vertexAttributesAsFloats[i*5 + 3] = Math.cos( sliceRadians * i );
+            vertexAttributesAsFloats[i*5 + 4] = Math.sin( sliceRadians * i );
+        }
+
+        this.m_VBO = gl.createBuffer();
+        gl.bindBuffer( gl.ARRAY_BUFFER, this.m_VBO );
+        gl.bufferData( gl.ARRAY_BUFFER, vertexAttributes, gl.STATIC_DRAW );
+
+        this.m_numVerts = numVerts;
+        this.m_primitiveType = gl.TRIANGLE_FAN;
+    }
+
+    draw(camera, matWorld, material)
     {
         var gl = this.m_gl;
 
@@ -74,8 +104,14 @@ class Mesh
         // Setup shader and uniforms.
         gl.useProgram( material.m_shader.program );
 
-        var u_WorldMatrix = gl.getUniformLocation( material.m_shader.program, "u_WorldMatrix" );
-        gl.uniformMatrix4fv( u_WorldMatrix, false, world.values )
+        var u_MatWorld = gl.getUniformLocation( material.m_shader.program, "u_MatWorld" );
+        gl.uniformMatrix4fv( u_MatWorld, false, matWorld.values )
+
+        var u_MatView = gl.getUniformLocation( material.m_shader.program, "u_MatView" );
+        gl.uniformMatrix4fv( u_MatView, false, camera.m_matView.values )
+
+        var u_MatProj = gl.getUniformLocation( material.m_shader.program, "u_MatProj" );
+        gl.uniformMatrix4fv( u_MatProj, false, camera.m_matProj.values )
 
         var u_Color = gl.getUniformLocation( material.m_shader.program, "u_Color" );
         gl.uniform4f( u_Color, material.m_color.r, material.m_color.g, material.m_color.b, material.m_color.a );
@@ -90,6 +126,6 @@ class Mesh
         }
 
         // Draw.
-        gl.drawArrays( gl.TRIANGLES, 0, 3 );
+        gl.drawArrays( this.m_primitiveType, 0, this.m_numVerts );
     }
 }
