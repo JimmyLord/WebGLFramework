@@ -1,8 +1,10 @@
 class Entity
 {
-    constructor(position, mesh, material)
+    constructor(position, rotation, mesh, material)
     {
         this.m_position = position;
+        this.m_rotation = rotation;
+        this.m_scale = new vec3( 1 );
         this.m_mesh = mesh;
         this.m_material = material;
     }
@@ -18,7 +20,7 @@ class Entity
     {
         var matWorld = new mat4;
         matWorld.setIdentity();
-        matWorld.translate( this.m_position );
+        matWorld.createSRT( this.m_scale, this.m_rotation, this.m_position );
 
         this.m_mesh.draw( camera, matWorld, this.m_material );
     }

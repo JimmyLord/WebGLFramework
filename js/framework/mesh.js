@@ -105,13 +105,13 @@ class Mesh
         gl.useProgram( material.m_shader.program );
 
         var u_MatWorld = gl.getUniformLocation( material.m_shader.program, "u_MatWorld" );
-        gl.uniformMatrix4fv( u_MatWorld, false, matWorld.values )
+        gl.uniformMatrix4fv( u_MatWorld, false, matWorld.m )
 
         var u_MatView = gl.getUniformLocation( material.m_shader.program, "u_MatView" );
-        gl.uniformMatrix4fv( u_MatView, false, camera.m_matView.values )
+        gl.uniformMatrix4fv( u_MatView, false, camera.m_matView.m )
 
         var u_MatProj = gl.getUniformLocation( material.m_shader.program, "u_MatProj" );
-        gl.uniformMatrix4fv( u_MatProj, false, camera.m_matProj.values )
+        gl.uniformMatrix4fv( u_MatProj, false, camera.m_matProj.m )
 
         var u_Color = gl.getUniformLocation( material.m_shader.program, "u_Color" );
         gl.uniform4f( u_Color, material.m_color.r, material.m_color.g, material.m_color.b, material.m_color.a );

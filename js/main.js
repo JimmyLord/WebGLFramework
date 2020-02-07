@@ -45,6 +45,7 @@ function main()
     resources.m_meshes["circle"].createCircle( 200, 0.2 );
 
     resources.m_textures["test"] = new Texture( gl, "data/textures/test.png" );
+    
     resources.m_materials["red"]   = new Material( resources.m_shaders["color"],   new color( 1, 0, 0, 1 ), null );
     resources.m_materials["green"] = new Material( resources.m_shaders["color"],   new color( 0, 1, 0, 1 ), null );
     resources.m_materials["blue"]  = new Material( resources.m_shaders["color"],   new color( 0, 0, 1, 1 ), null );
@@ -52,9 +53,9 @@ function main()
 
     // Setup some entities.
     var entities = [];
-    entities.push( new Entity( new vec3(0), resources.m_meshes["circle"], resources.m_materials["test"] ) );
-    entities.push( new Entity( new vec3(0), resources.m_meshes["triangle"], resources.m_materials["green"] ) );
-    entities.push( new Entity( new vec3(0), resources.m_meshes["triangle"], resources.m_materials["blue"] ) );
+    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["circle"], resources.m_materials["test"] ) );
+    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["triangle"], resources.m_materials["green"] ) );
+    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["triangle"], resources.m_materials["blue"] ) );
 
     var camera = new Camera( new vec3(0), 2 );
 
@@ -66,12 +67,13 @@ function main()
     {
         if( lastTime == null )
             lastTime = currentTime;
-        deltaTime = (currentTime - lastTime) / 1000.0;
+        deltaTime = (currentTime - lastTime) / 1000;
         lastTime = currentTime;
 
         //entities[0].m_position.x += deltaTime;
-        entities[1].m_position.x = Math.cos( currentTime/1000.0 );
-        entities[1].m_position.y = Math.sin( currentTime/1000.0 );
+        entities[1].m_position.x = Math.cos( currentTime/1000 );
+        entities[1].m_position.y = Math.sin( currentTime/1000 );
+        entities[1].m_rotation.z = -currentTime / 1000 * (180 / Math.PI);
 
         dir = new vec3(0);
         if( this.m_KeyStates['a'] || this.m_KeyStates['ArrowLeft'] )
@@ -134,10 +136,10 @@ function main()
         var x = event.layerX - canvas.offsetLeft;
         var y = event.layerY - canvas.offsetTop;
 
-        var orthoScaleX = camera.m_matProj.values[0];
-        var orthoOffsetX = camera.m_matProj.values[12];
-        var orthoScaleY = camera.m_matProj.values[5];
-        var orthoOffsetY = camera.m_matProj.values[13];
+        var orthoScaleX = camera.m_matProj.m[0];
+        var orthoOffsetX = camera.m_matProj.m[12];
+        var orthoScaleY = camera.m_matProj.m[5];
+        var orthoOffsetY = camera.m_matProj.m[13];
 
         entities[0].m_position.x = ((x / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
         entities[0].m_position.y = (((canvas.height - y) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
