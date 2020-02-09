@@ -43,6 +43,8 @@ function main()
     resources.m_meshes["triangle"].createTriangle( new vec3( 0.5, 0.5 ) );
     resources.m_meshes["circle"] = new Mesh( gl );
     resources.m_meshes["circle"].createCircle( 200, 0.2 );
+    resources.m_meshes["cube"] = new Mesh( gl );
+    resources.m_meshes["cube"].createCube( new vec3( 1, 1, 1 ) );
 
     resources.m_textures["test"] = new Texture( gl, "data/textures/test.png" );
     
@@ -55,7 +57,7 @@ function main()
     var entities = [];
     entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["circle"], resources.m_materials["test"] ) );
     entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["triangle"], resources.m_materials["green"] ) );
-    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["triangle"], resources.m_materials["blue"] ) );
+    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["cube"], resources.m_materials["blue"] ) );
 
     var camera = new Camera( new vec3(0), 2 );
 
