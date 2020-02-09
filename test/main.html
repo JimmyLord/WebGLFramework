@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <title>WebGL Test</title>
+        <style>
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;                
+                overflow: hidden;
+            }
+        </style>
+    </head>
+
+    <body>
+        <canvas id="MainCanvas"></canvas>
+
+        <!-- Framework classes -->
+        <script src="../framework/color.js"></script>
+        <script src="../framework/vector.js"></script>
+        <script src="../framework/matrix.js"></script>
+        <script src="../framework/shader.js"></script>
+        <script src="../framework/texture.js"></script>
+        <script src="../framework/material.js"></script>
+        <script src="../framework/mesh.js"></script>
+        <script src="../framework/resourcemanager.js"></script>
+        <script src="../framework/camera.js"></script>
+        <script src="../framework/entity.js"></script>
+
+        <!-- Main entry point -->
+        <script src="main.js" canvasName="MainCanvas" width=600 height=400 fullFrame=0></script>
+    </body>
+
+</html>

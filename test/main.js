@@ -46,20 +46,26 @@ function main()
     resources.m_meshes["cube"] = new Mesh( gl );
     resources.m_meshes["cube"].createCube( new vec3( 1, 1, 1 ) );
 
-    resources.m_textures["test"] = new Texture( gl, "data/textures/test.png" );
+    resources.m_textures["testTexture"] = new Texture( gl, "data/textures/test.png" );
     
-    resources.m_materials["red"]   = new Material( resources.m_shaders["color"],   new color( 1, 0, 0, 1 ), null );
-    resources.m_materials["green"] = new Material( resources.m_shaders["color"],   new color( 0, 1, 0, 1 ), null );
-    resources.m_materials["blue"]  = new Material( resources.m_shaders["color"],   new color( 0, 0, 1, 1 ), null );
-    resources.m_materials["test"]  = new Material( resources.m_shaders["texture"], new color( 0, 0, 0, 1 ), resources.m_textures["test"] );
+    resources.m_materials["red"] = new Material( resources.m_shaders["uniformColor"], new color( 1, 0, 0, 1 ), null );
+    resources.m_materials["green"] = new Material( resources.m_shaders["uniformColor"], new color( 0, 1, 0, 1 ), null );
+    resources.m_materials["blue"] = new Material( resources.m_shaders["uniformColor"], new color( 0, 0, 1, 1 ), null );
+    resources.m_materials["testTexture"] = new Material( resources.m_shaders["texture"], new color( 0, 0, 0, 1 ), resources.m_textures["testTexture"] );
+    resources.m_materials["vertexColor"] = new Material( resources.m_shaders["vertexColor"], new color( 0, 0, 1, 1 ), null );
 
     // Setup some entities.
     var entities = [];
-    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["circle"], resources.m_materials["test"] ) );
+    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["circle"], resources.m_materials["testTexture"] ) );
     entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["triangle"], resources.m_materials["green"] ) );
-    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["cube"], resources.m_materials["blue"] ) );
+    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["cube"], resources.m_materials["vertexColor"] ) );
 
     var camera = new Camera( new vec3(0), 2 );
+
+    gl.enable( gl.DEPTH_TEST );
+    gl.enable( gl.CULL_FACE );
+    gl.cullFace( gl.BACK );
+    gl.frontFace( gl.CW );
 
     // Start the update/draw cycle.
     requestAnimationFrame( update );
@@ -72,10 +78,11 @@ function main()
         deltaTime = (currentTime - lastTime) / 1000;
         lastTime = currentTime;
 
-        //entities[0].m_position.x += deltaTime;
         entities[1].m_position.x = Math.cos( currentTime/1000 );
         entities[1].m_position.y = Math.sin( currentTime/1000 );
         entities[1].m_rotation.z = -currentTime / 1000 * (180 / Math.PI);
+        entities[2].m_rotation.x += deltaTime * 50;
+        entities[2].m_rotation.y += deltaTime * 100;
 
         dir = new vec3(0);
         if( this.m_KeyStates['a'] || this.m_KeyStates['ArrowLeft'] )
