@@ -144,6 +144,7 @@ class mat4
 
         this.m[12] = -cameraPosition.x;
         this.m[13] = -cameraPosition.y;
+        this.m[14] = -cameraPosition.z;
     }
 
     createOrthoInfiniteZ(left, right, bottom, top)
@@ -154,5 +155,25 @@ class mat4
                                         this.m[ 9] = 0; this.m[13] = -((top+bottom)/(top-bottom));
         this.m[ 2] = 0; this.m[ 6] = 0; this.m[10] = 0; this.m[14] = 0;
         this.m[ 3] = 0; this.m[ 7] = 0; this.m[11] = 0; this.m[15] = 1;
+    }
+
+    createPerspectiveVFoV(fovDegrees, aspect, near, far)
+    {
+        var fov = 1.0 / Math.tan( fovDegrees/2.0 * Math.PI/180.0 );
+        var inverseRange = 1.0 / (near - far);
+
+        this.m[ 0] = fov / aspect;
+        this.m[ 1] = this.m[ 2] = this.m[ 3] = 0.0;
+    
+        this.m[ 5] = fov;
+        this.m[ 4] = this.m[ 6] = this.m[ 7] = 0.0;
+    
+        this.m[ 8] = 0;
+        this.m[ 9] = 0;
+        this.m[10] = -(near + far) * inverseRange;
+        this.m[11] = 1.0;
+    
+        this.m[14] = near * far * inverseRange * 2;
+        this.m[12] = this.m[13] = this.m[15] = 0.0;
     }
 }

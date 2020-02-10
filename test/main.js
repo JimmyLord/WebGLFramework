@@ -60,7 +60,7 @@ function main()
     entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["triangle"], resources.m_materials["green"] ) );
     entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["cube"], resources.m_materials["vertexColor"] ) );
 
-    var camera = new Camera( new vec3(0), 2 );
+    var camera = new Camera( new vec3(0, 0, -3), false, 2, canvas.width / canvas.height );
 
     gl.enable( gl.DEPTH_TEST );
     gl.enable( gl.CULL_FACE );
@@ -97,7 +97,7 @@ function main()
         entities[2].m_position.x += dir.x * deltaTime;
         entities[2].m_position.y += dir.y * deltaTime;
 
-        camera.update( canvas );
+        camera.update();
 
         draw();
     }
