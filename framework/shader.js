@@ -2,34 +2,29 @@ class Shader
 {
     constructor(gl, vertSource, fragSource)
     {
-        this.m_gl = gl;
-        this.m_vertShader = this.createShader( gl.VERTEX_SHADER, vertSource );
-        this.m_fragShader = this.createShader( gl.FRAGMENT_SHADER, fragSource );
-        this.m_program = this.createProgram( this.m_vertShader, this.m_fragShader );
-    }
-
-    get program()
-    {
-        return this.m_program;
+        this.gl = gl;
+        this.vertShader = this.createShader( gl.VERTEX_SHADER, vertSource );
+        this.fragShader = this.createShader( gl.FRAGMENT_SHADER, fragSource );
+        this.program = this.createProgram( this.vertShader, this.fragShader );
     }
     
     free()
     {
-        var gl = this.m_gl;
+        var gl = this.gl;
 
-        gl.deleteShader( this.m_vertShader );
-        gl.deleteShader( this.m_fragShader );
-        gl.deleteProgram( this.m_program );
+        gl.deleteShader( this.vertShader );
+        gl.deleteShader( this.fragShader );
+        gl.deleteProgram( this.program );
 
-        this.m_gl = null;
-        this.m_vertShader = null;
-        this.m_fragShader = null;
-        this.m_program = null;
+        this.gl = null;
+        this.vertShader = null;
+        this.fragShader = null;
+        this.program = null;
     }
 
     createShader(type, source)
     {
-        var gl = this.m_gl;
+        var gl = this.gl;
 
         var shader = gl.createShader( type );
         gl.shaderSource( shader, source );
@@ -45,7 +40,7 @@ class Shader
     
     createProgram(vertShader, fragShader)
     {
-        var gl = this.m_gl;
+        var gl = this.gl;
         
         var program = gl.createProgram();
         gl.attachShader( program, vertShader );

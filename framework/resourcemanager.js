@@ -2,31 +2,31 @@ class ResourceManager
 {
     constructor(gl)
     {
-        this.m_shaders = new Map;
-        this.m_materials = new Map;
-        this.m_meshes = new Map;
-        this.m_textures = new Map;
+        this.shaders = new Map;
+        this.materials = new Map;
+        this.meshes = new Map;
+        this.textures = new Map;
 
         this.createSomeShaders( gl );
     }
 
     free()
     {
-        this.m_shaders.forEach( shader => shader.free() );
-        this.m_shaders.clear();
-        this.m_shaders = null;
+        this.shaders.forEach( shader => shader.free() );
+        this.shaders.clear();
+        this.shaders = null;
 
-        this.m_materials.forEach( material => material.free() );
-        this.m_materials.clear();
-        this.m_materials = null;
+        this.materials.forEach( material => material.free() );
+        this.materials.clear();
+        this.materials = null;
 
-        this.m_meshes.forEach( mesh => mesh.free() );
-        this.m_meshes.clear();
-        this.m_meshes = null;
+        this.meshes.forEach( mesh => mesh.free() );
+        this.meshes.clear();
+        this.meshes = null;
 
-        this.m_textures.forEach( texture => texture.free() );
-        this.m_textures.clear();
-        this.m_textures = null;
+        this.textures.forEach( texture => texture.free() );
+        this.textures.clear();
+        this.textures = null;
     }
 
     createSomeShaders(gl)
@@ -86,8 +86,8 @@ class ResourceManager
             }
         `;
 
-        this.m_shaders["uniformColor"] = new Shader( gl, generalVertShaderSource, uniformColorFragShaderSource );
-        this.m_shaders["vertexColor"] = new Shader( gl, generalVertShaderSource, vertexColorFragShaderSource );
-        this.m_shaders["texture"] = new Shader( gl, generalVertShaderSource, textureFragShaderSource );
+        this.shaders["uniformColor"] = new Shader( gl, generalVertShaderSource, uniformColorFragShaderSource );
+        this.shaders["vertexColor"] = new Shader( gl, generalVertShaderSource, vertexColorFragShaderSource );
+        this.shaders["texture"] = new Shader( gl, generalVertShaderSource, textureFragShaderSource );
     }
 }

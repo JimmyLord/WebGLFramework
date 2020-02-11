@@ -2,26 +2,26 @@ class Entity
 {
     constructor(position, rotation, mesh, material)
     {
-        this.m_position = position;
-        this.m_rotation = rotation;
-        this.m_scale = new vec3( 1 );
-        this.m_mesh = mesh;
-        this.m_material = material;
+        this.position = position;
+        this.rotation = rotation;
+        this.scale = new vec3( 1 );
+        this.mesh = mesh;
+        this.material = material;
     }
 
     free()
     {
-        this.m_position = null;
-        this.m_mesh = null;
-        this.m_material = null;
+        this.position = null;
+        this.mesh = null;
+        this.material = null;
     }
 
     draw(camera)
     {
         var matWorld = new mat4;
         matWorld.setIdentity();
-        matWorld.createSRT( this.m_scale, this.m_rotation, this.m_position );
+        matWorld.createSRT( this.scale, this.rotation, this.position );
 
-        this.m_mesh.draw( camera, matWorld, this.m_material );
+        this.mesh.draw( camera, matWorld, this.material );
     }
 }

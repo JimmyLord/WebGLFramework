@@ -12,7 +12,7 @@ function log(str)
 //    fullFrame="true" or 1
 function main()
 {
-    m_KeyStates = new Map;
+    keyStates = new Map;
 
     // Get the canvas and the OpenGL context.
     var canvas = document.getElementById( document.currentScript.getAttribute( "canvasName" ) );
@@ -39,26 +39,26 @@ function main()
 
     // Setup our resources.
     var resources = new ResourceManager( gl );
-    resources.m_meshes["triangle"] = new Mesh( gl );
-    resources.m_meshes["triangle"].createTriangle( new vec3( 0.5, 0.5 ) );
-    resources.m_meshes["circle"] = new Mesh( gl );
-    resources.m_meshes["circle"].createCircle( 200, 0.2 );
-    resources.m_meshes["cube"] = new Mesh( gl );
-    resources.m_meshes["cube"].createCube( new vec3( 1, 1, 1 ) );
+    resources.meshes["triangle"] = new Mesh( gl );
+    resources.meshes["triangle"].createTriangle( new vec3( 0.5, 0.5 ) );
+    resources.meshes["circle"] = new Mesh( gl );
+    resources.meshes["circle"].createCircle( 200, 0.2 );
+    resources.meshes["cube"] = new Mesh( gl );
+    resources.meshes["cube"].createCube( new vec3( 1, 1, 1 ) );
 
-    resources.m_textures["testTexture"] = new Texture( gl, "data/textures/test.png" );
+    resources.textures["testTexture"] = new Texture( gl, "data/textures/test.png" );
     
-    resources.m_materials["red"] = new Material( resources.m_shaders["uniformColor"], new color( 1, 0, 0, 1 ), null );
-    resources.m_materials["green"] = new Material( resources.m_shaders["uniformColor"], new color( 0, 1, 0, 1 ), null );
-    resources.m_materials["blue"] = new Material( resources.m_shaders["uniformColor"], new color( 0, 0, 1, 1 ), null );
-    resources.m_materials["testTexture"] = new Material( resources.m_shaders["texture"], new color( 0, 0, 0, 1 ), resources.m_textures["testTexture"] );
-    resources.m_materials["vertexColor"] = new Material( resources.m_shaders["vertexColor"], new color( 0, 0, 1, 1 ), null );
+    resources.materials["red"] = new Material( resources.shaders["uniformColor"], new color( 1, 0, 0, 1 ), null );
+    resources.materials["green"] = new Material( resources.shaders["uniformColor"], new color( 0, 1, 0, 1 ), null );
+    resources.materials["blue"] = new Material( resources.shaders["uniformColor"], new color( 0, 0, 1, 1 ), null );
+    resources.materials["testTexture"] = new Material( resources.shaders["texture"], new color( 0, 0, 0, 1 ), resources.textures["testTexture"] );
+    resources.materials["vertexColor"] = new Material( resources.shaders["vertexColor"], new color( 0, 0, 1, 1 ), null );
 
     // Setup some entities.
     var entities = [];
-    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["circle"], resources.m_materials["testTexture"] ) );
-    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["triangle"], resources.m_materials["green"] ) );
-    entities.push( new Entity( new vec3(0), new vec3(0), resources.m_meshes["cube"], resources.m_materials["vertexColor"] ) );
+    entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["circle"], resources.materials["testTexture"] ) );
+    entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["triangle"], resources.materials["green"] ) );
+    entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["cube"], resources.materials["vertexColor"] ) );
 
     var camera = new Camera( new vec3(0, 0, -3), false, 2, canvas.width / canvas.height );
 
@@ -78,24 +78,24 @@ function main()
         deltaTime = (currentTime - lastTime) / 1000;
         lastTime = currentTime;
 
-        entities[1].m_position.x = Math.cos( currentTime/1000 );
-        entities[1].m_position.y = Math.sin( currentTime/1000 );
-        entities[1].m_rotation.z = -currentTime / 1000 * (180 / Math.PI);
-        entities[2].m_rotation.x += deltaTime * 50;
-        entities[2].m_rotation.y += deltaTime * 100;
+        entities[1].position.x = Math.cos( currentTime/1000 );
+        entities[1].position.y = Math.sin( currentTime/1000 );
+        entities[1].rotation.z = -currentTime / 1000 * (180 / Math.PI);
+        entities[2].rotation.x += deltaTime * 50;
+        entities[2].rotation.y += deltaTime * 100;
 
         dir = new vec3(0);
-        if( this.m_KeyStates['a'] || this.m_KeyStates['ArrowLeft'] )
+        if( this.keyStates['a'] || this.keyStates['ArrowLeft'] )
             dir.x += -1;
-        if( this.m_KeyStates['d'] || this.m_KeyStates['ArrowRight'] )
+        if( this.keyStates['d'] || this.keyStates['ArrowRight'] )
             dir.x += 1;
-        if( this.m_KeyStates['s'] || this.m_KeyStates['ArrowDown'] )
+        if( this.keyStates['s'] || this.keyStates['ArrowDown'] )
             dir.y += -1;
-        if( this.m_KeyStates['w'] || this.m_KeyStates['ArrowUp'] )
+        if( this.keyStates['w'] || this.keyStates['ArrowUp'] )
             dir.y += 1;
 
-        entities[2].m_position.x += dir.x * deltaTime;
-        entities[2].m_position.y += dir.y * deltaTime;
+        entities[2].position.x += dir.x * deltaTime;
+        entities[2].position.y += dir.y * deltaTime;
 
         camera.update();
 
@@ -145,13 +145,13 @@ function main()
         var x = event.layerX - canvas.offsetLeft;
         var y = event.layerY - canvas.offsetTop;
 
-        var orthoScaleX = camera.m_matProj.m[0];
-        var orthoOffsetX = camera.m_matProj.m[12];
-        var orthoScaleY = camera.m_matProj.m[5];
-        var orthoOffsetY = camera.m_matProj.m[13];
+        var orthoScaleX = camera.matProj.m[0];
+        var orthoOffsetX = camera.matProj.m[12];
+        var orthoScaleY = camera.matProj.m[5];
+        var orthoOffsetY = camera.matProj.m[13];
 
-        entities[0].m_position.x = ((x / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
-        entities[0].m_position.y = (((canvas.height - y) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
+        entities[0].position.x = ((x / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
+        entities[0].position.y = (((canvas.height - y) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
     }
 
     function onMouseDown(event)
@@ -168,12 +168,12 @@ function main()
 
     function onKeyDown(event)
     {
-        m_KeyStates[event.key] = 1;
+        keyStates[event.key] = 1;
     }
 
     function onKeyUp(event)
     {
-        m_KeyStates[event.key] = 0;
+        keyStates[event.key] = 0;
     }
 
     // Setup document events.

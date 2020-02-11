@@ -5,12 +5,12 @@ class Texture
         // This is deprecated, but no clue what an alternative would be... other than flipping all UVs.
         gl.pixelStorei( gl.UNPACK_FLIP_Y_WEBGL, true );
 
-        this.m_gl = gl;
-        this.m_textureID = gl.createTexture();
+        this.gl = gl;
+        this.textureID = gl.createTexture();
 
         // Create a temp 1 pixel texture, until loading of actual texture is complete.
         var pixels = new Uint8Array( [255, 255, 255, 255] );
-        gl.bindTexture( gl.TEXTURE_2D, this.m_textureID );
+        gl.bindTexture( gl.TEXTURE_2D, this.textureID );
         gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels );
 
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
@@ -20,32 +20,32 @@ class Texture
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
 
         // Start load of texture requested.
-        this.m_image = new Image();
-        this.m_image.src = filename;
-        this.m_image.addEventListener( 'load', this );
+        this.image = new Image();
+        this.image.src = filename;
+        this.image.addEventListener( 'load', this );
     }
 
     free()
     {
-        var gl = this.m_gl;
+        var gl = this.gl;
 
-        gl.deleteTexture( this.m_textureID );
-        this.m_textureID = null;
-        this.m_image = null;
-        this.m_gl = null;
+        gl.deleteTexture( this.textureID );
+        this.textureID = null;
+        this.image = null;
+        this.gl = null;
     }
 
     handleEvent(event)
     {
-        var gl = this.m_gl;
+        var gl = this.gl;
 
         if( event.type == "load" )
         {
-            gl.bindTexture( gl.TEXTURE_2D, this.m_textureID );
-            gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.m_image );
+            gl.bindTexture( gl.TEXTURE_2D, this.textureID );
+            gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image );
             
-            this.m_image.removeEventListener( 'load', this );
-            this.m_image = null;
+            this.image.removeEventListener( 'load', this );
+            this.image = null;
         }
     }
 }

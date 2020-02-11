@@ -2,15 +2,15 @@ class Material
 {
     constructor(shader, color, texture)
     {
-        this.m_shader = shader;
-        this.m_color = color;
-        this.m_texture = texture;
+        this.shader = shader;
+        this.color = color;
+        this.texture = texture;
     }
 
     free()
     {
-        this.m_shader = null;
-        this.m_color = null;
-        this.m_texture = null;
+        this.shader = null;
+        this.color = null;
+        this.texture = null;
     }
 }
