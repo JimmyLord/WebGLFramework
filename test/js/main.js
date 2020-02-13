@@ -16,10 +16,10 @@ class MainProject
     {
         var resources = this.framework.resources;
 
-        // Setup some entities.
+        // Set up some entities.
         this.entities = [];
 
-        this.entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["circle"], resources.materials["testTexture"] ) );
+        this.entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["circle"], resources.materials["red"] ) );
         this.entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["triangle"], resources.materials["green"] ) );
         this.entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["cube"], resources.materials["vertexColor"] ) );
     }

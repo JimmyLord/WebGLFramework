@@ -196,7 +196,7 @@ class Mesh
         if( this.VBO == null )
             return;
 
-        // Setup VBO and attributes.
+        // Set up VBO and attributes.
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
         gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
 
@@ -220,7 +220,7 @@ class Mesh
             gl.vertexAttribPointer( a_Color, 4, gl.UNSIGNED_BYTE, true, vertexSize, 20 )
         }
 
-        // Setup shader and uniforms.
+        // Set up shader and uniforms.
         gl.useProgram( material.shader.program );
 
         var u_MatWorld = gl.getUniformLocation( material.shader.program, "u_MatWorld" );
