@@ -5,6 +5,68 @@ function log(str)
     document.body.appendChild( newElem );
 }
 
+class MainProject
+{
+    constructor(framework)
+    {
+        this.framework = framework;
+    }
+
+    init()
+    {
+        var resources = this.framework.resources;
+
+        // Setup some entities.
+        this.entities = [];
+
+        this.entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["circle"], resources.materials["testTexture"] ) );
+        this.entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["triangle"], resources.materials["green"] ) );
+        this.entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["cube"], resources.materials["vertexColor"] ) );
+    }
+
+    update(deltaTime, currentTime)
+    {
+        this.entities[1].position.x = Math.cos( currentTime/1000 );
+        this.entities[1].position.y = Math.sin( currentTime/1000 );
+        this.entities[1].rotation.z = -currentTime / 1000 * (180 / Math.PI);
+        this.entities[2].rotation.x += deltaTime * 50;
+        this.entities[2].rotation.y += deltaTime * 100;
+
+        var keyStates = this.framework.keyStates;
+
+        var dir = new vec3(0);
+        if( keyStates['a'] || keyStates['ArrowLeft'] )
+            dir.x += -1;
+        if( keyStates['d'] || keyStates['ArrowRight'] )
+            dir.x += 1;
+        if( keyStates['s'] || keyStates['ArrowDown'] )
+            dir.y += -1;
+        if( keyStates['w'] || keyStates['ArrowUp'] )
+            dir.y += 1;
+
+        this.entities[2].position.x += dir.x * deltaTime;
+        this.entities[2].position.y += dir.y * deltaTime;
+    }
+
+    draw(camera)
+    {
+        this.entities.forEach( entity => entity.draw( camera ) );
+    }
+
+    onMouseMove(x, y, orthoX, orthoY)
+    {
+        this.entities[0].position.x = orthoX;
+        this.entities[0].position.y = orthoY;
+    }
+
+    shutdown()
+    {
+        this.entities.forEach( entity => entity.free() );
+        this.entities.length = 0;
+        this.entities = null;
+    }
+}
+
 // Params:
 //    canvasName="MainCanvas"
 //    width=600
@@ -12,185 +74,12 @@ function log(str)
 //    fullFrame="true" or 1
 function main()
 {
-    keyStates = new Map;
-
-    // Get the canvas and the OpenGL context.
-    var canvas = document.getElementById( document.currentScript.getAttribute( "canvasName" ) );
-    var gl = canvas.getContext( "webgl" );
-    if( gl == 0 )
-    {
-        log( "Failed to get WebGL context from canvas." );
-        return;
-    }
-
-    // Set the size of the canvas.
-    if( document.currentScript.getAttribute( "fullFrame" ) == "true" ||
-        document.currentScript.getAttribute( "fullFrame" ) == 1 )
-    {
-        var fullFrame = true;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    else
-    {
-        canvas.width = document.currentScript.getAttribute( "width" );
-        canvas.height = document.currentScript.getAttribute( "height" );
-    }
-
-    // Setup our resources.
-    var resources = new ResourceManager( gl );
-    resources.meshes["triangle"] = new Mesh( gl );
-    resources.meshes["triangle"].createTriangle( new vec3( 0.5, 0.5 ) );
-    resources.meshes["circle"] = new Mesh( gl );
-    resources.meshes["circle"].createCircle( 200, 0.2 );
-    resources.meshes["cube"] = new Mesh( gl );
-    resources.meshes["cube"].createCube( new vec3( 1, 1, 1 ) );
-
-    resources.textures["testTexture"] = new Texture( gl, "data/textures/test.png" );
+    var framework = new FrameworkMain();
+    var runnable = new MainProject( framework );
     
-    resources.materials["red"] = new Material( resources.shaders["uniformColor"], new color( 1, 0, 0, 1 ), null );
-    resources.materials["green"] = new Material( resources.shaders["uniformColor"], new color( 0, 1, 0, 1 ), null );
-    resources.materials["blue"] = new Material( resources.shaders["uniformColor"], new color( 0, 0, 1, 1 ), null );
-    resources.materials["testTexture"] = new Material( resources.shaders["texture"], new color( 0, 0, 0, 1 ), resources.textures["testTexture"] );
-    resources.materials["vertexColor"] = new Material( resources.shaders["vertexColor"], new color( 0, 0, 1, 1 ), null );
-
-    // Setup some entities.
-    var entities = [];
-    entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["circle"], resources.materials["testTexture"] ) );
-    entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["triangle"], resources.materials["green"] ) );
-    entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["cube"], resources.materials["vertexColor"] ) );
-
-    var camera = new Camera( new vec3(0, 0, -3), false, 2, canvas.width / canvas.height );
-
-    gl.enable( gl.DEPTH_TEST );
-    gl.enable( gl.CULL_FACE );
-    gl.cullFace( gl.BACK );
-    gl.frontFace( gl.CW );
-
-    // Start the update/draw cycle.
-    requestAnimationFrame( update );
-
-    var lastTime = null;
-    function update(currentTime)
-    {
-        if( lastTime == null )
-            lastTime = currentTime;
-        deltaTime = (currentTime - lastTime) / 1000;
-        lastTime = currentTime;
-
-        entities[1].position.x = Math.cos( currentTime/1000 );
-        entities[1].position.y = Math.sin( currentTime/1000 );
-        entities[1].rotation.z = -currentTime / 1000 * (180 / Math.PI);
-        entities[2].rotation.x += deltaTime * 50;
-        entities[2].rotation.y += deltaTime * 100;
-
-        dir = new vec3(0);
-        if( this.keyStates['a'] || this.keyStates['ArrowLeft'] )
-            dir.x += -1;
-        if( this.keyStates['d'] || this.keyStates['ArrowRight'] )
-            dir.x += 1;
-        if( this.keyStates['s'] || this.keyStates['ArrowDown'] )
-            dir.y += -1;
-        if( this.keyStates['w'] || this.keyStates['ArrowUp'] )
-            dir.y += 1;
-
-        entities[2].position.x += dir.x * deltaTime;
-        entities[2].position.y += dir.y * deltaTime;
-
-        camera.update();
-
-        draw();
-    }
-
-    function draw()
-    {
-        gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
-        gl.clearColor( 0, 0, 0.4, 1 );
-        gl.clear( gl.COLOR_BUFFER_BIT );
-
-        entities.forEach( entity => entity.draw( camera ) );
-
-        requestAnimationFrame( update );
-    }
-
-    function shutdown()
-    {
-        gl.disableVertexAttribArray( 0 );
-
-        resources.free();
-        resources = null;
-
-        gl.canvas.width = 1;
-        gl.canvas.height = 1;
-
-        entities.forEach( entity => entity.free() );
-        entities.length = 0;
-        entities = null;
-
-        camera.free();
-        camera = null;
-
-        log( "Shutdown!" );
-    }
-
-    // Register input callbacks.
-    document.addEventListener( "mousemove", onMouseMove, false );
-    document.addEventListener( "mousedown", onMouseDown, false );
-    document.addEventListener( "mouseup",   onMouseUp,   false );
-    document.addEventListener( "keydown",   onKeyDown,   false );
-    document.addEventListener( "keyup",     onKeyUp,     false );
-
-    function onMouseMove(event)
-    {
-        var x = event.layerX - canvas.offsetLeft;
-        var y = event.layerY - canvas.offsetTop;
-
-        var orthoScaleX = camera.matProj.m[0];
-        var orthoOffsetX = camera.matProj.m[12];
-        var orthoScaleY = camera.matProj.m[5];
-        var orthoOffsetY = camera.matProj.m[13];
-
-        entities[0].position.x = ((x / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
-        entities[0].position.y = (((canvas.height - y) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
-    }
-
-    function onMouseDown(event)
-    {
-        var x = event.layerX - canvas.offsetLeft;
-        var y = event.layerY - canvas.offsetTop;
-    }
-
-    function onMouseUp(event)
-    {
-        var x = event.layerX - canvas.offsetLeft;
-        var y = event.layerY - canvas.offsetTop;
-    }
-
-    function onKeyDown(event)
-    {
-        keyStates[event.key] = 1;
-    }
-
-    function onKeyUp(event)
-    {
-        keyStates[event.key] = 0;
-    }
-
-    // Setup document events.
-    window.onresize = function()
-    {
-        if( fullFrame )
-        {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-    }
-
-    window.onbeforeunload = function()
-    {
-        shutdown();
-        // return false; // If false is returned, the browser will pop-up a confirmation on unload.
-    };
+    //framework.init();
+    runnable.init();
+    framework.run( runnable );
 }
 
 main()
