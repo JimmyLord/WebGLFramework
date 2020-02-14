@@ -67,11 +67,6 @@ class MainProject
     }
 }
 
-// Params:
-//    canvasName="MainCanvas"
-//    width=600
-//    height=400
-//    fullFrame="true" or 1
 function main()
 {
     var framework = new FrameworkMain();

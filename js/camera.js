@@ -34,4 +34,17 @@ class Camera
             this.matProj.createPerspectiveVFoV( 45.0, this.aspectRatio, 0.01, 100.0 );
         }
     }
+
+    convertMouseToOrtho( canvas, x, y )
+    {
+        var orthoScaleX = this.matProj.m[0];
+        var orthoOffsetX = this.matProj.m[12];
+        var orthoScaleY = this.matProj.m[5];
+        var orthoOffsetY = this.matProj.m[13];
+
+        var orthoX = ((x / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
+        var orthoY = (((canvas.height - y) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
+
+        return [orthoX, orthoY];
+    }
 }

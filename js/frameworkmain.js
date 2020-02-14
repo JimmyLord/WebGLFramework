@@ -1,3 +1,8 @@
+// Params:
+//    canvasName="MainCanvas"
+//    width=600
+//    height=400
+//    fullFrame="true" or 1
 class FrameworkMain
 {
     constructor()
@@ -50,7 +55,7 @@ class FrameworkMain
         resources.materials["vertexColor"] = new Material( resources.shaders["vertexColor"], new color( 0, 0, 1, 1 ), null );
     
         // Create a camera.
-        this.camera = new Camera( new vec3(0, 0, -3), false, 2, this.canvas.width / this.canvas.height );
+        this.camera = new Camera( new vec3(0, 0, -3), true, 2, this.canvas.width / this.canvas.height );
     
         // Set up some basic GL state.
         gl.enable( gl.DEPTH_TEST );
@@ -135,18 +140,9 @@ class FrameworkMain
     
     onMouseMove(event)
     {
-        var canvas = this.canvas;
-
-        var x = event.layerX - canvas.offsetLeft;
-        var y = event.layerY - canvas.offsetTop;
-
-        var orthoScaleX = this.camera.matProj.m[0];
-        var orthoOffsetX = this.camera.matProj.m[12];
-        var orthoScaleY = this.camera.matProj.m[5];
-        var orthoOffsetY = this.camera.matProj.m[13];
-
-        var orthoX = ((x / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
-        var orthoY = (((canvas.height - y) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
+        var x = event.layerX - this.canvas.offsetLeft;
+        var y = event.layerY - this.canvas.offsetTop;
+        var [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseMove )
         {
@@ -158,10 +154,11 @@ class FrameworkMain
     {
         var x = event.layerX - this.canvas.offsetLeft;
         var y = event.layerY - this.canvas.offsetTop;
+        var [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseDown )
         {
-            this.runnableObject.onMouseDown( x, y );
+            this.runnableObject.onMouseDown( x, y, orthoX, orthoY );
         }
     }
 
@@ -169,10 +166,11 @@ class FrameworkMain
     {
         var x = event.layerX - this.canvas.offsetLeft;
         var y = event.layerY - this.canvas.offsetTop;
+        var [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseUp )
         {
-            this.runnableObject.onMouseUp( x, y );
+            this.runnableObject.onMouseUp( x, y, orthoX, orthoY );
         }
     }
 
