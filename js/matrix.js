@@ -36,14 +36,14 @@ class mat4
 
     rotate(angleDegrees, x, y, z)
     {
-        var sinAngle = Math.sin( angleDegrees * Math.PI / 180 )
-        var cosAngle = Math.cos( angleDegrees * Math.PI / 180 )
+        let sinAngle = Math.sin( angleDegrees * Math.PI / 180 )
+        let cosAngle = Math.cos( angleDegrees * Math.PI / 180 )
 
-        var mag = Math.sqrt( x*x + y*y + z*z );
+        let mag = Math.sqrt( x*x + y*y + z*z );
         if( mag > 0 )
         {
-            var xx, yy, zz, xy, yz, zx, xs, ys, zs;
-            var oneMinusCos;
+            let xx, yy, zz, xy, yz, zx, xs, ys, zs;
+            let oneMinusCos;
        
             x /= mag;
             y /= mag;
@@ -60,7 +60,7 @@ class mat4
             zs = z * sinAngle;
             oneMinusCos = 1 - cosAngle;
     
-            var rotMat = new mat4;
+            let rotMat = new mat4;
             rotMat.m[ 0] = (oneMinusCos * xx) + cosAngle;
             rotMat.m[ 1] = (oneMinusCos * xy) - zs;
             rotMat.m[ 2] = (oneMinusCos * zx) + ys;
@@ -81,7 +81,7 @@ class mat4
             rotMat.m[14] = 0;
             rotMat.m[15] = 1;
     
-            var temp = rotMat.multiply( this );
+            let temp = rotMat.multiply( this );
             this.m = temp.m;
             temp.m = null;
         }
@@ -89,7 +89,7 @@ class mat4
     
     multiply(o)
     {
-        var newmat = new mat4;
+        let newmat = new mat4;
 
         newmat.m[ 0] = this.m[ 0] * o.m[ 0] + this.m[ 4] * o.m[ 1] + this.m[ 8] * o.m[ 2] + this.m[12] * o.m[ 3];
         newmat.m[ 1] = this.m[ 1] * o.m[ 0] + this.m[ 5] * o.m[ 1] + this.m[ 9] * o.m[ 2] + this.m[13] * o.m[ 3];
@@ -159,8 +159,8 @@ class mat4
 
     createPerspectiveVFoV(fovDegrees, aspect, near, far)
     {
-        var fov = 1.0 / Math.tan( fovDegrees/2.0 * Math.PI/180.0 );
-        var inverseRange = 1.0 / (near - far);
+        let fov = 1.0 / Math.tan( fovDegrees/2.0 * Math.PI/180.0 );
+        let inverseRange = 1.0 / (near - far);
 
         this.m[ 0] = fov / aspect;
         this.m[ 1] = this.m[ 2] = this.m[ 3] = 0.0;

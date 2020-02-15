@@ -31,7 +31,7 @@ class ResourceManager
 
     createSomeShaders(gl)
     {
-        var generalVertShaderSource = `
+        let generalVertShaderSource = `
             attribute vec4 a_Position;
             attribute vec2 a_UV;
             attribute vec4 a_Color;
@@ -51,7 +51,7 @@ class ResourceManager
             }
         `;
 
-        var uniformColorFragShaderSource = `
+        let uniformColorFragShaderSource = `
             precision mediump float;
             
             uniform vec4 u_Color;
@@ -62,7 +62,7 @@ class ResourceManager
             }
         `;
 
-        var vertexColorFragShaderSource = `
+        let vertexColorFragShaderSource = `
             precision mediump float;
             
             varying vec4 v_Color;
@@ -73,7 +73,7 @@ class ResourceManager
             }
         `;
 
-        var textureFragShaderSource = `
+        let textureFragShaderSource = `
             precision mediump float;
             
             uniform sampler2D u_TextureAlbedo;

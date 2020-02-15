@@ -1,6 +1,6 @@
 function log(str)
 {
-    var newElem = document.createElement( 'p' ); 
+    let newElem = document.createElement( 'p' ); 
     newElem.appendChild( document.createTextNode( str ) );
     document.body.appendChild( newElem );
 }
@@ -14,7 +14,7 @@ class MainProject
 
     init()
     {
-        var resources = this.framework.resources;
+        let resources = this.framework.resources;
 
         // Set up some entities.
         this.entities = [];
@@ -32,9 +32,9 @@ class MainProject
         this.entities[2].rotation.x += deltaTime * 50;
         this.entities[2].rotation.y += deltaTime * 100;
 
-        var keyStates = this.framework.keyStates;
+        let keyStates = this.framework.keyStates;
 
-        var dir = new vec3(0);
+        let dir = new vec3(0);
         if( keyStates['a'] || keyStates['ArrowLeft'] )
             dir.x += -1;
         if( keyStates['d'] || keyStates['ArrowRight'] )
@@ -69,8 +69,8 @@ class MainProject
 
 function main()
 {
-    var framework = new FrameworkMain();
-    var runnable = new MainProject( framework );
+    let framework = new FrameworkMain();
+    let runnable = new MainProject( framework );
     
     //framework.init();
     runnable.init();

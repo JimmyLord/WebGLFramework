@@ -24,8 +24,8 @@ class Camera
         if( this.isOrtho )
         {
             // If orthographic.
-            var halfHeight = this.desiredHeight / 2;
-            var halfWidth = halfHeight * this.aspectRatio;
+            let halfHeight = this.desiredHeight / 2;
+            let halfWidth = halfHeight * this.aspectRatio;
             this.matProj.createOrthoInfiniteZ( -halfWidth, halfWidth, -halfHeight, halfHeight );
         }
         else
@@ -37,13 +37,13 @@ class Camera
 
     convertMouseToOrtho( canvas, x, y )
     {
-        var orthoScaleX = this.matProj.m[0];
-        var orthoOffsetX = this.matProj.m[12];
-        var orthoScaleY = this.matProj.m[5];
-        var orthoOffsetY = this.matProj.m[13];
+        let orthoScaleX = this.matProj.m[0];
+        let orthoOffsetX = this.matProj.m[12];
+        let orthoScaleY = this.matProj.m[5];
+        let orthoOffsetY = this.matProj.m[13];
 
-        var orthoX = ((x / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
-        var orthoY = (((canvas.height - y) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
+        let orthoX = ((x / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
+        let orthoY = (((canvas.height - y) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
 
         return [orthoX, orthoY];
     }

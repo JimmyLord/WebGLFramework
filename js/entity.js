@@ -18,7 +18,7 @@ class Entity
 
     draw(camera)
     {
-        var matWorld = new mat4;
+        let matWorld = new mat4;
         matWorld.setIdentity();
         matWorld.createSRT( this.scale, this.rotation, this.position );
 

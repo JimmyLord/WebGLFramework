@@ -9,7 +9,7 @@ class FrameworkMain
     {
         // Get the canvas and the OpenGL context.
         this.canvas = document.getElementById( document.currentScript.getAttribute( "canvasName" ) );
-        var gl = this.canvas.getContext( "webgl" );
+        let gl = this.canvas.getContext( "webgl" );
         if( gl == 0 )
         {
             log( "Failed to get WebGL context from canvas." );
@@ -36,7 +36,7 @@ class FrameworkMain
         }
     
         // Set up some base common resources.
-        var resources = new ResourceManager( gl );
+        let resources = new ResourceManager( gl );
         this.resources = resources;
 
         resources.meshes["triangle"] = new Mesh( gl );
@@ -51,6 +51,7 @@ class FrameworkMain
         resources.materials["red"] = new Material( resources.shaders["uniformColor"], new color( 1, 0, 0, 1 ), null );
         resources.materials["green"] = new Material( resources.shaders["uniformColor"], new color( 0, 1, 0, 1 ), null );
         resources.materials["blue"] = new Material( resources.shaders["uniformColor"], new color( 0, 0, 1, 1 ), null );
+        resources.materials["white"] = new Material( resources.shaders["uniformColor"], new color( 1, 1, 1, 1 ), null );
         //resources.materials["testTexture"] = new Material( resources.shaders["texture"], new color( 0, 0, 0, 1 ), resources.textures["testTexture"] );
         resources.materials["vertexColor"] = new Material( resources.shaders["vertexColor"], new color( 0, 0, 1, 1 ), null );
     
@@ -59,6 +60,7 @@ class FrameworkMain
     
         // Set up some basic GL state.
         gl.enable( gl.DEPTH_TEST );
+        gl.depthFunc( gl.LEQUAL );
         gl.enable( gl.CULL_FACE );
         gl.cullFace( gl.BACK );
         gl.frontFace( gl.CW );
@@ -78,7 +80,7 @@ class FrameworkMain
     
     update(currentTime)
     {
-        var deltaTime = (currentTime - this.lastTime) / 1000;
+        let deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
 
         this.camera.update();
@@ -93,7 +95,7 @@ class FrameworkMain
     
     draw()
     {
-        var gl = this.gl;
+        let gl = this.gl;
         
         gl.viewport( 0, 0, this.canvas.width, this.canvas.height );
         gl.clearColor( 0, 0, 0.4, 1 );
@@ -118,8 +120,8 @@ class FrameworkMain
         document.addEventListener( "keyup",     (event) => this.onKeyUp(event),     false );
     
         // Set up extra vars for callbacks below... fix this.
-        var fullFrame = this.fullFrame;
-        var framework = this;
+        let fullFrame = this.fullFrame;
+        let framework = this;
 
         // Set up document events.
         window.onresize = function()
@@ -140,9 +142,9 @@ class FrameworkMain
     
     onMouseMove(event)
     {
-        var x = event.layerX - this.canvas.offsetLeft;
-        var y = event.layerY - this.canvas.offsetTop;
-        var [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
+        let x = event.layerX - this.canvas.offsetLeft;
+        let y = event.layerY - this.canvas.offsetTop;
+        let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseMove )
         {
@@ -152,9 +154,9 @@ class FrameworkMain
 
     onMouseDown(event)
     {
-        var x = event.layerX - this.canvas.offsetLeft;
-        var y = event.layerY - this.canvas.offsetTop;
-        var [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
+        let x = event.layerX - this.canvas.offsetLeft;
+        let y = event.layerY - this.canvas.offsetTop;
+        let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseDown )
         {
@@ -164,9 +166,9 @@ class FrameworkMain
 
     onMouseUp(event)
     {
-        var x = event.layerX - this.canvas.offsetLeft;
-        var y = event.layerY - this.canvas.offsetTop;
-        var [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
+        let x = event.layerX - this.canvas.offsetLeft;
+        let y = event.layerY - this.canvas.offsetTop;
+        let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseUp )
         {

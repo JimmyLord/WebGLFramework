@@ -9,7 +9,7 @@ class Texture
         this.textureID = gl.createTexture();
 
         // Create a temp 1 pixel texture, until loading of actual texture is complete.
-        var pixels = new Uint8Array( [255, 255, 255, 255] );
+        let pixels = new Uint8Array( [255, 255, 255, 255] );
         gl.bindTexture( gl.TEXTURE_2D, this.textureID );
         gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels );
 
@@ -27,7 +27,7 @@ class Texture
 
     free()
     {
-        var gl = this.gl;
+        let gl = this.gl;
 
         gl.deleteTexture( this.textureID );
         this.textureID = null;
@@ -37,7 +37,7 @@ class Texture
 
     handleEvent(event)
     {
-        var gl = this.gl;
+        let gl = this.gl;
 
         if( event.type == "load" )
         {

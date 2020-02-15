@@ -10,7 +10,7 @@ class Shader
     
     free()
     {
-        var gl = this.gl;
+        let gl = this.gl;
 
         gl.deleteShader( this.vertShader );
         gl.deleteShader( this.fragShader );
@@ -24,12 +24,12 @@ class Shader
 
     createShader(type, source)
     {
-        var gl = this.gl;
+        let gl = this.gl;
 
-        var shader = gl.createShader( type );
+        let shader = gl.createShader( type );
         gl.shaderSource( shader, source );
         gl.compileShader( shader );
-        var success = gl.getShaderParameter( shader, gl.COMPILE_STATUS );
+        let success = gl.getShaderParameter( shader, gl.COMPILE_STATUS );
         if( success == false )
         {
             log( gl.getShaderInfoLog( shader ) );
@@ -40,13 +40,13 @@ class Shader
     
     createProgram(vertShader, fragShader)
     {
-        var gl = this.gl;
+        let gl = this.gl;
         
-        var program = gl.createProgram();
+        let program = gl.createProgram();
         gl.attachShader( program, vertShader );
         gl.attachShader( program, fragShader );
         gl.linkProgram( program );
-        var success = gl.getProgramParameter( program, gl.LINK_STATUS );
+        let success = gl.getProgramParameter( program, gl.LINK_STATUS );
         if( success == false )
         {
             log( gl.getProgramInfoLog( program ) );
