@@ -148,7 +148,7 @@ class FrameworkMain
 
         if( this.runnableObject.onMouseMove )
         {
-            this.runnableObject.onMouseMove( x, y, orthoX, orthoY );
+            this.runnableObject.onMouseMove( event.which, x, y, orthoX, orthoY );
         }
     }
 
@@ -160,7 +160,7 @@ class FrameworkMain
 
         if( this.runnableObject.onMouseDown )
         {
-            this.runnableObject.onMouseDown( x, y, orthoX, orthoY );
+            this.runnableObject.onMouseDown( event.which, x, y, orthoX, orthoY );
         }
     }
 
@@ -172,7 +172,7 @@ class FrameworkMain
 
         if( this.runnableObject.onMouseUp )
         {
-            this.runnableObject.onMouseUp( x, y, orthoX, orthoY );
+            this.runnableObject.onMouseUp( event.which, x, y, orthoX, orthoY );
         }
     }
 

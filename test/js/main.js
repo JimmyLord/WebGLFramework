@@ -53,7 +53,7 @@ class MainProject
         this.entities.forEach( entity => entity.draw( camera ) );
     }
 
-    onMouseMove(x, y, orthoX, orthoY)
+    onMouseMove(buttonID, x, y, orthoX, orthoY)
     {
         this.entities[0].position.x = orthoX;
         this.entities[0].position.y = orthoY;
