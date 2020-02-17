@@ -18,20 +18,18 @@ class mat4
         this.m[ 3] = 0; this.m[ 7] = 0; this.m[11] = 0; this.m[15] = 1;
     }
 
-    translate(xOrVec3, y, z)
+    translate(pos)
     {
-        if( xOrVec3 instanceof vec3 )
-        {
-            this.m[12] += xOrVec3.x;
-            this.m[13] += xOrVec3.y;
-            this.m[14] += xOrVec3.z;
-        }
-        else
-        {
-            this.m[12] += xOrVec3;
-            this.m[13] += y;
-            this.m[14] += z;
-        }
+        this.m[12] += pos.x;
+        this.m[13] += pos.y;
+        this.m[14] += pos.z;
+    }
+
+    translateF32(x, y, z)
+    {
+        this.m[12] += x;
+        this.m[13] += y;
+        this.m[14] += z;
     }
 
     rotate(angleDegrees, x, y, z)
@@ -111,22 +109,20 @@ class mat4
         return newmat;
     }
 
-    createScale(xOrVec3, y, z)
+    createScale(scale)
     {
-        if( xOrVec3 instanceof vec3 )
-        {
-            this.m[ 0] = xOrVec3.x; this.m[ 4] = 0; this.m[ 8] = 0; this.m[12] = 0;
-            this.m[ 1] = 0; this.m[ 5] = xOrVec3.y; this.m[ 9] = 0; this.m[13] = 0;
-            this.m[ 2] = 0; this.m[ 6] = 0; this.m[10] = xOrVec3.z; this.m[14] = 0;
-            this.m[ 3] = 0; this.m[ 7] = 0; this.m[11] = 0; this.m[15] = 1;
-        }
-        else
-        {
-            this.m[ 0] = xOrVec3; this.m[ 4] = 0; this.m[ 8] = 0; this.m[12] = 0;
-            this.m[ 1] = 0; this.m[ 5] = y; this.m[ 9] = 0; this.m[13] = 0;
-            this.m[ 2] = 0; this.m[ 6] = 0; this.m[10] = z; this.m[14] = 0;
-            this.m[ 3] = 0; this.m[ 7] = 0; this.m[11] = 0; this.m[15] = 1;
-        }
+        this.m[ 0] = scale.x; this.m[ 4] = 0;       this.m[ 8] = 0;       this.m[12] = 0;
+        this.m[ 1] = 0;       this.m[ 5] = scale.y; this.m[ 9] = 0;       this.m[13] = 0;
+        this.m[ 2] = 0;       this.m[ 6] = 0;       this.m[10] = scale.z; this.m[14] = 0;
+        this.m[ 3] = 0;       this.m[ 7] = 0;       this.m[11] = 0;       this.m[15] = 1;
+    }
+
+    createScaleF32(x, y, z)
+    {
+        this.m[ 0] = x; this.m[ 4] = 0; this.m[ 8] = 0; this.m[12] = 0;
+        this.m[ 1] = 0; this.m[ 5] = y; this.m[ 9] = 0; this.m[13] = 0;
+        this.m[ 2] = 0; this.m[ 6] = 0; this.m[10] = z; this.m[14] = 0;
+        this.m[ 3] = 0; this.m[ 7] = 0; this.m[11] = 0; this.m[15] = 1;
     }
 
     createSRT(scale, rotation, translation)

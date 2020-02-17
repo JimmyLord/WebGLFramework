@@ -7,41 +7,26 @@ class vec3
         else                               { this.x = x; this.y = y; this.z = z; } // xyz
     }
 
-    plus(o)
-    {
-        if( o instanceof vec3 ) return new vec3( this.x + o.x, this.y + o.y, this.z + o.z );
-        else                    return new vec3( this.x + o, this.y + o, this.z + o );
-    }
+    set(o)              { this.x = o.x; this.y = o.y; this.z = o.z; }
+    setF32(x, y, z)     { this.x = x; this.y = y; this.z = z; }
 
-    minus(o)
-    {
-        if( o instanceof vec3 ) return new vec3( this.x - o.x, this.y - o.y, this.z - o.z );
-        else                    return new vec3( this.x - o, this.y - o, this.z - o );
-    }
+    plus(o)             { return new vec3( this.x + o.x, this.y + o.y, this.z + o.z ); }
+    plusF32(o)          { return new vec3( this.x + o, this.y + o, this.z + o ); }
 
-    dividedBy(o)
-    {
-        if( o instanceof vec3 ) return new vec3( this.x / o.x, this.y / o.y, this.z / o.z );
-        else                    return new vec3( this.x / o, this.y / o, this.z / o );
-    }
+    minus(o)            { return new vec3( this.x - o.x, this.y - o.y, this.z - o.z ); }
+    minusF32(o)         { return new vec3( this.x - o, this.y - o, this.z - o ); }
 
-    add(o)
-    {
-        if( o instanceof vec3 ) { this.x += o.x; this.y += o.y; this.z += o.z; }
-        else                    { this.x += o; this.y += o; this.z += o; }
-    }
+    dividedByVec3(o)    { return new vec3( this.x / o.x, this.y / o.y, this.z / o.z ); }
+    dividedBy(o)        { return new vec3( this.x / o, this.y / o, this.z / o ); }
 
-    subtract(o)
-    {
-        if( o instanceof vec3 ) { this.x -= o.x; this.y -= o.y; this.z -= o.z; }
-        else                    { this.x -= o; this.y -= o; this.z -= o; }
-    }
+    add(o)              { this.x += o.x; this.y += o.y; this.z += o.z; }
+    addF32(o)           { this.x += o; this.y += o; this.z += o; }
 
-    divideBy(o)
-    {
-        if( o instanceof vec3 ) { this.x /= o.x; this.y /= o.y; this.z /= o.z; }
-        else                    { this.x /= o; this.y /= o; this.z /= o; }
-    }
+    subtract(o)         { this.x -= o.x; this.y -= o.y; this.z -= o.z; }
+    subtractF32(o)      { this.x -= o; this.y -= o; this.z -= o; }
+
+    divideByVec3(o)     { this.x /= o.x; this.y /= o.y; this.z /= o.z; }
+    divideBy(o)         { this.x /= o; this.y /= o; this.z /= o; }
 
     distanceFrom(o)
     {
