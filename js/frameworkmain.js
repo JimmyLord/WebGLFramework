@@ -9,7 +9,7 @@ class FrameworkMain
     {
         // Get the canvas and the OpenGL context.
         this.canvas = document.getElementById( document.currentScript.getAttribute( "canvasName" ) );
-        let gl = this.canvas.getContext( "webgl" );
+        let gl = this.canvas.getContext( "webgl2" );
         if( gl == 0 )
         {
             log( "Failed to get WebGL context from canvas." );
@@ -34,6 +34,9 @@ class FrameworkMain
             this.canvas.width = document.currentScript.getAttribute( "width" );
             this.canvas.height = document.currentScript.getAttribute( "height" );
         }
+
+        // Create an imgui instance.
+        this.imgui = new ImGui( this.gl, this.canvas );
     
         // Set up some base common resources.
         let resources = new ResourceManager( gl );
@@ -46,7 +49,8 @@ class FrameworkMain
         resources.meshes["cube"] = new Mesh( gl );
         resources.meshes["cube"].createCube( new vec3( 1, 1, 1 ) );
     
-        //resources.textures["testTexture"] = new Texture( gl, "data/textures/test.png" );
+        //resources.textures["testTexture"] = new Texture( gl );
+        //resources.textures["testTexture"].loadFromFile( "data/textures/test.png" );
         
         resources.materials["red"] = new Material( resources.shaders["uniformColor"], new color( 1, 0, 0, 1 ), null );
         resources.materials["green"] = new Material( resources.shaders["uniformColor"], new color( 0, 1, 0, 1 ), null );
@@ -83,12 +87,18 @@ class FrameworkMain
         let deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
 
+        this.imgui.newFrame();
+
         this.camera.update();
 
         if( this.runnableObject.update )
         {
             this.runnableObject.update( deltaTime, currentTime );
         }
+
+        this.imgui.text( "ABCDEFGHIJKLM" );
+        this.imgui.text( "NOPQRSTUVWXYZ" );
+        this.imgui.text( "TESTING ABC" );
 
         this.draw();
     }
@@ -108,6 +118,8 @@ class FrameworkMain
 
         // Restart the update/draw cycle.
         requestAnimationFrame( (currentTime) => this.update( currentTime ) );
+
+        this.imgui.draw();
     }
 
     registerDoMCallbacks()

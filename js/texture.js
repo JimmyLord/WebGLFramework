@@ -1,11 +1,18 @@
 class Texture
 {
-    constructor(gl, filename)
+    constructor(gl, filename, pixelsUint8Array, width, height)
+    {
+        this.gl = gl;
+        this.textureID = 0;
+    }
+
+    loadFromFile(filename)
     {
         // This is deprecated, but no clue what an alternative would be... other than flipping all UVs.
         gl.pixelStorei( gl.UNPACK_FLIP_Y_WEBGL, true );
 
-        this.gl = gl;
+        let gl = this.gl;
+
         this.textureID = gl.createTexture();
 
         // Create a temp 1 pixel texture, until loading of actual texture is complete.
@@ -23,6 +30,22 @@ class Texture
         this.image = new Image();
         this.image.src = filename;
         this.image.addEventListener( 'load', this );
+    }
+
+    createFromUInt8Array(pixels, width, height)
+    {
+        let gl = this.gl;
+
+        this.textureID = gl.createTexture();
+        gl.bindTexture( gl.TEXTURE_2D, this.textureID );
+
+        gl.texImage2D( gl.TEXTURE_2D, 0, gl.R8, width, height, 0, gl.RED, gl.UNSIGNED_BYTE, pixels );
+
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
+
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
     }
 
     free()
