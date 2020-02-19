@@ -19,6 +19,7 @@ class FrameworkMain
         // Set some members.
         this.gl = gl;
         this.keyStates = new Map;
+        this.lastMousePosition = new vec3(0,0,0);
 
         // Set the size of the canvas.
         this.fullFrame = false;
@@ -35,6 +36,12 @@ class FrameworkMain
             this.canvas.height = document.currentScript.getAttribute( "height" );
         }
 
+        // Correct the canvas size for requested pixel ratio.
+        this.canvas.width *= window.devicePixelRatio;
+        this.canvas.height *= window.devicePixelRatio;
+        this.canvas.style.width = (this.canvas.width / window.devicePixelRatio) + 'px';
+        this.canvas.style.height = (this.canvas.height / window.devicePixelRatio) + 'px';
+        
         // Create an imgui instance.
         this.imgui = new ImGui( this.gl, this.canvas );
     
@@ -96,9 +103,14 @@ class FrameworkMain
             this.runnableObject.update( deltaTime, currentTime );
         }
 
-        this.imgui.text( "ABCDEFGHIJKLM" );
+        this.imgui.window( "TESTING" );
+        this.imgui.text( "POS " + this.imgui.windows["TESTING"]["pos"].x + "," + this.imgui.windows["TESTING"]["pos"].y );
         this.imgui.text( "NOPQRSTUVWXYZ" );
         this.imgui.text( "TESTING ABC" );
+
+        this.imgui.window( "MOUSE" );
+        this.imgui.windows["MOUSE"]["pos"].x = 480 * window.devicePixelRatio;
+        this.imgui.text( "POS " + this.lastMousePosition.x + "," + this.lastMousePosition.y );
 
         this.draw();
     }
@@ -142,6 +154,12 @@ class FrameworkMain
             {
                 this.canvas.width = window.innerWidth;
                 this.canvas.height = window.innerHeight;
+
+                // Correct the canvas size for requested pixel ratio.
+                this.canvas.width *= window.devicePixelRatio;
+                this.canvas.height *= window.devicePixelRatio;
+                this.canvas.style.width = (this.canvas.width / window.devicePixelRatio) + 'px';
+                this.canvas.style.height = (this.canvas.height / window.devicePixelRatio) + 'px';
             }
         }
     
@@ -154,20 +172,22 @@ class FrameworkMain
     
     onMouseMove(event)
     {
-        let x = event.layerX - this.canvas.offsetLeft;
-        let y = event.layerY - this.canvas.offsetTop;
+        let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
+        let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
         let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseMove )
         {
             this.runnableObject.onMouseMove( event.which, x, y, orthoX, orthoY );
         }
+
+        this.lastMousePosition.setF32( Math.trunc(x), Math.trunc(y), 0 );
     }
 
     onMouseDown(event)
     {
-        let x = event.layerX - this.canvas.offsetLeft;
-        let y = event.layerY - this.canvas.offsetTop;
+        let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
+        let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
         let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseDown )
@@ -178,8 +198,8 @@ class FrameworkMain
 
     onMouseUp(event)
     {
-        let x = event.layerX - this.canvas.offsetLeft;
-        let y = event.layerY - this.canvas.offsetTop;
+        let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
+        let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
         let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseUp )

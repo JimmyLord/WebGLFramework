@@ -1,3 +1,22 @@
+class Rect
+{
+    constructor(x,y,w,h)
+    {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+    }
+
+    set(x,y,w,h)
+    {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+    }
+}
+
 class ImGui
 {
     constructor(gl, canvas)
@@ -6,6 +25,7 @@ class ImGui
         this.canvas = canvas;
 
         this.drawList = [];
+        this.windows = {};
 
         this.VBO = gl.createBuffer();
         this.IBO = gl.createBuffer();
@@ -52,8 +72,34 @@ class ImGui
     generateFontTexture()
     {
         let pixels = new Uint8Array( [
-            // TODO 33-47: !"#$%&'()*+,-./
-            // TODO 48-64: 0123456789:;<=>?@
+            // Dummy full-white block for window backgrounds and other things.
+            1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+            // TODO 33-38: !"#$%&
+            // TODO 39-51: '()*+,-./0123
+            0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,1,1,1,1,0,0, 0,0,0,1,1,0,0,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,0,0,
+            0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,0,0,0,0,0,1,0, 0,0,0,0,0,0,1,0,
+            0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,0,0,0,0,0,1,0, 0,0,0,0,0,0,1,0,
+            0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,1,1,1,1,1,1,0, 0,0,1,1,1,1,0,0,
+            0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,1,0,0,0,0,0,0, 0,0,0,0,0,0,1,0,
+            0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,1,1,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,1,0,0,0,0,0,0, 0,0,0,0,0,0,1,0,
+            0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,1,1,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,1,0,0,0,0,0,0, 0,0,0,0,0,0,1,0,
+            0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,1,1,1,1,0,0, 0,0,0,1,1,1,0,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,0,0,
+            // TODO 52-64: 456789:;<=>?@
+            0,1,0,0,0,0,1,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,1,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+            0,1,0,0,0,0,1,0, 0,1,0,0,0,0,0,0, 0,1,0,0,0,0,0,0, 0,0,0,0,0,0,1,0, 0,1,0,0,0,0,1,0, 0,1,0,0,0,0,1,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+            0,1,0,0,0,0,1,0, 0,1,0,0,0,0,0,0, 0,1,0,0,0,0,0,0, 0,0,0,0,0,1,0,0, 0,1,0,0,0,0,1,0, 0,1,0,0,0,0,1,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+            0,1,1,1,1,1,1,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,1,0, 0,0,0,0,0,1,0,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,1,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,1,0, 0,0,0,0,0,0,1,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,0,0,1,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,1,0, 0,0,0,0,0,0,1,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,0,0,1,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,1,0, 0,0,0,0,0,0,1,0, 0,1,0,0,0,0,1,0, 0,0,0,1,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,0,0,1,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,1,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,1,0, 0,0,0,1,0,0,0,0, 0,1,1,1,1,1,1,0, 0,0,0,0,0,0,1,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
             // 65-77: Upper case A-M
             0,0,0,1,1,0,0,0, 0,1,1,1,1,1,0,0, 0,1,1,1,1,1,0,0, 0,1,1,1,1,1,0,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,0,0, 0,1,1,1,1,1,1,0, 0,1,0,0,0,0,1,0, 0,0,1,1,1,1,1,0, 0,0,0,1,1,1,1,0, 0,1,0,0,0,1,0,0, 0,1,0,0,0,0,0,0, 0,1,0,0,0,0,1,0,
             0,0,1,0,0,1,0,0, 0,1,0,0,0,0,1,0, 0,1,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,1,0,0,0,0,0,0, 0,1,0,0,0,0,0,0, 0,1,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,0,0,0,0,1,0,0, 0,1,0,0,0,1,0,0, 0,1,0,0,0,0,0,0, 0,1,1,0,0,1,1,0,
@@ -79,9 +125,9 @@ class ImGui
         ] );
 
         this.texture = new Texture( this.gl );
-        this.firstChar = 65;
+        this.firstChar = 39 - 13; // -13 for dummy block.
         this.numCols = 13;
-        this.numRows = 2;
+        this.numRows = 5;
         this.texture.createFromUInt8Array( pixels, this.numCols*8, this.numRows*8 );
     }
 
@@ -98,12 +144,14 @@ class ImGui
         gl.disable( gl.DEPTH_TEST );
         gl.enable( gl.BLEND );
         gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
+        gl.enable( gl.SCISSOR_TEST );
         for( let i=0; i<this.drawList.length; i++ )
         {
             let item = this.drawList[i];
-
+            
             this.drawItem( item );
         }
+        gl.disable( gl.SCISSOR_TEST );
         gl.enable( gl.DEPTH_TEST );
     }
     
@@ -175,8 +223,9 @@ class ImGui
         // Set up shader and uniforms.
         gl.useProgram( this.shader.program );
 
+        // Ortho matrix with 0,0 at top-left.
         this.matProj = new mat4();
-        this.matProj.createOrthoInfiniteZ( 0, this.canvas.width, 0, this.canvas.height );
+        this.matProj.createOrthoInfiniteZ( 0, this.canvas.width, this.canvas.height, 0 );
 
         let u_MatProj = gl.getUniformLocation( this.shader.program, "u_MatProj" );
         gl.uniformMatrix4fv( u_MatProj, false, this.matProj.m )
@@ -190,13 +239,78 @@ class ImGui
             gl.uniform1i( u_TextureAlbedo, textureUnit );
         }
 
-        // Draw.
+        // Scissor.
+        let lowerLeftY = this.canvas.height - (item.rect.y + item.rect.h);
+        gl.scissor( item.rect.x, lowerLeftY, item.rect.w, item.rect.h );
+        
+        // Draw.        
         gl.drawElements( item.primitiveType, item.indexCount, gl.UNSIGNED_SHORT, 0 );
-
+        
         if( a_UV != -1 )
             gl.disableVertexAttribArray( a_UV );
         if( a_Color != -1 )
             gl.disableVertexAttribArray( a_Color );
+    }
+
+    window(name)
+    {
+        let gl = this.gl;
+
+        if( this.windows[name] == undefined )
+        {
+            this.windows[name] = []
+            this.windows[name].pos = new vec3( 20, 20, 0 );
+            this.windows[name].size = new vec3( 120, 90, 0 );
+            this.windows[name].rect = new Rect( 0, 0, 0, 0 );
+        }
+
+        let numVerts = 0;
+        let numIndices = 0;
+        let verts = [];
+        let indices = [];
+
+        let x = this.windows[name].pos.x;
+        let y = this.windows[name].pos.y;
+
+        this.position.set( this.windows[name].pos );
+
+        let w = this.windows[name].size.x;
+
+        let titleH = 8 + this.padding.y*2;
+        
+        // Draw the title box.
+        let h = titleH;
+        verts.push( x+0,y+h,   0,0,   0,0,0,200 );
+        verts.push( x+0,y+0,   0,0,   0,0,0,200 );
+        verts.push( x+w,y+0,   0,0,   0,0,0,200 );
+        verts.push( x+w,y+h,   0,0,   0,0,0,200 );
+        indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
+        numVerts += 4;
+        numIndices += 6;
+
+        // Draw the BG box.
+        y += titleH;
+        h = this.windows[name].size.y - titleH;
+        verts.push( x+0,y+h,   0,0,   255,255,255,64 );
+        verts.push( x+0,y+0,   0,0,   255,255,255,64 );
+        verts.push( x+w,y+0,   0,0,   255,255,255,64 );
+        verts.push( x+w,y+h,   0,0,   255,255,255,64 );
+        indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
+        numVerts += 4;
+        numIndices += 6;
+
+        // Define scissor rect, y is lower left.
+        let rx = this.windows[name].pos.x;
+        let ry = this.windows[name].pos.y;
+        let rw = this.windows[name].size.x;
+        let rh = this.windows[name].size.y;
+        this.windows[name].rect.set( rx, ry, rw, rh );
+        this.rect = this.windows[name].rect;
+
+        this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.windows[name].rect ) );
+
+        this.text( name );
+        this.position.y += this.padding.y;
     }
 
     text(str)
@@ -212,7 +326,7 @@ class ImGui
         let indices = [];
 
         let x = this.position.x + this.padding.x;
-        let y = this.canvas.height - (h + this.padding.y) - this.position.y;
+        let y = this.position.y + this.padding.y;
 
         let stepU = 1.0 / this.numCols;
         let stepV = 1.0 / this.numRows;
@@ -230,10 +344,10 @@ class ImGui
             let cx = Math.trunc( c % this.numCols );
             let cy = Math.trunc( c / this.numCols );
 
-            verts.push( x+0,y+0,   stepU*(cx+0),stepV*(cy+1),   255,255,255,255 );
-            verts.push( x+0,y+h,   stepU*(cx+0),stepV*(cy+0),   255,255,255,255 );
-            verts.push( x+w,y+h,   stepU*(cx+1),stepV*(cy+0),   255,255,255,255 );
-            verts.push( x+w,y+0,   stepU*(cx+1),stepV*(cy+1),   255,255,255,255 );
+            verts.push( x+0,y+h,   stepU*(cx+0),stepV*(cy+1),   255,255,255,255 );
+            verts.push( x+0,y+0,   stepU*(cx+0),stepV*(cy+0),   255,255,255,255 );
+            verts.push( x+w,y+0,   stepU*(cx+1),stepV*(cy+0),   255,255,255,255 );
+            verts.push( x+w,y+h,   stepU*(cx+1),stepV*(cy+1),   255,255,255,255 );
             indices.push( count*4+0,count*4+1,count*4+2, count*4+0,count*4+2,count*4+3 );
 
             numVerts += 4;
@@ -243,7 +357,7 @@ class ImGui
             count++;
         }
 
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices ) );
+        this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.rect ) );
 
         this.position.y += h + this.padding.y;
     }
@@ -251,12 +365,13 @@ class ImGui
 
 class DrawListItem
 {
-    constructor(primitiveType, vertCount, verts, indexCount, indices)
+    constructor(primitiveType, vertCount, verts, indexCount, indices, rect)
     {
         this.primitiveType = primitiveType;
         this.vertexCount = vertCount;
         this.indexCount = indexCount;
         this.verts = verts;
         this.indices = indices;
+        this.rect = rect;
     }
 }
