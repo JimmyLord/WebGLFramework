@@ -46,6 +46,8 @@ class MainProject
 
         this.entities[2].position.x += dir.x * deltaTime;
         this.entities[2].position.y += dir.y * deltaTime;
+
+        this.framework.drawImGuiTestWindow();
     }
 
     draw(camera)

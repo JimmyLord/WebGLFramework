@@ -1,22 +1,3 @@
-class Rect
-{
-    constructor(x,y,w,h)
-    {
-        this.x = x;
-        this.y = y;
-        this.w = w;
-        this.h = h;
-    }
-
-    set(x,y,w,h)
-    {
-        this.x = x;
-        this.y = y;
-        this.w = w;
-        this.h = h;
-    }
-}
-
 class ImGui
 {
     constructor(gl, canvas)
@@ -24,14 +5,29 @@ class ImGui
         this.gl = gl;
         this.canvas = canvas;
 
+        // Persistent values.
         this.drawList = [];
         this.windows = {};
+        this.lastMousePosition = new vec3(0);
+        this.windowMoving = null;
+        this.oldMouseButtons = [ false, false, false ];
 
+        // Persistent values within single frame.
+        this.position = new vec3(0);
+
+        // Settings.
+        this.padding = new vec3(2);
+
+        // Inputs.
+        this.mousePosition = new vec3(0);
+        this.mouseButtons = [ false, false, false ];
+        
+        // Outputs.
+        this.isHoveringWindow = false;
+
+        // Resources.
         this.VBO = gl.createBuffer();
         this.IBO = gl.createBuffer();
-
-        this.position = new vec3(0);
-        this.padding = new vec3(2);
 
         let imguiVertShaderSource = `
             attribute vec4 a_Position;
@@ -133,8 +129,49 @@ class ImGui
 
     newFrame()
     {
+        this.isHoveringWindow = false;
+
         this.drawList.length = 0;
         this.position.setF32( 0, 0, 0 );
+
+        let mouseChange = this.mousePosition.minus( this.lastMousePosition );
+        this.lastMousePosition.setF32( this.mousePosition.x, this.mousePosition.y, 0 );
+
+        for( let key in this.windows )
+        {
+            if( this.windows[key].rect.contains( this.mousePosition ) )
+            {
+                this.isHoveringWindow = true;
+
+                if( this.mouseButtons[0] == 1 && this.oldMouseButtons[0] == 0 ) // Left button clicked.
+                {
+                    this.windowMoving = this.windows[key];
+                    break;
+                }
+            }
+        }
+
+        if( this.mouseButtons[0] == 0 )
+        {
+            this.windowMoving = null;
+        }
+
+        if( this.windowMoving )
+        {
+            this.windowMoving.pos.add( mouseChange );
+
+            // this.window( "TEST" );
+            // this.windows["TEST"].pos.x = 20;
+            // this.windows["TEST"].pos.y = 200;
+            // this.text( "Delta: " + mouseChange.x + " " + mouseChange.y );
+            // this.text( "Rect XY: " + this.windowMoving.rect.x + " " + this.windowMoving.rect.y );
+            // this.text( "Rect WH: " + this.windowMoving.rect.w + " " + this.windowMoving.rect.h );
+            // this.text( "In Rect: " + this.windowMoving.rect.contains( this.mousePosition ) );
+        }
+
+        this.oldMouseButtons[0] = this.mouseButtons[0];
+        this.oldMouseButtons[1] = this.mouseButtons[1];
+        this.oldMouseButtons[2] = this.mouseButtons[2];
     }
 
     draw()
@@ -258,8 +295,10 @@ class ImGui
 
         if( this.windows[name] == undefined )
         {
+            let windowCount = Object.keys( this.windows ).length;
+
             this.windows[name] = []
-            this.windows[name].pos = new vec3( 20, 20, 0 );
+            this.windows[name].pos = new vec3( 20 + 150*windowCount, 20, 0 );
             this.windows[name].size = new vec3( 120, 90, 0 );
             this.windows[name].rect = new Rect( 0, 0, 0, 0 );
         }
@@ -335,11 +374,13 @@ class ImGui
         for( let i=0; i<str.length; i++ )
         {
             let c = str.charCodeAt(i);
-            if( c == 32 )
+            if( c == 32 ) // Handle spaces.
             {
                 x += w;
                 continue;
             }
+            if( c >= 97 ) // Temp hack for lower case letters.
+                c -= 32;
             c -= this.firstChar;
             let cx = Math.trunc( c % this.numCols );
             let cy = Math.trunc( c / this.numCols );
@@ -373,5 +414,35 @@ class DrawListItem
         this.verts = verts;
         this.indices = indices;
         this.rect = rect;
+    }
+}
+
+class Rect
+{
+    constructor(x,y,w,h)
+    {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+    }
+
+    set(x,y,w,h)
+    {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+    }
+
+    contains(pos)
+    {
+        if( pos.x > this.x && pos.x < this.x + this.w &&
+            pos.y > this.y && pos.y < this.y + this.h )
+        {
+            return true;
+        }
+        
+        return false;
     }
 }

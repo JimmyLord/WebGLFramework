@@ -19,7 +19,7 @@ class FrameworkMain
         // Set some members.
         this.gl = gl;
         this.keyStates = new Map;
-        this.lastMousePosition = new vec3(0,0,0);
+        this.lastMousePosition = new vec3(0);
 
         // Set the size of the canvas.
         this.fullFrame = false;
@@ -94,6 +94,7 @@ class FrameworkMain
         let deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
 
+        this.imgui.mousePosition.setF32( this.lastMousePosition.x, this.lastMousePosition.y, 0 );
         this.imgui.newFrame();
 
         this.camera.update();
@@ -102,15 +103,6 @@ class FrameworkMain
         {
             this.runnableObject.update( deltaTime, currentTime );
         }
-
-        this.imgui.window( "TESTING" );
-        this.imgui.text( "POS " + this.imgui.windows["TESTING"]["pos"].x + "," + this.imgui.windows["TESTING"]["pos"].y );
-        this.imgui.text( "NOPQRSTUVWXYZ" );
-        this.imgui.text( "TESTING ABC" );
-
-        this.imgui.window( "MOUSE" );
-        this.imgui.windows["MOUSE"]["pos"].x = 480 * window.devicePixelRatio;
-        this.imgui.text( "POS " + this.lastMousePosition.x + "," + this.lastMousePosition.y );
 
         this.draw();
     }
@@ -132,6 +124,14 @@ class FrameworkMain
         requestAnimationFrame( (currentTime) => this.update( currentTime ) );
 
         this.imgui.draw();
+    }
+
+    drawImGuiTestWindow()
+    {
+        this.imgui.window( "ImGui Test" );
+        this.imgui.text( "Pos:   " + this.imgui.windows["ImGui Test"].pos.x + "," + this.imgui.windows["ImGui Test"].pos.y );
+        this.imgui.text( "Size:  " + this.imgui.windows["ImGui Test"].size.x + "," + this.imgui.windows["ImGui Test"].size.y );
+        this.imgui.text( "Mouse: " + this.lastMousePosition.x + "," + this.lastMousePosition.y );
     }
 
     registerDoMCallbacks()
@@ -178,7 +178,7 @@ class FrameworkMain
 
         if( this.runnableObject.onMouseMove )
         {
-            this.runnableObject.onMouseMove( event.which, x, y, orthoX, orthoY );
+            this.runnableObject.onMouseMove( event.which-1, x, y, orthoX, orthoY );
         }
 
         this.lastMousePosition.setF32( Math.trunc(x), Math.trunc(y), 0 );
@@ -192,8 +192,10 @@ class FrameworkMain
 
         if( this.runnableObject.onMouseDown )
         {
-            this.runnableObject.onMouseDown( event.which, x, y, orthoX, orthoY );
+            this.runnableObject.onMouseDown( event.which-1, x, y, orthoX, orthoY );
         }
+
+        this.imgui.mouseButtons[ event.which-1 ] = true;
     }
 
     onMouseUp(event)
@@ -204,8 +206,10 @@ class FrameworkMain
 
         if( this.runnableObject.onMouseUp )
         {
-            this.runnableObject.onMouseUp( event.which, x, y, orthoX, orthoY );
+            this.runnableObject.onMouseUp( event.which-1, x, y, orthoX, orthoY );
         }
+
+        this.imgui.mouseButtons[ event.which-1 ] = false;
     }
 
     onKeyDown(event)
