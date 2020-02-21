@@ -9,6 +9,7 @@ class ImGui
         this.drawList = [];
         this.windows = {};
         this.lastMousePosition = new vec3(0);
+        this.activeWindow = null;
         this.windowMoving = null;
         this.oldMouseButtons = [ false, false, false ];
 
@@ -16,6 +17,7 @@ class ImGui
         this.position = new vec3(0);
 
         // Settings.
+        this.scale = 2;
         this.padding = new vec3(2);
 
         // Inputs.
@@ -24,6 +26,7 @@ class ImGui
         
         // Outputs.
         this.isHoveringWindow = false;
+        this.isHoveringControl = false;
 
         // Resources.
         this.VBO = gl.createBuffer();
@@ -132,7 +135,10 @@ class ImGui
         this.isHoveringWindow = false;
 
         this.drawList.length = 0;
+        this.activeWindow = null;
         this.position.setF32( 0, 0, 0 );
+
+        this.mousePosition.divideBy( this.scale );
 
         let mouseChange = this.mousePosition.minus( this.lastMousePosition );
         this.lastMousePosition.setF32( this.mousePosition.x, this.mousePosition.y, 0 );
@@ -156,22 +162,27 @@ class ImGui
             this.windowMoving = null;
         }
 
-        if( this.windowMoving )
+        if( this.isHoveringControl == false && this.windowMoving )
         {
             this.windowMoving.pos.add( mouseChange );
-
-            // this.window( "TEST" );
-            // this.windows["TEST"].pos.x = 20;
-            // this.windows["TEST"].pos.y = 200;
-            // this.text( "Delta: " + mouseChange.x + " " + mouseChange.y );
-            // this.text( "Rect XY: " + this.windowMoving.rect.x + " " + this.windowMoving.rect.y );
-            // this.text( "Rect WH: " + this.windowMoving.rect.w + " " + this.windowMoving.rect.h );
-            // this.text( "In Rect: " + this.windowMoving.rect.contains( this.mousePosition ) );
         }
 
-        this.oldMouseButtons[0] = this.mouseButtons[0];
-        this.oldMouseButtons[1] = this.mouseButtons[1];
-        this.oldMouseButtons[2] = this.mouseButtons[2];
+        if( false )
+        {
+            this.window( "TEST" );
+            this.windows["TEST"].pos.x = 400;
+            this.windows["TEST"].pos.y = 20;
+            this.windows["TEST"].size.x = 250;
+            this.text( "Delta: " + mouseChange.x + " " + mouseChange.y );
+            this.text( "Mouse Pos: " + this.mousePosition.x + " " + this.mousePosition.y );
+            this.text( "Buttons: " + this.mouseButtons );
+            if( this.windowMoving )
+            {
+                this.text( "Rect XY: " + this.windowMoving.rect.x + " " + this.windowMoving.rect.y );
+                this.text( "Rect WH: " + this.windowMoving.rect.w + " " + this.windowMoving.rect.h );
+                this.text( "In Rect: " + this.windowMoving.rect.contains( this.mousePosition ) );
+            }
+        }
     }
 
     draw()
@@ -190,6 +201,13 @@ class ImGui
         }
         gl.disable( gl.SCISSOR_TEST );
         gl.enable( gl.DEPTH_TEST );
+
+        // Backup old mouse state before DOM callbacks change current state.
+        this.oldMouseButtons[0] = this.mouseButtons[0];
+        this.oldMouseButtons[1] = this.mouseButtons[1];
+        this.oldMouseButtons[2] = this.mouseButtons[2];
+
+        this.isHoveringControl = false;
     }
     
     drawItem(item)
@@ -262,7 +280,7 @@ class ImGui
 
         // Ortho matrix with 0,0 at top-left.
         this.matProj = new mat4();
-        this.matProj.createOrthoInfiniteZ( 0, this.canvas.width, this.canvas.height, 0 );
+        this.matProj.createOrthoInfiniteZ( 0, this.canvas.width / this.scale, this.canvas.height / this.scale, 0 );
 
         let u_MatProj = gl.getUniformLocation( this.shader.program, "u_MatProj" );
         gl.uniformMatrix4fv( u_MatProj, false, this.matProj.m )
@@ -277,8 +295,8 @@ class ImGui
         }
 
         // Scissor.
-        let lowerLeftY = this.canvas.height - (item.rect.y + item.rect.h);
-        gl.scissor( item.rect.x, lowerLeftY, item.rect.w, item.rect.h );
+        let lowerLeftY = this.canvas.height - (item.rect.y + item.rect.h) * this.scale;
+        gl.scissor( item.rect.x * this.scale, lowerLeftY, item.rect.w * this.scale, item.rect.h * this.scale );
         
         // Draw.        
         gl.drawElements( item.primitiveType, item.indexCount, gl.UNSIGNED_SHORT, 0 );
@@ -311,6 +329,7 @@ class ImGui
         let x = this.windows[name].pos.x;
         let y = this.windows[name].pos.y;
 
+        this.activeWindow = this.windows[name];
         this.position.set( this.windows[name].pos );
 
         let w = this.windows[name].size.x;
@@ -401,6 +420,63 @@ class ImGui
         this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.rect ) );
 
         this.position.y += h + this.padding.y;
+    }
+
+    button(label)
+    {
+        let gl = this.gl;
+
+        this.position.x = this.activeWindow.pos.x;
+
+        let w = label.length * 8 + this.padding.x * 3;
+        let h = 12;
+
+        let numVerts = 4;
+        let numIndices = 6;
+        let verts = [];
+        let indices = [];
+
+        let x = this.position.x + this.padding.x;
+        let y = this.position.y + this.padding.y;
+
+        let isHovering = false;
+        let rgb = new vec3(0,96,0);
+        let rect = new Rect( x, y, w, h );
+        if( rect.contains( this.mousePosition ) ) // is hovering.
+        {
+            isHovering = true;
+            rgb.setF32(0,160,0);
+
+            if( this.mouseButtons[0] == true ) // is pressing.
+            {
+                rgb.setF32(0,220,0);
+            }
+        }
+
+        verts.push( x+0,y+h,   0,0,   rgb.x,rgb.y,rgb.z,255 );
+        verts.push( x+0,y+0,   0,0,   rgb.x,rgb.y,rgb.z,255 );
+        verts.push( x+w,y+0,   0,0,   rgb.x,rgb.y,rgb.z,255 );
+        verts.push( x+w,y+h,   0,0,   rgb.x,rgb.y,rgb.z,255 );
+        indices.push( 0,1,2, 0,2,3 );
+
+        this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.rect ) );
+
+        this.position.x += this.padding.x;
+        this.position.y += this.padding.y;
+
+        this.text( label );
+
+        this.position.y += this.padding.y;
+
+        // Check if was pressed this frame.
+        if( isHovering && this.mouseButtons[0] == true && this.oldMouseButtons[0] == false )
+        {
+            this.isHoveringControl = true;
+            this.windowMoving = null;
+            return true;
+        }
+
+        return false;
     }
 }
 

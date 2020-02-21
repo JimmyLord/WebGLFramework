@@ -129,9 +129,17 @@ class FrameworkMain
     drawImGuiTestWindow()
     {
         this.imgui.window( "ImGui Test" );
+        this.imgui.windows["ImGui Test"].size.y = 100;
         this.imgui.text( "Pos:   " + this.imgui.windows["ImGui Test"].pos.x + "," + this.imgui.windows["ImGui Test"].pos.y );
         this.imgui.text( "Size:  " + this.imgui.windows["ImGui Test"].size.x + "," + this.imgui.windows["ImGui Test"].size.y );
         this.imgui.text( "Mouse: " + this.lastMousePosition.x + "," + this.lastMousePosition.y );
+        this.imgui.text( "UI Scale: " );
+        if( this.imgui.button( "1" ) )
+            this.imgui.scale = 1;
+        if( this.imgui.button( "1.5" ) )
+            this.imgui.scale = 1.5;
+        if( this.imgui.button( "2" ) )
+            this.imgui.scale = 2;
     }
 
     registerDoMCallbacks()
