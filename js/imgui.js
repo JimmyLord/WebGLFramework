@@ -143,8 +143,13 @@ class ImGui
         let mouseChange = this.mousePosition.minus( this.lastMousePosition );
         this.lastMousePosition.setF32( this.mousePosition.x, this.mousePosition.y, 0 );
 
+        // Loop through all windows.
         for( let key in this.windows )
         {
+            // Reset their frame persistent values.
+            this.windows[key].currentFrameYOffset = 0;
+
+            // Find which window is hovered and if it was clicked.
             if( this.windows[key].rect.contains( this.mousePosition ) )
             {
                 this.isHoveringWindow = true;
@@ -319,55 +324,62 @@ class ImGui
             this.windows[name].pos = new vec3( 20 + 150*windowCount, 20, 0 );
             this.windows[name].size = new vec3( 120, 90, 0 );
             this.windows[name].rect = new Rect( 0, 0, 0, 0 );
+            this.windows[name].currentFrameYOffset = 0;
         }
-
-        let numVerts = 0;
-        let numIndices = 0;
-        let verts = [];
-        let indices = [];
-
-        let x = this.windows[name].pos.x;
-        let y = this.windows[name].pos.y;
 
         this.activeWindow = this.windows[name];
         this.position.set( this.windows[name].pos );
+        this.position.y += this.windows[name].currentFrameYOffset;
 
-        let w = this.windows[name].size.x;
+        // If we're adding the window for the first time, add a title and BG.
+        if( this.windows[name].currentFrameYOffset == 0 )
+        {
+            let numVerts = 0;
+            let numIndices = 0;
+            let verts = [];
+            let indices = [];
+    
+            let x = this.windows[name].pos.x;
+            let y = this.windows[name].pos.y;
+    
+            let w = this.windows[name].size.x;
 
-        let titleH = 8 + this.padding.y*2;
-        
-        // Draw the title box.
-        let h = titleH;
-        verts.push( x+0,y+h,   0,0,   0,0,0,200 );
-        verts.push( x+0,y+0,   0,0,   0,0,0,200 );
-        verts.push( x+w,y+0,   0,0,   0,0,0,200 );
-        verts.push( x+w,y+h,   0,0,   0,0,0,200 );
-        indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
-        numVerts += 4;
-        numIndices += 6;
+            let titleH = 8 + this.padding.y*2;
+            
+            // Draw the title box.
+            let h = titleH;
+            verts.push( x+0,y+h,   0,0,   0,0,0,200 );
+            verts.push( x+0,y+0,   0,0,   0,0,0,200 );
+            verts.push( x+w,y+0,   0,0,   0,0,0,200 );
+            verts.push( x+w,y+h,   0,0,   0,0,0,200 );
+            indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
+            numVerts += 4;
+            numIndices += 6;
 
-        // Draw the BG box.
-        y += titleH;
-        h = this.windows[name].size.y - titleH;
-        verts.push( x+0,y+h,   0,0,   255,255,255,64 );
-        verts.push( x+0,y+0,   0,0,   255,255,255,64 );
-        verts.push( x+w,y+0,   0,0,   255,255,255,64 );
-        verts.push( x+w,y+h,   0,0,   255,255,255,64 );
-        indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
-        numVerts += 4;
-        numIndices += 6;
+            // Draw the BG box.
+            y += titleH;
+            h = this.windows[name].size.y - titleH;
+            verts.push( x+0,y+h,   0,0,   255,255,255,64 );
+            verts.push( x+0,y+0,   0,0,   255,255,255,64 );
+            verts.push( x+w,y+0,   0,0,   255,255,255,64 );
+            verts.push( x+w,y+h,   0,0,   255,255,255,64 );
+            indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
+            numVerts += 4;
+            numIndices += 6;
 
-        // Define scissor rect, y is lower left.
-        let rx = this.windows[name].pos.x;
-        let ry = this.windows[name].pos.y;
-        let rw = this.windows[name].size.x;
-        let rh = this.windows[name].size.y;
-        this.windows[name].rect.set( rx, ry, rw, rh );
-        this.rect = this.windows[name].rect;
+            // Define scissor rect, y is lower left.
+            let rx = this.windows[name].pos.x;
+            let ry = this.windows[name].pos.y;
+            let rw = this.windows[name].size.x;
+            let rh = this.windows[name].size.y+100;
+            this.windows[name].rect.set( rx, ry, rw, rh );
+            this.rect = this.windows[name].rect;
 
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.windows[name].rect ) );
+            this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.windows[name].rect ) );
 
-        this.text( name );
+            this.text( name );
+        }
+
         this.position.y += this.padding.y;
     }
 
@@ -420,6 +432,7 @@ class ImGui
         this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.rect ) );
 
         this.position.y += h + this.padding.y;
+        this.activeWindow.currentFrameYOffset = this.position.y - this.activeWindow.pos.y;
     }
 
     button(label)
