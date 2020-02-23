@@ -129,20 +129,30 @@ class FrameworkMain
     drawImGuiTestWindow()
     {
         this.imgui.window( "ImGui Test" );
-        this.imgui.windows["ImGui Test"].size.y = 110;
-        this.imgui.text( "Pos:   " + this.imgui.windows["ImGui Test"].pos.x + "," + this.imgui.windows["ImGui Test"].pos.y );
+        this.imgui.windows["ImGui Test"].size.setF32( 143, 120, 0 );
+        this.imgui.text( "Te" );
+        this.imgui.sameLine();
+        this.imgui.text( "st" );
+        this.imgui.text( "Pos:   " + this.imgui.windows["ImGui Test"].position.x + "," + this.imgui.windows["ImGui Test"].position.y );
         this.imgui.text( "Size:  " + this.imgui.windows["ImGui Test"].size.x + "," + this.imgui.windows["ImGui Test"].size.y );
         this.imgui.text( "Mouse: " + this.lastMousePosition.x + "," + this.lastMousePosition.y );
-        this.imgui.text( "UI Scale: " );
+        this.imgui.text( "UI Scale " );
+        this.imgui.sameLine();
         if( this.imgui.button( "1" ) )
             this.imgui.scale = 1;
+        this.imgui.sameLine();
         if( this.imgui.button( "1.5" ) )
             this.imgui.scale = 1.5;
+        this.imgui.sameLine();
         if( this.imgui.button( "2" ) )
             this.imgui.scale = 2;
 
         this.imgui.window( "ImGui Test" );
         this.imgui.text( "Test" );
+        this.imgui.button( "Dummy" );
+        this.imgui.button( "Dummy2" );
+        this.imgui.sameLine();
+        this.imgui.button( "Dummy3" );
     }
 
     registerDoMCallbacks()

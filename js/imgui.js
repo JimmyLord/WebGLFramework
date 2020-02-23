@@ -14,7 +14,6 @@ class ImGui
         this.oldMouseButtons = [ false, false, false ];
 
         // Persistent values within single frame.
-        this.position = new vec3(0);
 
         // Settings.
         this.scale = 2;
@@ -136,7 +135,6 @@ class ImGui
 
         this.drawList.length = 0;
         this.activeWindow = null;
-        this.position.setF32( 0, 0, 0 );
 
         this.mousePosition.divideBy( this.scale );
 
@@ -147,7 +145,8 @@ class ImGui
         for( let key in this.windows )
         {
             // Reset their frame persistent values.
-            this.windows[key].currentFrameYOffset = 0;
+            this.windows[key].cursor.set( this.windows[key].position );
+            this.windows[key].previousLineEndPosition.setF32( 0, 0, 0 );
 
             // Find which window is hovered and if it was clicked.
             if( this.windows[key].rect.contains( this.mousePosition ) )
@@ -169,14 +168,15 @@ class ImGui
 
         if( this.isHoveringControl == false && this.windowMoving )
         {
-            this.windowMoving.pos.add( mouseChange );
+            this.windowMoving.position.add( mouseChange );
+            this.windowMoving.cursor.set( this.windowMoving.position );
         }
 
         if( false )
         {
             this.window( "TEST" );
-            this.windows["TEST"].pos.x = 400;
-            this.windows["TEST"].pos.y = 20;
+            this.windows["TEST"].position.x = 400;
+            this.windows["TEST"].position.y = 20;
             this.windows["TEST"].size.x = 250;
             this.text( "Delta: " + mouseChange.x + " " + mouseChange.y );
             this.text( "Mouse Pos: " + this.mousePosition.x + " " + this.mousePosition.y );
@@ -312,6 +312,11 @@ class ImGui
             gl.disableVertexAttribArray( a_Color );
     }
 
+    sameLine()
+    {
+        this.activeWindow.cursor.set( this.activeWindow.previousLineEndPosition );
+    }
+
     window(name)
     {
         let gl = this.gl;
@@ -321,28 +326,29 @@ class ImGui
             let windowCount = Object.keys( this.windows ).length;
 
             this.windows[name] = []
-            this.windows[name].pos = new vec3( 20 + 150*windowCount, 20, 0 );
-            this.windows[name].size = new vec3( 120, 90, 0 );
-            this.windows[name].rect = new Rect( 0, 0, 0, 0 );
-            this.windows[name].currentFrameYOffset = 0;
+            this.activeWindow = this.windows[name];
+            this.activeWindow.position = new vec3( 20 + 150*windowCount, 20, 0 );
+            this.activeWindow.size = new vec3( 120, 90, 0 );
+            this.activeWindow.rect = new Rect( 0, 0, 0, 0 );
+            this.activeWindow.cursor = new vec3(0);
+            this.activeWindow.cursor.set( this.activeWindow.position );
+            this.activeWindow.previousLineEndPosition = new vec3(0);
         }
-
+        
         this.activeWindow = this.windows[name];
-        this.position.set( this.windows[name].pos );
-        this.position.y += this.windows[name].currentFrameYOffset;
 
         // If we're adding the window for the first time, add a title and BG.
-        if( this.windows[name].currentFrameYOffset == 0 )
+        if( this.activeWindow.cursor.y == this.activeWindow.position.y )
         {
             let numVerts = 0;
             let numIndices = 0;
             let verts = [];
             let indices = [];
     
-            let x = this.windows[name].pos.x;
-            let y = this.windows[name].pos.y;
+            let x = this.activeWindow.position.x;
+            let y = this.activeWindow.position.y;
     
-            let w = this.windows[name].size.x;
+            let w = this.activeWindow.size.x;
 
             let titleH = 8 + this.padding.y*2;
             
@@ -358,7 +364,7 @@ class ImGui
 
             // Draw the BG box.
             y += titleH;
-            h = this.windows[name].size.y - titleH;
+            h = this.activeWindow.size.y - titleH;
             verts.push( x+0,y+h,   0,0,   255,255,255,64 );
             verts.push( x+0,y+0,   0,0,   255,255,255,64 );
             verts.push( x+w,y+0,   0,0,   255,255,255,64 );
@@ -368,24 +374,27 @@ class ImGui
             numIndices += 6;
 
             // Define scissor rect, y is lower left.
-            let rx = this.windows[name].pos.x;
-            let ry = this.windows[name].pos.y;
-            let rw = this.windows[name].size.x;
-            let rh = this.windows[name].size.y+100;
-            this.windows[name].rect.set( rx, ry, rw, rh );
-            this.rect = this.windows[name].rect;
+            let rx = this.activeWindow.position.x;
+            let ry = this.activeWindow.position.y;
+            let rw = this.activeWindow.size.x;
+            let rh = this.activeWindow.size.y+100;
+            this.activeWindow.rect.set( rx, ry, rw, rh );
+            this.rect = this.activeWindow.rect;
 
-            this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.windows[name].rect ) );
+            this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.activeWindow.rect ) );
 
             this.text( name );
         }
-
-        this.position.y += this.padding.y;
     }
 
     text(str)
     {
         let gl = this.gl;
+
+        this.activeWindow.cursor.x += this.padding.x;
+        this.activeWindow.cursor.y += this.padding.y;
+        let x = this.activeWindow.cursor.x;
+        let y = this.activeWindow.cursor.y;
 
         let w = 8;
         let h = 8;
@@ -394,9 +403,6 @@ class ImGui
         let numIndices = 0;
         let verts = [];
         let indices = [];
-
-        let x = this.position.x + this.padding.x;
-        let y = this.position.y + this.padding.y;
 
         let stepU = 1.0 / this.numCols;
         let stepV = 1.0 / this.numRows;
@@ -431,26 +437,29 @@ class ImGui
 
         this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.rect ) );
 
-        this.position.y += h + this.padding.y;
-        this.activeWindow.currentFrameYOffset = this.position.y - this.activeWindow.pos.y;
+        this.activeWindow.previousLineEndPosition.setF32( x-this.padding.x, y-this.padding.y, 0 );
+
+        this.activeWindow.cursor.setF32( x, y+h, 0 );
+        this.activeWindow.cursor.y += this.padding.y;
+
+        this.activeWindow.cursor.x = this.activeWindow.position.x;
     }
 
     button(label)
     {
         let gl = this.gl;
 
-        this.position.x = this.activeWindow.pos.x;
-
-        let w = label.length * 8 + this.padding.x * 3;
-        let h = 12;
+        let w = this.padding.x + label.length * 8 + this.padding.x;
+        let buttonTopPadding = 1;
+        let h = buttonTopPadding + 8 + this.padding.y;
 
         let numVerts = 4;
         let numIndices = 6;
         let verts = [];
         let indices = [];
 
-        let x = this.position.x + this.padding.x;
-        let y = this.position.y + this.padding.y;
+        let x = this.activeWindow.cursor.x + this.padding.x;
+        let y = this.activeWindow.cursor.y + buttonTopPadding;
 
         let isHovering = false;
         let rgb = new vec3(0,96,0);
@@ -474,12 +483,11 @@ class ImGui
 
         this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.rect ) );
 
-        this.position.x += this.padding.x;
-        this.position.y += this.padding.y;
+        this.activeWindow.cursor.x += this.padding.x;
 
         this.text( label );
 
-        this.position.y += this.padding.y;
+        this.activeWindow.cursor.y += this.padding.y;
 
         // Check if was pressed this frame.
         if( isHovering && this.mouseButtons[0] == true && this.oldMouseButtons[0] == false )
@@ -488,6 +496,10 @@ class ImGui
             this.windowMoving = null;
             return true;
         }
+
+        this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding, 0 );
+
+        this.activeWindow.cursor.y -= this.padding.y;
 
         return false;
     }
