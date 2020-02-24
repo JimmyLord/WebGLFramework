@@ -16,6 +16,9 @@ class FrameworkMain
             return;
         }
 
+        // Get local storage.
+        this.storage = window.localStorage;
+
         // Set some members.
         this.gl = gl;
         this.keyStates = new Map;
@@ -44,6 +47,7 @@ class FrameworkMain
         
         // Create an imgui instance.
         this.imgui = new ImGui( this.gl, this.canvas );
+        this.imgui.loadState( this.storage.imguiState );
     
         // Set up some base common resources.
         let resources = new ResourceManager( gl );
@@ -124,6 +128,7 @@ class FrameworkMain
         requestAnimationFrame( (currentTime) => this.update( currentTime ) );
 
         this.imgui.draw();
+        this.imgui.saveState( this.storage, "imguiState" );
     }
 
     drawImGuiTestWindow()
@@ -138,14 +143,11 @@ class FrameworkMain
         this.imgui.text( "Mouse: " + this.lastMousePosition.x + "," + this.lastMousePosition.y );
         this.imgui.text( "UI Scale " );
         this.imgui.sameLine();
-        if( this.imgui.button( "1" ) )
-            this.imgui.scale = 1;
+        if( this.imgui.button( "1" ) ) { this.imgui.scale = 1; this.imgui.markStateDirty(); }
         this.imgui.sameLine();
-        if( this.imgui.button( "1.5" ) )
-            this.imgui.scale = 1.5;
+        if( this.imgui.button( "1.5" ) ) { this.imgui.scale = 1.5; this.imgui.markStateDirty(); }
         this.imgui.sameLine();
-        if( this.imgui.button( "2" ) )
-            this.imgui.scale = 2;
+        if( this.imgui.button( "2" ) ) { this.imgui.scale = 2; this.imgui.markStateDirty(); }
 
         this.imgui.window( "ImGui Test" );
         this.imgui.text( "Test" );

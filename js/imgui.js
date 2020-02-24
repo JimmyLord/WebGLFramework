@@ -11,7 +11,9 @@ class ImGui
         this.lastMousePosition = new vec3(0);
         this.activeWindow = null;
         this.windowMoving = null;
+        this.windowMoved = false;
         this.oldMouseButtons = [ false, false, false ];
+        this.stateIsDirty = false;
 
         // Persistent values within single frame.
 
@@ -129,6 +131,60 @@ class ImGui
         this.texture.createFromUInt8Array( pixels, this.numCols*8, this.numRows*8 );
     }
 
+    loadState(imguiState)
+    {
+        let state = null;
+        try { state = JSON.parse( imguiState ); }
+        catch( e ) { return; }
+
+        this.scale = state.scale;
+
+        for( let key in state.windows )
+        {
+            this.windows[key] = [];
+            this.windows[key].position = new vec3( state.windows[key].position["x"], state.windows[key].position["y"], 0 );
+            this.windows[key].size = new vec3( state.windows[key].size["x"], state.windows[key].size["y"], 0 );
+            
+            this.windows[key].cursor = new vec3(0);
+            this.windows[key].previousLineEndPosition = new vec3(0);
+            this.windows[key].rect = new Rect(0,0,0,0);
+        }
+    }
+
+    markStateDirty()
+    {
+        this.stateIsDirty = true;
+    }
+
+    saveState(storage, name)
+    {
+        if( this.stateIsDirty )
+        {
+            //console.log( "Saving imgui state." );
+
+            storage[name] = JSON.stringify( this );
+            this.stateIsDirty = false;
+        }
+    }
+
+    toJSON()
+    {
+        let state = {
+             scale: this.scale,
+        }
+
+        state.windows = {};
+        
+        for( let key in this.windows )
+        {
+            state.windows[key] = {};
+            state.windows[key].position = this.windows[key].position;
+            state.windows[key].size = this.windows[key].size;
+        }
+
+        return state;
+    }
+
     newFrame()
     {
         this.isHoveringWindow = false;
@@ -163,13 +219,22 @@ class ImGui
 
         if( this.mouseButtons[0] == 0 )
         {
+            if( this.windowMoved )
+            {
+                this.windowMoved = false;
+                this.stateIsDirty = true;
+            }
             this.windowMoving = null;
         }
 
         if( this.isHoveringControl == false && this.windowMoving )
         {
-            this.windowMoving.position.add( mouseChange );
-            this.windowMoving.cursor.set( this.windowMoving.position );
+            if( mouseChange.x != 0 || mouseChange.y != 0 )
+            {
+                this.windowMoving.position.add( mouseChange );
+                this.windowMoved = true;
+                this.windowMoving.cursor.set( this.windowMoving.position );
+            }
         }
 
         if( false )
@@ -325,10 +390,11 @@ class ImGui
         {
             let windowCount = Object.keys( this.windows ).length;
 
-            this.windows[name] = []
+            this.windows[name] = [];
             this.activeWindow = this.windows[name];
             this.activeWindow.position = new vec3( 20 + 150*windowCount, 20, 0 );
             this.activeWindow.size = new vec3( 120, 90, 0 );
+
             this.activeWindow.rect = new Rect( 0, 0, 0, 0 );
             this.activeWindow.cursor = new vec3(0);
             this.activeWindow.cursor.set( this.activeWindow.position );
@@ -377,9 +443,8 @@ class ImGui
             let rx = this.activeWindow.position.x;
             let ry = this.activeWindow.position.y;
             let rw = this.activeWindow.size.x;
-            let rh = this.activeWindow.size.y+100;
+            let rh = this.activeWindow.size.y;
             this.activeWindow.rect.set( rx, ry, rw, rh );
-            this.rect = this.activeWindow.rect;
 
             this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.activeWindow.rect ) );
 
@@ -435,7 +500,7 @@ class ImGui
             count++;
         }
 
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.rect ) );
+        this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.activeWindow.rect ) );
 
         this.activeWindow.previousLineEndPosition.setF32( x-this.padding.x, y-this.padding.y, 0 );
 
@@ -481,7 +546,7 @@ class ImGui
         verts.push( x+w,y+h,   0,0,   rgb.x,rgb.y,rgb.z,255 );
         indices.push( 0,1,2, 0,2,3 );
 
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.rect ) );
+        this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.activeWindow.rect ) );
 
         this.activeWindow.cursor.x += this.padding.x;
 
