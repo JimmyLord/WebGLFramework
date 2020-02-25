@@ -134,12 +134,12 @@ class FrameworkMain
     drawImGuiTestWindow()
     {
         this.imgui.window( "ImGui Test" );
-        this.imgui.windows["ImGui Test"].size.setF32( 143, 120, 0 );
+        //this.imgui.windows["ImGui Test"].size.setF32( 143, 120, 0 );
         this.imgui.text( "Te" );
         this.imgui.sameLine();
         this.imgui.text( "st" );
-        this.imgui.text( "Pos:   " + this.imgui.windows["ImGui Test"].position.x + "," + this.imgui.windows["ImGui Test"].position.y );
-        this.imgui.text( "Size:  " + this.imgui.windows["ImGui Test"].size.x + "," + this.imgui.windows["ImGui Test"].size.y );
+        this.imgui.text( "Pos:   " + Math.trunc( this.imgui.windows["ImGui Test"].position.x ) + "," + Math.trunc( this.imgui.windows["ImGui Test"].position.y ) );
+        this.imgui.text( "Size:  " + Math.trunc( this.imgui.windows["ImGui Test"].size.x ) + "," + Math.trunc( this.imgui.windows["ImGui Test"].size.y ) );
         this.imgui.text( "Mouse: " + this.lastMousePosition.x + "," + this.lastMousePosition.y );
         this.imgui.text( "UI Scale " );
         this.imgui.sameLine();

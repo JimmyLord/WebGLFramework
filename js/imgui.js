@@ -8,9 +8,11 @@ class ImGui
         // Persistent values.
         this.drawList = [];
         this.windows = {};
+        this.mouseChange = new vec3(0);
         this.lastMousePosition = new vec3(0);
         this.activeWindow = null;
-        this.windowMoving = null;
+        this.windowBeingMoved = null;
+        this.windowBeingResized = null;
         this.windowMoved = false;
         this.oldMouseButtons = [ false, false, false ];
         this.stateIsDirty = false;
@@ -194,7 +196,7 @@ class ImGui
 
         this.mousePosition.divideBy( this.scale );
 
-        let mouseChange = this.mousePosition.minus( this.lastMousePosition );
+        this.mouseChange = this.mousePosition.minus( this.lastMousePosition );
         this.lastMousePosition.setF32( this.mousePosition.x, this.mousePosition.y, 0 );
 
         // Loop through all windows.
@@ -211,7 +213,7 @@ class ImGui
 
                 if( this.mouseButtons[0] == 1 && this.oldMouseButtons[0] == 0 ) // Left button clicked.
                 {
-                    this.windowMoving = this.windows[key];
+                    this.windowBeingMoved = this.windows[key];
                     break;
                 }
             }
@@ -224,16 +226,27 @@ class ImGui
                 this.windowMoved = false;
                 this.stateIsDirty = true;
             }
-            this.windowMoving = null;
+            this.windowBeingMoved = null;
+            this.windowBeingResized = null;
         }
 
-        if( this.isHoveringControl == false && this.windowMoving )
+        if( this.isHoveringControl == false && this.windowBeingMoved )
         {
-            if( mouseChange.x != 0 || mouseChange.y != 0 )
+            if( this.mouseChange.x != 0 || this.mouseChange.y != 0 )
             {
-                this.windowMoving.position.add( mouseChange );
+                this.windowBeingMoved.position.add( this.mouseChange );
                 this.windowMoved = true;
-                this.windowMoving.cursor.set( this.windowMoving.position );
+                this.windowBeingMoved.cursor.set( this.windowBeingMoved.position );
+            }
+        }
+
+        if( this.isHoveringControl == false && this.windowBeingResized )
+        {
+            if( this.mouseChange.x != 0 || this.mouseChange.y != 0 )
+            {
+                this.windowBeingResized.size.add( this.mouseChange );
+                this.windowMoved = true;
+                //this.windowBeingMoved.cursor.set( this.windowBeingMoved.position );
             }
         }
 
@@ -243,14 +256,14 @@ class ImGui
             this.windows["TEST"].position.x = 400;
             this.windows["TEST"].position.y = 20;
             this.windows["TEST"].size.x = 250;
-            this.text( "Delta: " + mouseChange.x + " " + mouseChange.y );
+            this.text( "Delta: " + this.mouseChange.x + " " + this.mouseChange.y );
             this.text( "Mouse Pos: " + this.mousePosition.x + " " + this.mousePosition.y );
             this.text( "Buttons: " + this.mouseButtons );
-            if( this.windowMoving )
+            if( this.windowBeingMoved )
             {
-                this.text( "Rect XY: " + this.windowMoving.rect.x + " " + this.windowMoving.rect.y );
-                this.text( "Rect WH: " + this.windowMoving.rect.w + " " + this.windowMoving.rect.h );
-                this.text( "In Rect: " + this.windowMoving.rect.contains( this.mousePosition ) );
+                this.text( "Rect XY: " + this.windowBeingMoved.rect.x + " " + this.windowBeingMoved.rect.y );
+                this.text( "Rect WH: " + this.windowBeingMoved.rect.w + " " + this.windowBeingMoved.rect.h );
+                this.text( "In Rect: " + this.windowBeingMoved.rect.contains( this.mousePosition ) );
             }
         }
     }
@@ -450,6 +463,18 @@ class ImGui
 
             this.text( name );
         }
+
+        let x = this.activeWindow.cursor.x;
+        let y = this.activeWindow.cursor.y;
+        let rect = this.activeWindow.rect;
+        this.activeWindow.cursor.x = rect.x + rect.w - 12; // padding + 8 + padding.
+        this.activeWindow.cursor.y = rect.y + rect.h - 12; // padding + 8 + padding.
+        if( this.button( " " ) )
+        {
+            this.windowBeingResized = this.activeWindow;
+        }
+        this.activeWindow.cursor.x = x;
+        this.activeWindow.cursor.y = y;
     }
 
     text(str)
@@ -510,7 +535,7 @@ class ImGui
         this.activeWindow.cursor.x = this.activeWindow.position.x;
     }
 
-    button(label)
+    button(label, returnTrueIfHeld)
     {
         let gl = this.gl;
 
@@ -552,19 +577,18 @@ class ImGui
 
         this.text( label );
 
-        this.activeWindow.cursor.y += this.padding.y;
-
-        // Check if was pressed this frame.
-        if( isHovering && this.mouseButtons[0] == true && this.oldMouseButtons[0] == false )
-        {
-            this.isHoveringControl = true;
-            this.windowMoving = null;
-            return true;
-        }
-
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding, 0 );
 
-        this.activeWindow.cursor.y -= this.padding.y;
+        // Check if was pressed this frame.
+        if( isHovering &&
+            ( ( returnTrueIfHeld && this.mouseButtons[0] == true ) ||
+              ( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) ) )
+        {
+            this.isHoveringControl = true;
+            this.windowBeingMoved = null;
+            this.windowBeingResized = null;
+            return true;
+        }
 
         return false;
     }
