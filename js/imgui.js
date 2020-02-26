@@ -8,6 +8,7 @@ class ImGui
         // Persistent values.
         this.drawList = [];
         this.windows = {};
+        this.ownsMouse = false;
         this.mouseChange = new vec3(0);
         this.lastMousePosition = new vec3(0);
         this.activeWindow = null;
@@ -147,6 +148,7 @@ class ImGui
             this.windows[key].position = new vec3( state.windows[key].position["x"], state.windows[key].position["y"], 0 );
             this.windows[key].size = new vec3( state.windows[key].size["x"], state.windows[key].size["y"], 0 );
             
+            this.windows[key].activeThisFrame = false;
             this.windows[key].cursor = new vec3(0);
             this.windows[key].previousLineEndPosition = new vec3(0);
             this.windows[key].rect = new Rect(0,0,0,0);
@@ -202,24 +204,33 @@ class ImGui
         // Loop through all windows.
         for( let key in this.windows )
         {
-            // Reset their frame persistent values.
-            this.windows[key].cursor.set( this.windows[key].position );
-            this.windows[key].previousLineEndPosition.setF32( 0, 0, 0 );
-
             // Find which window is hovered and if it was clicked.
-            if( this.windows[key].rect.contains( this.mousePosition ) )
+            if( this.windows[key].activeThisFrame && this.windows[key].rect.contains( this.mousePosition ) )
             {
-                this.isHoveringWindow = true;
+                if( this.mouseButtons[0] == false || this.ownsMouse == true )
+                {
+                    this.isHoveringWindow = true;
+                    this.ownsMouse = true;
+                }
 
-                if( this.mouseButtons[0] == 1 && this.oldMouseButtons[0] == 0 ) // Left button clicked.
+                if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
                 {
                     this.windowBeingMoved = this.windows[key];
-                    break;
                 }
             }
+
+            // Reset their frame persistent values.
+            this.windows[key].activeThisFrame = false;
+            this.windows[key].cursor.set( this.windows[key].position );
+            this.windows[key].previousLineEndPosition.setF32( 0, 0, 0 );
         }
 
-        if( this.mouseButtons[0] == 0 )
+        if( this.mouseButtons[0] == true && this.isHoveringWindow == false )
+        {
+            this.ownsMouse = false;
+        }
+
+        if( this.mouseButtons[0] == false )
         {
             if( this.windowMoved )
             {
@@ -415,6 +426,7 @@ class ImGui
         }
         
         this.activeWindow = this.windows[name];
+        this.activeWindow.activeThisFrame = true;
 
         // If we're adding the window for the first time, add a title and BG.
         if( this.activeWindow.cursor.y == this.activeWindow.position.y )
@@ -444,10 +456,10 @@ class ImGui
             // Draw the BG box.
             y += titleH;
             h = this.activeWindow.size.y - titleH;
-            verts.push( x+0,y+h,   0,0,   255,255,255,64 );
-            verts.push( x+0,y+0,   0,0,   255,255,255,64 );
-            verts.push( x+w,y+0,   0,0,   255,255,255,64 );
-            verts.push( x+w,y+h,   0,0,   255,255,255,64 );
+            verts.push( x+0,y+h,   0,0,   0,0,225,196 );
+            verts.push( x+0,y+0,   0,0,   0,0,225,196 );
+            verts.push( x+w,y+0,   0,0,   0,0,225,196 );
+            verts.push( x+w,y+h,   0,0,   0,0,225,196 );
             indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
             numVerts += 4;
             numIndices += 6;
