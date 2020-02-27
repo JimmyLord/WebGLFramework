@@ -431,38 +431,24 @@ class ImGui
         // If we're adding the window for the first time, add a title and BG.
         if( this.activeWindow.cursor.y == this.activeWindow.position.y )
         {
-            let numVerts = 0;
-            let numIndices = 0;
             let verts = [];
             let indices = [];
-    
+            
             let x = this.activeWindow.position.x;
             let y = this.activeWindow.position.y;
-    
+            
             let w = this.activeWindow.size.x;
-
+            
             let titleH = 8 + this.padding.y*2;
             
             // Draw the title box.
             let h = titleH;
-            verts.push( x+0,y+h,   0,0,   0,0,0,200 );
-            verts.push( x+0,y+0,   0,0,   0,0,0,200 );
-            verts.push( x+w,y+0,   0,0,   0,0,0,200 );
-            verts.push( x+w,y+h,   0,0,   0,0,0,200 );
-            indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
-            numVerts += 4;
-            numIndices += 6;
+            this.addBoxToArray( verts, indices, x,y,w,h, 0,0,0,200 );
 
             // Draw the BG box.
             y += titleH;
             h = this.activeWindow.size.y - titleH;
-            verts.push( x+0,y+h,   0,0,   0,0,225,196 );
-            verts.push( x+0,y+0,   0,0,   0,0,225,196 );
-            verts.push( x+w,y+0,   0,0,   0,0,225,196 );
-            verts.push( x+w,y+h,   0,0,   0,0,225,196 );
-            indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
-            numVerts += 4;
-            numIndices += 6;
+            this.addBoxToArray( verts, indices, x,y,w,h, 0,0,255,200 );
 
             // Define scissor rect, y is lower left.
             let rx = this.activeWindow.position.x;
@@ -471,7 +457,7 @@ class ImGui
             let rh = this.activeWindow.size.y;
             this.activeWindow.rect.set( rx, ry, rw, rh );
 
-            this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.activeWindow.rect ) );
+            this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
             this.text( name );
         }
@@ -489,6 +475,16 @@ class ImGui
         this.activeWindow.cursor.y = y;
     }
 
+    addBoxToArray(verts, indices, x, y, w, h, r, g, b, a)
+    {
+        let numVerts = verts.length/8;
+        indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
+        verts.push( x+0,y+h,   0,0,   r,g,b,a );
+        verts.push( x+0,y+0,   0,0,   r,g,b,a );
+        verts.push( x+w,y+0,   0,0,   r,g,b,a );
+        verts.push( x+w,y+h,   0,0,   r,g,b,a );
+    }
+
     text(str)
     {
         let gl = this.gl;
@@ -501,8 +497,6 @@ class ImGui
         let w = 8;
         let h = 8;
 
-        let numVerts = 0;
-        let numIndices = 0;
         let verts = [];
         let indices = [];
 
@@ -530,14 +524,11 @@ class ImGui
             verts.push( x+w,y+h,   stepU*(cx+1),stepV*(cy+1),   255,255,255,255 );
             indices.push( count*4+0,count*4+1,count*4+2, count*4+0,count*4+2,count*4+3 );
 
-            numVerts += 4;
-            numIndices += 6;
-
             x += w;
             count++;
         }
 
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.activeWindow.rect ) );
+        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
         this.activeWindow.previousLineEndPosition.setF32( x-this.padding.x, y-this.padding.y, 0 );
 
@@ -555,8 +546,6 @@ class ImGui
         let buttonTopPadding = 1;
         let h = buttonTopPadding + 8 + this.padding.y;
 
-        let numVerts = 4;
-        let numIndices = 6;
         let verts = [];
         let indices = [];
 
@@ -577,18 +566,11 @@ class ImGui
             }
         }
 
-        verts.push( x+0,y+h,   0,0,   rgb.x,rgb.y,rgb.z,255 );
-        verts.push( x+0,y+0,   0,0,   rgb.x,rgb.y,rgb.z,255 );
-        verts.push( x+w,y+0,   0,0,   rgb.x,rgb.y,rgb.z,255 );
-        verts.push( x+w,y+h,   0,0,   rgb.x,rgb.y,rgb.z,255 );
-        indices.push( 0,1,2, 0,2,3 );
-
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, numVerts, verts, numIndices, indices, this.activeWindow.rect ) );
+        this.addBoxToArray( verts, indices, x,y,w,h, rgb.x,rgb.y,rgb.z,255 );
+        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
         this.activeWindow.cursor.x += this.padding.x;
-
         this.text( label );
-
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding, 0 );
 
         // Check if was pressed this frame.
@@ -604,15 +586,74 @@ class ImGui
 
         return false;
     }
+
+    checkbox(label, isChecked)
+    {
+        let gl = this.gl;
+
+        this.text( label );
+        this.sameLine();
+        this.activeWindow.cursor.x += this.padding.x;
+
+        let w = this.padding.x + 8 + this.padding.x;
+        let buttonTopPadding = 1;
+        let h = buttonTopPadding + 8 + this.padding.y;
+
+        let verts = [];
+        let indices = [];
+
+        let x = this.activeWindow.cursor.x + this.padding.x;
+        let y = this.activeWindow.cursor.y + buttonTopPadding;
+
+        let isHovering = false;
+        let rgb = new vec3(0,96,0);
+        let rect = new Rect( x, y, w, h );
+        if( rect.contains( this.mousePosition ) ) // is hovering.
+        {
+            isHovering = true;
+            rgb.setF32(0,160,0);
+
+            if( this.mouseButtons[0] == true ) // is pressing.
+            {
+                rgb.setF32(0,220,0);
+            }
+        }
+
+        this.addBoxToArray( verts, indices, x,y,w,h, rgb.x,rgb.y,rgb.z,255 );
+
+        if( isChecked )
+        {
+            rgb.setF32( 255, 255, 0 );
+            this.addBoxToArray( verts, indices, x+2,y+2,w-4,h-4, rgb.x,rgb.y,rgb.z,255 );
+        }
+
+        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+
+        this.activeWindow.cursor.x += this.padding.x;
+
+        this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding, 0 );
+
+        // Check if was pressed this frame.
+        if( isHovering &&
+            ( ( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) ) )
+        {
+            this.isHoveringControl = true;
+            this.windowBeingMoved = null;
+            this.windowBeingResized = null;
+            return true;
+        }
+
+        return false;
+    }
 }
 
 class DrawListItem
 {
-    constructor(primitiveType, vertCount, verts, indexCount, indices, rect)
+    constructor(primitiveType, verts, indices, rect)
     {
         this.primitiveType = primitiveType;
-        this.vertexCount = vertCount;
-        this.indexCount = indexCount;
+        this.vertexCount = verts.length / 8;
+        this.indexCount = indices.length;
         this.verts = verts;
         this.indices = indices;
         this.rect = rect;

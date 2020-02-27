@@ -10,6 +10,7 @@ class MainProject
     constructor(framework)
     {
         this.framework = framework;
+        this.objectFollowsMouse = true;
     }
 
     init()
@@ -48,6 +49,12 @@ class MainProject
         this.entities[2].position.y += dir.y * deltaTime;
 
         this.framework.drawImGuiTestWindow();
+
+        this.framework.imgui.window( "ImGui Test" );
+        if( this.framework.imgui.checkbox( "Follow mouse", this.objectFollowsMouse ) )
+        {
+            this.objectFollowsMouse = !this.objectFollowsMouse;
+        }
     }
 
     draw(camera)
@@ -57,8 +64,11 @@ class MainProject
 
     onMouseMove(buttonID, x, y, orthoX, orthoY)
     {
-        this.entities[0].position.x = orthoX;
-        this.entities[0].position.y = orthoY;
+        if( this.objectFollowsMouse )
+        {
+            this.entities[0].position.x = orthoX;
+            this.entities[0].position.y = orthoY;
+        }
     }
 
     shutdown()
