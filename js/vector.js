@@ -33,4 +33,10 @@ class vec3
         let d = this.minus( o );
         return Math.sqrt( d.x*d.x + d.y*d.y + d.z*d.z );
     }
+
+    distanceFromSquared(o)
+    {
+        let d = this.minus( o );
+        return d.x*d.x + d.y*d.y + d.z*d.z;
+    }
 }
