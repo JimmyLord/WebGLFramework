@@ -16,6 +16,9 @@ class vec3
     minus(o)            { return new vec3( this.x - o.x, this.y - o.y, this.z - o.z ); }
     minusF32(o)         { return new vec3( this.x - o, this.y - o, this.z - o ); }
 
+    timesVec3(o)        { return new vec3( this.x * o.x, this.y * o.y, this.z * o.z ); }
+    times(o)            { return new vec3( this.x * o, this.y * o, this.z * o ); }
+
     dividedByVec3(o)    { return new vec3( this.x / o.x, this.y / o.y, this.z / o.z ); }
     dividedBy(o)        { return new vec3( this.x / o, this.y / o, this.z / o ); }
 
@@ -24,6 +27,9 @@ class vec3
 
     subtract(o)         { this.x -= o.x; this.y -= o.y; this.z -= o.z; }
     subtractF32(o)      { this.x -= o; this.y -= o; this.z -= o; }
+
+    multiplyByVec3(o)   { this.x *= o.x; this.y *= o.y; this.z *= o.z; }
+    multiplyBy(o)       { this.x *= o; this.y *= o; this.z *= o; }
 
     divideByVec3(o)     { this.x /= o.x; this.y /= o.y; this.z /= o.z; }
     divideBy(o)         { this.x /= o; this.y /= o; this.z /= o; }

@@ -71,7 +71,8 @@ class FrameworkMain
         resources.materials["vertexColor"] = new Material( resources.shaders["vertexColor"], new color( 0, 0, 1, 1 ), null );
     
         // Create a camera.
-        this.camera = new Camera( new vec3(0, 0, -3), true, 2, this.canvas.width / this.canvas.height );
+        this.orthoHeight = 2;
+        this.camera = new Camera( new vec3(0, 0, -3), true, this.orthoHeight, this.canvas.width / this.canvas.height );
     
         // Set up some basic GL state.
         gl.enable( gl.DEPTH_TEST );
@@ -141,7 +142,7 @@ class FrameworkMain
         this.imgui.text( "Pos:   " + Math.trunc( this.imgui.windows["ImGui Test"].position.x ) + "," + Math.trunc( this.imgui.windows["ImGui Test"].position.y ) );
         this.imgui.text( "Size:  " + Math.trunc( this.imgui.windows["ImGui Test"].size.x ) + "," + Math.trunc( this.imgui.windows["ImGui Test"].size.y ) );
         this.imgui.text( "Mouse: " + this.lastMousePosition.x + "," + this.lastMousePosition.y );
-        this.imgui.text( "UI Scale " );
+        this.imgui.text( "UI Scale:" );
         this.imgui.sameLine();
         if( this.imgui.button( "1" ) ) { this.imgui.scale = 1; this.imgui.markStateDirty(); }
         this.imgui.sameLine();
@@ -150,11 +151,8 @@ class FrameworkMain
         if( this.imgui.button( "2" ) ) { this.imgui.scale = 2; this.imgui.markStateDirty(); }
 
         this.imgui.window( "ImGui Test" );
-        this.imgui.text( "Test" );
-        this.imgui.button( "Dummy" );
-        this.imgui.button( "Dummy2" );
-        this.imgui.sameLine();
-        this.imgui.button( "Dummy3" );
+        this.orthoHeight = this.imgui.dragNumber( "Cam:", this.orthoHeight, 0.01, 2 );
+        this.camera.desiredHeight = this.orthoHeight;
     }
 
     registerDoMCallbacks()

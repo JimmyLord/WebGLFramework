@@ -90,7 +90,7 @@ class ImGui
             0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,0,0,0,0,0,1,0, 0,0,0,0,0,0,1,0,
             0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,0,0,0,0,0,1,0, 0,0,0,0,0,0,1,0,
             0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,1,1,1,1,1,1,0, 0,0,1,1,1,1,0,0,
-            0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,1,0,0,0,0,0,0, 0,0,0,0,0,0,1,0,
+            0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,1,1,1,1,1,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,1,0,0,0,0,0,0, 0,0,0,0,0,0,1,0,
             0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,1,1,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,1,0,0,0,0,0,0, 0,0,0,0,0,0,1,0,
             0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,1,1,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,0,0,0,0,1,0, 0,0,0,0,1,0,0,0, 0,1,0,0,0,0,0,0, 0,0,0,0,0,0,1,0,
             0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,1,1,1,1,0,0, 0,0,0,1,1,1,0,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,0,0,
@@ -145,13 +145,22 @@ class ImGui
         for( let key in state.windows )
         {
             this.windows[key] = [];
-            this.windows[key].position = new vec3( state.windows[key].position["x"], state.windows[key].position["y"], 0 );
-            this.windows[key].size = new vec3( state.windows[key].size["x"], state.windows[key].size["y"], 0 );
+            let window = this.windows[key];
+
+            window.position = new vec3( state.windows[key].position["x"], state.windows[key].position["y"], 0 );
+            window.size = new vec3( state.windows[key].size["x"], state.windows[key].size["y"], 0 );
             
-            this.windows[key].activeThisFrame = false;
-            this.windows[key].cursor = new vec3(0);
-            this.windows[key].previousLineEndPosition = new vec3(0);
-            this.windows[key].rect = new Rect(0,0,0,0);
+            window.activeThisFrame = false;
+            window.cursor = new vec3(0);
+            window.previousLineEndPosition = new vec3(0);
+            window.rect = new Rect(0,0,0,0);
+
+            // If the window is offscreen, force it back to 0,0.
+            if( window.position.x + window.size.x < 0 || window.position.x >= this.canvas.w ||
+                window.position.y + window.size.y < 0 || window.position.y >= this.canvas.h )
+            {
+                window.position.setF32( 0, 0 );
+            }
         }
     }
 
@@ -199,6 +208,7 @@ class ImGui
         this.mousePosition.divideBy( this.scale );
 
         this.mouseChange = this.mousePosition.minus( this.lastMousePosition );
+        this.mouseChangeUnscaled = this.mouseChange.times( this.scale );
         this.lastMousePosition.setF32( this.mousePosition.x, this.mousePosition.y, 0 );
 
         // Loop through all windows.
@@ -645,6 +655,76 @@ class ImGui
         }
 
         return false;
+    }
+
+    dragNumber(label, value, increment, decimalPlaces)
+    {
+        let gl = this.gl;
+
+        // Label and a bit of padding to it's right.
+        this.text( label );
+        this.sameLine();
+        this.activeWindow.cursor.x += this.padding.x;
+        this.valueAsString = value.toFixed( decimalPlaces );
+
+        // Vars.
+        let verts = [];
+        let indices = [];
+
+        let buttonTopPadding = 1;
+        let offsetx = this.activeWindow.cursor.x - this.activeWindow.position.x;
+        let boxWidth = (this.activeWindow.size.x - offsetx) - this.padding.x*2;
+        let midPoint = boxWidth/2 - this.valueAsString.length*8/2;
+
+        // Background.
+        let x = this.activeWindow.cursor.x + this.padding.x;
+        let y = this.activeWindow.cursor.y + buttonTopPadding;
+        let w = boxWidth;
+        let h = buttonTopPadding + 8 + this.padding.y;
+
+        let isHovering = false;
+        let rgb = new vec3(0,96,0);
+        let rect = new Rect( x, y, w, h );
+        if( rect.contains( this.mousePosition ) ) // is hovering.
+        {
+            isHovering = true;
+            rgb.setF32(0,160,0);
+
+            if( this.mouseButtons[0] == true ) // is pressing.
+            {
+                rgb.setF32(0,220,0);
+            }
+        }
+
+        this.addBoxToArray( verts, indices, x,y,w,h, rgb.x,rgb.y,rgb.z,255 );
+        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+
+        // Value.
+        this.activeWindow.cursor.x += midPoint;
+        this.text( this.valueAsString );
+        this.sameLine();
+
+        this.activeWindow.cursor.x += this.padding.x;
+        this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding, 0 );
+        this.activeWindow.cursor.x = this.activeWindow.position.x;
+        this.activeWindow.cursor.y += this.padding.y + 8 + this.padding.y;
+        
+        // Check if was pressed this frame.
+        if( isHovering &&
+            ( ( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) ) )
+        {
+            this.isHoveringControl = true;
+            this.windowBeingMoved = null;
+            this.windowBeingResized = null;
+        }
+
+        // If mouse held.
+        if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == true )
+        {
+            value += this.mouseChangeUnscaled.x * increment;
+        }
+
+        return value;
     }
 }
 
