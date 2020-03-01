@@ -12,6 +12,7 @@ class ImGui
         this.mouseChange = new vec3(0);
         this.lastMousePosition = new vec3(0);
         this.activeWindow = null;
+        this.activeControl = null;
         this.windowBeingMoved = null;
         this.windowBeingResized = null;
         this.windowMoved = false;
@@ -240,13 +241,14 @@ class ImGui
             this.ownsMouse = false;
         }
 
-        if( this.mouseButtons[0] == false )
+        if( this.mouseButtons[0] == false ) // Not held.
         {
             if( this.windowMoved )
             {
                 this.windowMoved = false;
                 this.stateIsDirty = true;
             }
+            this.activeControl = null;
             this.windowBeingMoved = null;
             this.windowBeingResized = null;
         }
@@ -713,13 +715,15 @@ class ImGui
         if( isHovering &&
             ( ( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) ) )
         {
+            this.activeControl = label;
             this.isHoveringControl = true;
             this.windowBeingMoved = null;
             this.windowBeingResized = null;
         }
 
         // If mouse held.
-        if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == true )
+        if( this.activeControl == label &&
+            this.mouseButtons[0] == true && this.oldMouseButtons[0] == true )
         {
             value += this.mouseChangeUnscaled.x * increment;
         }
