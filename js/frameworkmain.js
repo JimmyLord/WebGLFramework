@@ -22,7 +22,7 @@ class FrameworkMain
         // Set some members.
         this.gl = gl;
         this.keyStates = new Map;
-        this.lastMousePosition = new vec3(0);
+        this.lastMousePosition = new vec2(0);
 
         // Set the size of the canvas.
         this.fullFrame = false;
@@ -99,7 +99,7 @@ class FrameworkMain
         let deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
 
-        this.imgui.mousePosition.setF32( this.lastMousePosition.x, this.lastMousePosition.y, 0 );
+        this.imgui.mousePosition.setF32( this.lastMousePosition.x, this.lastMousePosition.y );
         this.imgui.newFrame();
 
         this.camera.update();
@@ -135,7 +135,7 @@ class FrameworkMain
     drawImGuiTestWindow()
     {
         this.imgui.window( "ImGui Test" );
-        //this.imgui.windows["ImGui Test"].size.setF32( 143, 120, 0 );
+        //this.imgui.windows["ImGui Test"].size.setF32( 143, 120 );
         this.imgui.text( "Te" );
         this.imgui.sameLine();
         this.imgui.text( "st" );
@@ -202,7 +202,7 @@ class FrameworkMain
             this.runnableObject.onMouseMove( event.which-1, x, y, orthoX, orthoY );
         }
 
-        this.lastMousePosition.setF32( Math.trunc(x), Math.trunc(y), 0 );
+        this.lastMousePosition.setF32( Math.trunc(x), Math.trunc(y) );
     }
 
     onMouseDown(event)

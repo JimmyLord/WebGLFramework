@@ -9,8 +9,8 @@ class ImGui
         this.drawList = [];
         this.windows = {};
         this.ownsMouse = false;
-        this.mouseChange = new vec3(0);
-        this.lastMousePosition = new vec3(0);
+        this.mouseChange = new vec2(0);
+        this.lastMousePosition = new vec2(0);
         this.activeWindow = null;
         this.activeControl = null;
         this.windowBeingMoved = null;
@@ -23,10 +23,10 @@ class ImGui
 
         // Settings.
         this.scale = 2;
-        this.padding = new vec3(2);
+        this.padding = new vec2(2);
 
         // Inputs.
-        this.mousePosition = new vec3(0);
+        this.mousePosition = new vec2(0);
         this.mouseButtons = [ false, false, false ];
         
         // Outputs.
@@ -148,12 +148,12 @@ class ImGui
             this.windows[key] = [];
             let window = this.windows[key];
 
-            window.position = new vec3( state.windows[key].position["x"], state.windows[key].position["y"], 0 );
-            window.size = new vec3( state.windows[key].size["x"], state.windows[key].size["y"], 0 );
+            window.position = new vec2( state.windows[key].position["x"], state.windows[key].position["y"] );
+            window.size = new vec2( state.windows[key].size["x"], state.windows[key].size["y"] );
             
             window.activeThisFrame = false;
-            window.cursor = new vec3(0);
-            window.previousLineEndPosition = new vec3(0);
+            window.cursor = new vec2(0);
+            window.previousLineEndPosition = new vec2(0);
             window.rect = new Rect(0,0,0,0);
 
             // If the window is offscreen, force it back to 0,0.
@@ -210,7 +210,7 @@ class ImGui
 
         this.mouseChange = this.mousePosition.minus( this.lastMousePosition );
         this.mouseChangeUnscaled = this.mouseChange.times( this.scale );
-        this.lastMousePosition.setF32( this.mousePosition.x, this.mousePosition.y, 0 );
+        this.lastMousePosition.setF32( this.mousePosition.x, this.mousePosition.y );
 
         // Loop through all windows.
         for( let key in this.windows )
@@ -233,7 +233,7 @@ class ImGui
             // Reset their frame persistent values.
             this.windows[key].activeThisFrame = false;
             this.windows[key].cursor.set( this.windows[key].position );
-            this.windows[key].previousLineEndPosition.setF32( 0, 0, 0 );
+            this.windows[key].previousLineEndPosition.setF32( 0, 0 );
         }
 
         if( this.mouseButtons[0] == true && this.isHoveringWindow == false )
@@ -428,13 +428,13 @@ class ImGui
 
             this.windows[name] = [];
             this.activeWindow = this.windows[name];
-            this.activeWindow.position = new vec3( 20 + 150*windowCount, 20, 0 );
-            this.activeWindow.size = new vec3( 120, 90, 0 );
+            this.activeWindow.position = new vec2( 20 + 150*windowCount, 20 );
+            this.activeWindow.size = new vec2( 120, 90 );
 
             this.activeWindow.rect = new Rect( 0, 0, 0, 0 );
-            this.activeWindow.cursor = new vec3(0);
+            this.activeWindow.cursor = new vec2(0);
             this.activeWindow.cursor.set( this.activeWindow.position );
-            this.activeWindow.previousLineEndPosition = new vec3(0);
+            this.activeWindow.previousLineEndPosition = new vec2(0);
         }
         
         this.activeWindow = this.windows[name];
@@ -542,9 +542,9 @@ class ImGui
 
         this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
-        this.activeWindow.previousLineEndPosition.setF32( x-this.padding.x, y-this.padding.y, 0 );
+        this.activeWindow.previousLineEndPosition.setF32( x-this.padding.x, y-this.padding.y );
 
-        this.activeWindow.cursor.setF32( x, y+h, 0 );
+        this.activeWindow.cursor.setF32( x, y+h );
         this.activeWindow.cursor.y += this.padding.y;
 
         this.activeWindow.cursor.x = this.activeWindow.position.x;
@@ -583,7 +583,7 @@ class ImGui
 
         this.activeWindow.cursor.x += this.padding.x;
         this.text( label );
-        this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding, 0 );
+        this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
 
         // Check if was pressed this frame.
         if( isHovering &&
@@ -623,11 +623,11 @@ class ImGui
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
             isHovering = true;
-            rgb.setF32(0,160,0);
+            rgb.setF32( 0, 160, 0 );
 
             if( this.mouseButtons[0] == true ) // is pressing.
             {
-                rgb.setF32(0,220,0);
+                rgb.setF32( 0, 220, 0 );
             }
         }
 
@@ -642,7 +642,7 @@ class ImGui
         this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
         this.activeWindow.cursor.x += this.padding.x;
-        this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding, 0 );
+        this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
         this.activeWindow.cursor.x = this.activeWindow.position.x;
         this.activeWindow.cursor.y += this.padding.y + 8 + this.padding.y;
         
@@ -690,11 +690,11 @@ class ImGui
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
             isHovering = true;
-            rgb.setF32(0,160,0);
+            rgb.setF32( 0, 160, 0 );
 
             if( this.mouseButtons[0] == true ) // is pressing.
             {
-                rgb.setF32(0,220,0);
+                rgb.setF32( 0, 220, 0 );
             }
         }
 
@@ -707,7 +707,7 @@ class ImGui
         this.sameLine();
 
         this.activeWindow.cursor.x += this.padding.x;
-        this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding, 0 );
+        this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
         this.activeWindow.cursor.x = this.activeWindow.position.x;
         this.activeWindow.cursor.y += this.padding.y + 8 + this.padding.y;
         
