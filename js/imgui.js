@@ -144,17 +144,13 @@ class ImGui
 
         for( let key in state.windows )
         {
-            this.windows[key] = [];
+            this.windows[key] = new Window();
             let window = this.windows[key];
 
-            window.position = new vec2( state.windows[key].position["x"], state.windows[key].position["y"] );
-            window.size = new vec2( state.windows[key].size["x"], state.windows[key].size["y"] );
+            window.position.setF32( state.windows[key].position["x"], state.windows[key].position["y"] );
+            window.size.setF32( state.windows[key].size["x"], state.windows[key].size["y"] );
+            window.cursor.set( window.position );
             
-            window.activeThisFrame = false;
-            window.cursor = new vec2(0);
-            window.previousLineEndPosition = new vec2(0);
-            window.rect = new Rect(0,0,0,0);
-
             // If the window is offscreen, force it back to 0,0.
             if( window.position.x + window.size.x < 0 || window.position.x >= this.canvas.w ||
                 window.position.y + window.size.y < 0 || window.position.y >= this.canvas.h )
@@ -425,15 +421,12 @@ class ImGui
         {
             let windowCount = Object.keys( this.windows ).length;
 
-            this.windows[name] = [];
+            this.windows[name] = new Window();
             this.activeWindow = this.windows[name];
-            this.activeWindow.position = new vec2( 20 + 150*windowCount, 20 );
-            this.activeWindow.size = new vec2( 120, 90 );
-
-            this.activeWindow.rect = new Rect( 0, 0, 0, 0 );
-            this.activeWindow.cursor = new vec2(0);
+            
+            this.activeWindow.position.setF32( 20 + 150*windowCount, 20 );
+            this.activeWindow.size.setF32( 120, 90 );
             this.activeWindow.cursor.set( this.activeWindow.position );
-            this.activeWindow.previousLineEndPosition = new vec2(0);
         }
         
         this.activeWindow = this.windows[name];
@@ -728,6 +721,20 @@ class ImGui
         }
 
         return value;
+    }
+}
+
+class Window
+{
+    constructor()
+    {
+        this.position = new vec2( 0, 0 );
+        this.size = new vec2( 0, 0 );
+    
+        this.activeThisFrame = false;
+        this.cursor = new vec2(0);
+        this.previousLineEndPosition = new vec2(0);
+        this.rect = new Rect(0,0,0,0);
     }
 }
 
