@@ -449,34 +449,48 @@ class ImGui
             let h = titleH;
             this.addBoxToArray( verts, indices, x,y,w,h, 0,0,0,200 );
 
-            // Draw the BG box.
-            y += titleH;
-            h = this.activeWindow.size.y - titleH;
-            this.addBoxToArray( verts, indices, x,y,w,h, 0,0,255,200 );
+            this.activeWindow.rect.set( x, y, w, h );
 
-            // Define scissor rect, y is lower left.
-            let rx = this.activeWindow.position.x;
-            let ry = this.activeWindow.position.y;
-            let rw = this.activeWindow.size.x;
-            let rh = this.activeWindow.size.y;
-            this.activeWindow.rect.set( rx, ry, rw, rh );
+            if( this.activeWindow.expanded )
+            {
+                // Draw the BG box.
+                y += titleH;
+                h = this.activeWindow.size.y - titleH;
+                this.addBoxToArray( verts, indices, x,y,w,h, 0,0,255,200 );
+
+                // Define scissor rect, y is lower left.
+                let rx = this.activeWindow.position.x;
+                let ry = this.activeWindow.position.y;
+                let rw = this.activeWindow.size.x;
+                let rh = this.activeWindow.size.y;
+                this.activeWindow.rect.set( rx, ry, rw, rh );
+            }
 
             this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
+            if( this.checkbox( "", this.activeWindow.expanded ) )
+            {
+                this.activeWindow.expanded = !this.activeWindow.expanded;
+            }
+            this.sameLine();
             this.text( name );
         }
 
-        let x = this.activeWindow.cursor.x;
-        let y = this.activeWindow.cursor.y;
-        let rect = this.activeWindow.rect;
-        this.activeWindow.cursor.x = rect.x + rect.w - 12; // padding + 8 + padding.
-        this.activeWindow.cursor.y = rect.y + rect.h - 12; // padding + 8 + padding.
-        if( this.button( " " ) )
+        // Button at bottom right to resize window.
+        if( this.activeWindow.expanded )
         {
-            this.windowBeingResized = this.activeWindow;
+            let x = this.activeWindow.cursor.x;
+            let y = this.activeWindow.cursor.y;
+            let rect = this.activeWindow.rect;
+            this.activeWindow.cursor.x = rect.x + rect.w - 12; // padding + 8 + padding.
+            this.activeWindow.cursor.y = rect.y + rect.h - 12; // padding + 8 + padding.
+            if( this.button( " " ) )
+            {
+                this.windowBeingResized = this.activeWindow;
+            }
+            this.activeWindow.cursor.x = x;
+            this.activeWindow.cursor.y = y;
         }
-        this.activeWindow.cursor.x = x;
-        this.activeWindow.cursor.y = y;
     }
 
     addBoxToArray(verts, indices, x, y, w, h, r, g, b, a)
@@ -491,6 +505,9 @@ class ImGui
 
     text(str)
     {
+        // if( this.activeWindow.expanded == false )
+        //     return;
+
         let gl = this.gl;
 
         this.activeWindow.cursor.x += this.padding.x;
@@ -544,6 +561,9 @@ class ImGui
 
     button(label, returnTrueIfHeld)
     {
+        // if( this.activeWindow.expanded == false )
+        //     return;
+
         let gl = this.gl;
 
         let w = this.padding.x + label.length * 8 + this.padding.x;
@@ -593,6 +613,9 @@ class ImGui
 
     checkbox(label, isChecked)
     {
+        // if( this.activeWindow.expanded == false )
+        //     return;
+
         let gl = this.gl;
 
         this.text( label );
@@ -653,6 +676,9 @@ class ImGui
 
     dragNumber(label, value, increment, decimalPlaces)
     {
+        // if( this.activeWindow.expanded == false )
+        //     return;
+
         let gl = this.gl;
 
         // Label and a bit of padding to it's right.
@@ -735,6 +761,8 @@ class Window
         this.cursor = new vec2(0);
         this.previousLineEndPosition = new vec2(0);
         this.rect = new Rect(0,0,0,0);
+
+        this.expanded = true;
     }
 }
 
