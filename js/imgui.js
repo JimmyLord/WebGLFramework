@@ -8,7 +8,9 @@ class ImGui
         // Persistent values.
         this.drawList = [];
         this.windows = {};
+        this.currentTime = 0;
         this.ownsMouse = false;
+        this.lastTimeMouseClicked = [ 0, 0, 0 ];
         this.mouseChange = new vec2(0);
         this.lastMousePosition = new vec2(0);
         this.activeWindow = null;
@@ -194,8 +196,10 @@ class ImGui
         return state;
     }
 
-    newFrame()
+    newFrame(deltaTime)
     {
+        this.currentTime += deltaTime;
+
         this.isHoveringWindow = false;
 
         this.drawList.length = 0;
@@ -222,6 +226,13 @@ class ImGui
                 if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
                 {
                     this.windowBeingMoved = this.windows[key];
+
+                    // If double click on a window, collapse or expand it.
+                    if( this.currentTime - this.lastTimeMouseClicked[0] < 0.2 )
+                    {
+                        this.windowBeingMoved.expanded = !this.windowBeingMoved.expanded;
+                        this.windowBeingMoved = null;
+                    }
                 }
             }
 
@@ -283,6 +294,12 @@ class ImGui
                 this.text( "Rect WH: " + this.windowBeingMoved.rect.w + " " + this.windowBeingMoved.rect.h );
                 this.text( "In Rect: " + this.windowBeingMoved.rect.contains( this.mousePosition ) );
             }
+        }
+
+        // Update lastTimeMouseClicked to be able to detect double-clicks above.
+        if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
+        {
+            this.lastTimeMouseClicked[0] = this.currentTime;
         }
     }
 

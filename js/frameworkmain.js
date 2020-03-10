@@ -100,7 +100,7 @@ class FrameworkMain
         this.lastTime = currentTime;
 
         this.imgui.mousePosition.setF32( this.lastMousePosition.x, this.lastMousePosition.y );
-        this.imgui.newFrame();
+        this.imgui.newFrame( deltaTime );
 
         this.camera.update();
 
