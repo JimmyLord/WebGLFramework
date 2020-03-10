@@ -227,11 +227,15 @@ class ImGui
                 {
                     this.windowBeingMoved = this.windows[key];
 
-                    // If double click on a window, collapse or expand it.
-                    if( this.currentTime - this.lastTimeMouseClicked[0] < 0.2 )
+                    // If double click on a window title, collapse or expand it.
+                    let titleH = 8 + this.padding.y*2;
+                    if( this.mousePosition.y < this.windows[key].rect.y + titleH )
                     {
-                        this.windowBeingMoved.expanded = !this.windowBeingMoved.expanded;
-                        this.windowBeingMoved = null;
+                        if( this.currentTime - this.lastTimeMouseClicked[0] < 0.2 )
+                        {
+                            this.windowBeingMoved.expanded = !this.windowBeingMoved.expanded;
+                            this.windowBeingMoved = null;
+                        }
                     }
                 }
             }
