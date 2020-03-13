@@ -137,6 +137,7 @@ class FrameworkMain
         this.imgui.window( "ImGui Test" );
         //this.imgui.windows["ImGui Test"].size.setF32( 143, 120 );
         this.imgui.text( "!\"#$%&'()*+,-./<=>?@[\\]^_`" );
+        this.imgui.text( "abcdefg" );
         this.imgui.text( "Te" );
         this.imgui.sameLine();
         this.imgui.text( "st" );
