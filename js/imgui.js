@@ -26,6 +26,7 @@ class ImGui
         // Settings.
         this.scale = 2;
         this.padding = new vec2(2);
+        this.doubleClickTime = 0.3;
 
         // Inputs.
         this.mousePosition = new vec2(0);
@@ -151,6 +152,7 @@ class ImGui
         catch( e ) { return; }
 
         this.scale = state.scale;
+        this.doubleClickTime = state.doubleClickTime;
 
         for( let key in state.windows )
         {
@@ -189,7 +191,8 @@ class ImGui
     toJSON()
     {
         let state = {
-             scale: this.scale,
+            scale: this.scale,
+            doubleClickTime: this.doubleClickTime,
         }
 
         state.windows = {};
@@ -239,7 +242,7 @@ class ImGui
                     let titleH = 8 + this.padding.y*2;
                     if( this.mousePosition.y < this.windows[key].rect.y + titleH )
                     {
-                        if( this.currentTime - this.lastTimeMouseClicked[0] < 0.2 )
+                        if( this.currentTime - this.lastTimeMouseClicked[0] < this.doubleClickTime )
                         {
                             this.windowBeingMoved.expanded = !this.windowBeingMoved.expanded;
                             this.windowBeingMoved = null;
@@ -442,6 +445,7 @@ class ImGui
         this.activeWindow.cursor.set( this.activeWindow.previousLineEndPosition );
     }
 
+    // Return true is window is expanded.
     window(name)
     {
         let gl = this.gl;
@@ -460,6 +464,13 @@ class ImGui
         
         this.activeWindow = this.windows[name];
         this.activeWindow.activeThisFrame = true;
+
+        // If the window is offscreen, force it back to 0,0.
+        if( this.activeWindow.position.x + this.activeWindow.size.x < 0 || this.activeWindow.position.x >= this.canvas.w ||
+            this.activeWindow.position.y + this.activeWindow.size.y < 0 || this.activeWindow.position.y >= this.canvas.h )
+        {
+            this.activeWindow.position.setF32( 0, 0 );
+        }
 
         // If we're adding the window for the first time, add a title and BG.
         if( this.activeWindow.cursor.y == this.activeWindow.position.y )
@@ -520,6 +531,8 @@ class ImGui
             this.activeWindow.cursor.x = x;
             this.activeWindow.cursor.y = y;
         }
+
+        return this.activeWindow.expanded;
     }
 
     addBoxToArray(verts, indices, x, y, w, h, r, g, b, a)
