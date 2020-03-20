@@ -10,6 +10,7 @@ class MainProject
     constructor(framework)
     {
         this.framework = framework;
+        this.scene = null;
         this.objectFollowsMouse = true;
     }
 
@@ -17,21 +18,25 @@ class MainProject
     {
         let resources = this.framework.resources;
 
-        // Set up some entities.
-        this.entities = [];
+        this.scene = new Scene( this.framework );
 
-        this.entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["circle"], resources.materials["red"] ) );
-        this.entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["triangle"], resources.materials["green"] ) );
-        this.entities.push( new Entity( new vec3(0), new vec3(0), resources.meshes["cube"], resources.materials["vertexColor"] ) );
+        this.scene.init( true );
+        
+        // Set up some entities.
+        this.scene.add( new Entity( new vec3(0), new vec3(0), resources.meshes["circle"], resources.materials["red"] ) );
+        this.scene.add( new Entity( new vec3(0), new vec3(0), resources.meshes["triangle"], resources.materials["green"] ) );
+        this.scene.add( new Entity( new vec3(0), new vec3(0), resources.meshes["cube"], resources.materials["vertexColor"] ) );
     }
 
     update(deltaTime, currentTime)
     {
-        this.entities[1].position.x = Math.cos( currentTime/1000 );
-        this.entities[1].position.y = Math.sin( currentTime/1000 );
-        this.entities[1].rotation.z = -currentTime / 1000 * (180 / Math.PI);
-        this.entities[2].rotation.x += deltaTime * 50;
-        this.entities[2].rotation.y += deltaTime * 100;
+        this.scene.update(deltaTime, currentTime);
+
+        this.scene.entities[1].position.x = Math.cos( currentTime/1000 );
+        this.scene.entities[1].position.y = Math.sin( currentTime/1000 );
+        this.scene.entities[1].rotation.z = -currentTime / 1000 * (180 / Math.PI);
+        this.scene.entities[2].rotation.x += deltaTime * 50;
+        this.scene.entities[2].rotation.y += deltaTime * 100;
 
         let keyStates = this.framework.keyStates;
 
@@ -45,8 +50,8 @@ class MainProject
         if( keyStates['w'] || keyStates['ArrowUp'] )
             dir.y += 1;
 
-        this.entities[2].position.x += dir.x * deltaTime;
-        this.entities[2].position.y += dir.y * deltaTime;
+        this.scene.entities[2].position.x += dir.x * deltaTime;
+        this.scene.entities[2].position.y += dir.y * deltaTime;
 
         this.framework.drawImGuiTestWindow();
 
@@ -57,25 +62,25 @@ class MainProject
         }
     }
 
-    draw(camera)
+    draw()
     {
-        this.entities.forEach( entity => entity.draw( camera ) );
+        this.scene.draw( this.scene.camera );
     }
 
     onMouseMove(buttonID, x, y, orthoX, orthoY)
     {
         if( this.objectFollowsMouse )
         {
-            this.entities[0].position.x = orthoX;
-            this.entities[0].position.y = orthoY;
+            let [orthoX, orthoY] = this.scene.camera.convertMouseToOrtho( this.framework.canvas, x, y );
+
+            this.scene.entities[0].position.x = orthoX;
+            this.scene.entities[0].position.y = orthoY;
         }
     }
 
     shutdown()
     {
-        this.entities.forEach( entity => entity.free() );
-        this.entities.length = 0;
-        this.entities = null;
+        this.scene.shutdown();
     }
 }
 

@@ -53,26 +53,8 @@ class FrameworkMain
         let resources = new ResourceManager( gl );
         this.resources = resources;
 
-        resources.meshes["triangle"] = new Mesh( gl );
-        resources.meshes["triangle"].createTriangle( new vec3( 0.5, 0.5 ) );
-        resources.meshes["circle"] = new Mesh( gl );
-        resources.meshes["circle"].createCircle( 200, 0.2 );
-        resources.meshes["cube"] = new Mesh( gl );
-        resources.meshes["cube"].createCube( new vec3( 1, 1, 1 ) );
-    
-        //resources.textures["testTexture"] = new Texture( gl );
-        //resources.textures["testTexture"].loadFromFile( "data/textures/test.png" );
-        
-        resources.materials["red"] = new Material( resources.shaders["uniformColor"], new color( 1, 0, 0, 1 ), null );
-        resources.materials["green"] = new Material( resources.shaders["uniformColor"], new color( 0, 1, 0, 1 ), null );
-        resources.materials["blue"] = new Material( resources.shaders["uniformColor"], new color( 0, 0, 1, 1 ), null );
-        resources.materials["white"] = new Material( resources.shaders["uniformColor"], new color( 1, 1, 1, 1 ), null );
-        //resources.materials["testTexture"] = new Material( resources.shaders["texture"], new color( 0, 0, 0, 1 ), resources.textures["testTexture"] );
-        resources.materials["vertexColor"] = new Material( resources.shaders["vertexColor"], new color( 0, 0, 1, 1 ), null );
-    
-        // Create a camera.
+        // Set up an ortho height for the default scene camera for the imgui test window.
         this.orthoHeight = 2;
-        this.camera = new Camera( new vec3(0, 0, -3), true, this.orthoHeight, this.canvas.width / this.canvas.height );
     
         // Set up some basic GL state.
         gl.enable( gl.DEPTH_TEST );
@@ -102,8 +84,6 @@ class FrameworkMain
         this.imgui.mousePosition.setF32( this.lastMousePosition.x, this.lastMousePosition.y );
         this.imgui.newFrame( deltaTime );
 
-        this.camera.update();
-
         if( this.runnableObject.update )
         {
             this.runnableObject.update( deltaTime, currentTime );
@@ -122,7 +102,7 @@ class FrameworkMain
 
         if( this.runnableObject.draw )
         {
-            this.runnableObject.draw( this.camera );
+            this.runnableObject.draw();
         }
 
         // Restart the update/draw cycle.
@@ -136,7 +116,6 @@ class FrameworkMain
     {
         this.imgui.window( "ImGui Test" );
         //this.imgui.windows["ImGui Test"].size.setF32( 143, 120 );
-        this.imgui.text( "!\"#$%&'()*+,-./<=>?@[\\]^_`" );
         this.imgui.text( "Te" );
         this.imgui.sameLine();
         this.imgui.text( "st" );
@@ -153,7 +132,6 @@ class FrameworkMain
 
         this.imgui.window( "ImGui Test" );
         this.orthoHeight = this.imgui.dragNumber( "Cam:", this.orthoHeight, 0.01, 2 );
-        this.camera.desiredHeight = this.orthoHeight;
     }
 
     registerDoMCallbacks()
@@ -196,11 +174,10 @@ class FrameworkMain
     {
         let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
         let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
-        let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseMove )
         {
-            this.runnableObject.onMouseMove( event.which-1, x, y, orthoX, orthoY );
+            this.runnableObject.onMouseMove( event.which-1, x, y );
         }
 
         this.lastMousePosition.setF32( Math.trunc(x), Math.trunc(y) );
@@ -210,11 +187,10 @@ class FrameworkMain
     {
         let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
         let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
-        let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseDown )
         {
-            this.runnableObject.onMouseDown( event.which-1, x, y, orthoX, orthoY );
+            this.runnableObject.onMouseDown( event.which-1, x, y );
         }
 
         this.imgui.mouseButtons[ event.which-1 ] = true;
@@ -224,11 +200,10 @@ class FrameworkMain
     {
         let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
         let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
-        let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.canvas, x, y );
 
         if( this.runnableObject.onMouseUp )
         {
-            this.runnableObject.onMouseUp( event.which-1, x, y, orthoX, orthoY );
+            this.runnableObject.onMouseUp( event.which-1, x, y );
         }
 
         this.imgui.mouseButtons[ event.which-1 ] = false;
@@ -268,9 +243,6 @@ class FrameworkMain
         {
             this.runnableObject.shutdown();
         }
-
-        this.camera.free();
-        this.camera = null;
 
         log( "Shutdown!" );
     }
