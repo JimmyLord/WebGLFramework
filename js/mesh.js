@@ -44,17 +44,20 @@ class Mesh
         let vertexPositions = [ -size.x/2,-size.y/2,0,   0,size.y/2,0,   size.x/2,-size.y/2,0, ];
         let vertexUVs = [ 0,0,   0.5,1,   1,0, ];
 
-        // VertexFormat: XYZ UV RGBA. (5 floats + 4 uint8s or 6 floats or 24 bytes)
-        let sizeofVertex = (5*sizeofFloat32 + 4*sizeofUint8);
+        // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
+        let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
         let vertexAttributes = new ArrayBuffer( numVerts * sizeofVertex );
         let vertexAttributesAsFloats = new Float32Array( vertexAttributes );
         for( let i=0; i<numVerts; i++ )
         {
-            vertexAttributesAsFloats[i*6 + 0] = vertexPositions[i*3 + 0];
-            vertexAttributesAsFloats[i*6 + 1] = vertexPositions[i*3 + 1];
-            vertexAttributesAsFloats[i*6 + 2] = vertexPositions[i*3 + 2];
-            vertexAttributesAsFloats[i*6 + 3] = vertexUVs[i*2 + 0];
-            vertexAttributesAsFloats[i*6 + 4] = vertexUVs[i*2 + 1];
+            vertexAttributesAsFloats[i*9 + 0] = vertexPositions[i*3 + 0];
+            vertexAttributesAsFloats[i*9 + 1] = vertexPositions[i*3 + 1];
+            vertexAttributesAsFloats[i*9 + 2] = vertexPositions[i*3 + 2];
+            vertexAttributesAsFloats[i*9 + 3] = vertexUVs[i*2 + 0];
+            vertexAttributesAsFloats[i*9 + 4] = vertexUVs[i*2 + 1];
+            vertexAttributesAsFloats[i*9 + 5] = 0;
+            vertexAttributesAsFloats[i*9 + 6] = 0;
+            vertexAttributesAsFloats[i*9 + 7] = -1;
         }
 
         this.VBO = gl.createBuffer();
@@ -74,7 +77,7 @@ class Mesh
         let sizeofFloat32 = 4;
         let sizeofUint8 = 1;
         let sizeofUnsignedShort = 2;
-        let vertexPositionsAndUVs = [
+        let vertexPosUVColor = [
                 -size.x/2, -size.y/2, 0,    0, 0,   0, 0, 128, 255,
                 -size.x/2,  size.y/2, 0,    0, 1,   0, 0, 128, 255,
                  size.x/2,  size.y/2, 0,    1, 1,   0, 0, 128, 255,
@@ -85,26 +88,29 @@ class Mesh
                  0, 1, 2,  0, 2, 3,
             ];
 
-        // VertexFormat: XYZ UV RGBA. (5 floats + 4 uint8s or 6 floats or 24 bytes)
-        let sizeofVertex = (5*sizeofFloat32 + 4*sizeofUint8);
+        // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
+        let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
         let vertexAttributes = new ArrayBuffer( numVerts * sizeofVertex );
         let vertexAttributesAsFloats = new Float32Array( vertexAttributes );
         for( let i=0; i<numVerts; i++ )
         {
-            vertexAttributesAsFloats[i*6 + 0] = vertexPositionsAndUVs[i*9 + 0];
-            vertexAttributesAsFloats[i*6 + 1] = vertexPositionsAndUVs[i*9 + 1];
-            vertexAttributesAsFloats[i*6 + 2] = vertexPositionsAndUVs[i*9 + 2];
-            vertexAttributesAsFloats[i*6 + 3] = vertexPositionsAndUVs[i*9 + 3];
-            vertexAttributesAsFloats[i*6 + 4] = vertexPositionsAndUVs[i*9 + 4];
+            vertexAttributesAsFloats[i*9 + 0] = vertexPosUVColor[i*9 + 0];
+            vertexAttributesAsFloats[i*9 + 1] = vertexPosUVColor[i*9 + 1];
+            vertexAttributesAsFloats[i*9 + 2] = vertexPosUVColor[i*9 + 2];
+            vertexAttributesAsFloats[i*9 + 3] = vertexPosUVColor[i*9 + 3];
+            vertexAttributesAsFloats[i*9 + 4] = vertexPosUVColor[i*9 + 4];
+            vertexAttributesAsFloats[i*9 + 5] = 0;
+            vertexAttributesAsFloats[i*9 + 6] = 0;
+            vertexAttributesAsFloats[i*9 + 7] = -1;
         }
 
         let vertexAttributesAsUint8s = new Uint8Array( vertexAttributes );
         for( let i=0; i<numVerts; i++ )
         {
-            vertexAttributesAsUint8s[i*sizeofVertex + 5*4 + 0] = vertexPositionsAndUVs[i*9 + 5];
-            vertexAttributesAsUint8s[i*sizeofVertex + 5*4 + 1] = vertexPositionsAndUVs[i*9 + 6];
-            vertexAttributesAsUint8s[i*sizeofVertex + 5*4 + 2] = vertexPositionsAndUVs[i*9 + 7];
-            vertexAttributesAsUint8s[i*sizeofVertex + 5*4 + 3] = vertexPositionsAndUVs[i*9 + 8];
+            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 0] = vertexPosUVColor[i*9 + 5];
+            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 1] = vertexPosUVColor[i*9 + 6];
+            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 2] = vertexPosUVColor[i*9 + 7];
+            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 3] = vertexPosUVColor[i*9 + 8];
         }
 
         // Indices: Uint16.
@@ -137,37 +143,37 @@ class Mesh
         let sizeofFloat32 = 4;
         let sizeofUint8 = 1;
         let sizeofUnsignedShort = 2;
-        let vertexPositionsAndUVs = [
+        let vertexPosUVNormalColor = [
                 // Front
-                -size.x/2, -size.y/2, -size.z/2, 0, 0,   0, 0, 128, 255,
-                -size.x/2,  size.y/2, -size.z/2, 0, 1,   0, 0, 128, 255,
-                 size.x/2,  size.y/2, -size.z/2, 1, 1,   0, 0, 128, 255,
-                 size.x/2, -size.y/2, -size.z/2, 1, 0,   0, 0, 128, 255,
+                -size.x/2, -size.y/2, -size.z/2,   0,0,   0,0,-1,   0,0,128,255,
+                -size.x/2,  size.y/2, -size.z/2,   0,1,   0,0,-1,   0,0,128,255,
+                 size.x/2,  size.y/2, -size.z/2,   1,1,   0,0,-1,   0,0,128,255,
+                 size.x/2, -size.y/2, -size.z/2,   1,0,   0,0,-1,   0,0,128,255,
                 // Back
-                -size.x/2, -size.y/2,  size.z/2, 0, 0,   0, 0, 255, 255,
-                -size.x/2,  size.y/2,  size.z/2, 0, 1,   0, 0, 255, 255,
-                 size.x/2,  size.y/2,  size.z/2, 1, 1,   0, 0, 255, 255,
-                 size.x/2, -size.y/2,  size.z/2, 1, 0,   0, 0, 255, 255,
+                -size.x/2, -size.y/2,  size.z/2,   0,0,   0,0,1,    0,0,255,255,
+                -size.x/2,  size.y/2,  size.z/2,   0,1,   0,0,1,    0,0,255,255,
+                 size.x/2,  size.y/2,  size.z/2,   1,1,   0,0,1,    0,0,255,255,
+                 size.x/2, -size.y/2,  size.z/2,   1,0,   0,0,1,    0,0,255,255,
                 // Left
-                -size.x/2, -size.y/2, -size.z/2, 0, 0,   128, 0, 0, 255,
-                -size.x/2,  size.y/2, -size.z/2, 0, 1,   128, 0, 0, 255,
-                -size.x/2,  size.y/2,  size.z/2, 1, 1,   128, 0, 0, 255,
-                -size.x/2, -size.y/2,  size.z/2, 1, 0,   128, 0, 0, 255,
+                -size.x/2, -size.y/2, -size.z/2,   0,0,   -1,0,0,   128,0,0,255,
+                -size.x/2,  size.y/2, -size.z/2,   0,1,   -1,0,0,   128,0,0,255,
+                -size.x/2,  size.y/2,  size.z/2,   1,1,   -1,0,0,   128,0,0,255,
+                -size.x/2, -size.y/2,  size.z/2,   1,0,   -1,0,0,   128,0,0,255,
                 // Right
-                 size.x/2, -size.y/2, -size.z/2, 0, 0,   255, 0, 0, 255,
-                 size.x/2,  size.y/2, -size.z/2, 0, 1,   255, 0, 0, 255,
-                 size.x/2,  size.y/2,  size.z/2, 1, 1,   255, 0, 0, 255,
-                 size.x/2, -size.y/2,  size.z/2, 1, 0,   255, 0, 0, 255,
+                 size.x/2, -size.y/2, -size.z/2,   0,0,   1,0,0,    255,0,0,255,
+                 size.x/2,  size.y/2, -size.z/2,   0,1,   1,0,0,    255,0,0,255,
+                 size.x/2,  size.y/2,  size.z/2,   1,1,   1,0,0,    255,0,0,255,
+                 size.x/2, -size.y/2,  size.z/2,   1,0,   1,0,0,    255,0,0,255,
                 // Top
-                -size.x/2,  size.y/2, -size.z/2, 0, 0,   0, 255, 0, 255,
-                -size.x/2,  size.y/2,  size.z/2, 0, 1,   0, 255, 0, 255,
-                 size.x/2,  size.y/2,  size.z/2, 1, 1,   0, 255, 0, 255,
-                 size.x/2,  size.y/2, -size.z/2, 1, 0,   0, 255, 0, 255,
+                -size.x/2,  size.y/2, -size.z/2,   0,0,   0,1,0,    0,255,0,255,
+                -size.x/2,  size.y/2,  size.z/2,   0,1,   0,1,0,    0,255,0,255,
+                 size.x/2,  size.y/2,  size.z/2,   1,1,   0,1,0,    0,255,0,255,
+                 size.x/2,  size.y/2, -size.z/2,   1,0,   0,1,0,    0,255,0,255,
                 // Bottom
-                -size.x/2, -size.y/2, -size.z/2, 0, 0,   0, 128, 0, 255,
-                -size.x/2, -size.y/2,  size.z/2, 0, 1,   0, 128, 0, 255,
-                 size.x/2, -size.y/2,  size.z/2, 1, 1,   0, 128, 0, 255,
-                 size.x/2, -size.y/2, -size.z/2, 1, 0,   0, 128, 0, 255,
+                -size.x/2, -size.y/2, -size.z/2,   0,0,   0,-1,0,   0,128,0,255,
+                -size.x/2, -size.y/2,  size.z/2,   0,1,   0,-1,0,   0,128,0,255,
+                 size.x/2, -size.y/2,  size.z/2,   1,1,   0,-1,0,   0,128,0,255,
+                 size.x/2, -size.y/2, -size.z/2,   1,0,   0,-1,0,   0,128,0,255,
             ];
 
         let indices = [
@@ -179,26 +185,29 @@ class Mesh
                 20,22,21, 20,23,22,
             ];
 
-        // VertexFormat: XYZ UV RGBA. (5 floats + 4 uint8s or 6 floats or 24 bytes)
-        let sizeofVertex = (5*sizeofFloat32 + 4*sizeofUint8);
+        // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
+        let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
         let vertexAttributes = new ArrayBuffer( numVerts * sizeofVertex );
         let vertexAttributesAsFloats = new Float32Array( vertexAttributes );
         for( let i=0; i<numVerts; i++ )
         {
-            vertexAttributesAsFloats[i*6 + 0] = vertexPositionsAndUVs[i*9 + 0];
-            vertexAttributesAsFloats[i*6 + 1] = vertexPositionsAndUVs[i*9 + 1];
-            vertexAttributesAsFloats[i*6 + 2] = vertexPositionsAndUVs[i*9 + 2];
-            vertexAttributesAsFloats[i*6 + 3] = vertexPositionsAndUVs[i*9 + 3];
-            vertexAttributesAsFloats[i*6 + 4] = vertexPositionsAndUVs[i*9 + 4];
+            vertexAttributesAsFloats[i*9 + 0] = vertexPosUVNormalColor[i*12 + 0];
+            vertexAttributesAsFloats[i*9 + 1] = vertexPosUVNormalColor[i*12 + 1];
+            vertexAttributesAsFloats[i*9 + 2] = vertexPosUVNormalColor[i*12 + 2];
+            vertexAttributesAsFloats[i*9 + 3] = vertexPosUVNormalColor[i*12 + 3];
+            vertexAttributesAsFloats[i*9 + 4] = vertexPosUVNormalColor[i*12 + 4];
+            vertexAttributesAsFloats[i*9 + 5] = vertexPosUVNormalColor[i*12 + 5];
+            vertexAttributesAsFloats[i*9 + 6] = vertexPosUVNormalColor[i*12 + 6];
+            vertexAttributesAsFloats[i*9 + 7] = vertexPosUVNormalColor[i*12 + 7];
         }
 
         let vertexAttributesAsUint8s = new Uint8Array( vertexAttributes );
         for( let i=0; i<numVerts; i++ )
         {
-            vertexAttributesAsUint8s[i*sizeofVertex + 5*4 + 0] = vertexPositionsAndUVs[i*9 + 5];
-            vertexAttributesAsUint8s[i*sizeofVertex + 5*4 + 1] = vertexPositionsAndUVs[i*9 + 6];
-            vertexAttributesAsUint8s[i*sizeofVertex + 5*4 + 2] = vertexPositionsAndUVs[i*9 + 7];
-            vertexAttributesAsUint8s[i*sizeofVertex + 5*4 + 3] = vertexPositionsAndUVs[i*9 + 8];
+            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 0] = vertexPosUVNormalColor[i*12 + 8];
+            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 1] = vertexPosUVNormalColor[i*12 + 9];
+            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 2] = vertexPosUVNormalColor[i*12 + 10];
+            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 3] = vertexPosUVNormalColor[i*12 + 11];
         }
 
         // Indices: Uint16.
@@ -230,18 +239,21 @@ class Mesh
         let sizeofFloat32 = 4;
         let sizeofUint8 = 1;
 
-        // VertexFormat: XYZ UV RGBA. (5 floats + 4 uint8s or 6 floats or 24 bytes)
-        let sizeofVertex = (5*sizeofFloat32 + 4*sizeofUint8);
+        // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
+        let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
         let vertexAttributes = new ArrayBuffer( numVerts * sizeofVertex );
         let vertexAttributesAsFloats = new Float32Array( vertexAttributes );
         let sliceRadians = -2*Math.PI / numVerts;
         for( let i=0; i<numVerts; i++ )
         {
-            vertexAttributesAsFloats[i*6 + 0] = Math.cos( sliceRadians * i ) * radius;
-            vertexAttributesAsFloats[i*6 + 1] = Math.sin( sliceRadians * i ) * radius;
-            vertexAttributesAsFloats[i*6 + 2] = 0;
-            vertexAttributesAsFloats[i*6 + 3] = Math.cos( sliceRadians * i );
-            vertexAttributesAsFloats[i*6 + 4] = Math.sin( sliceRadians * i );
+            vertexAttributesAsFloats[i*9 + 0] = Math.cos( sliceRadians * i ) * radius;
+            vertexAttributesAsFloats[i*9 + 1] = Math.sin( sliceRadians * i ) * radius;
+            vertexAttributesAsFloats[i*9 + 2] = 0;
+            vertexAttributesAsFloats[i*9 + 3] = Math.cos( sliceRadians * i );
+            vertexAttributesAsFloats[i*9 + 4] = Math.sin( sliceRadians * i );
+            vertexAttributesAsFloats[i*9 + 5] = 0;
+            vertexAttributesAsFloats[i*9 + 6] = 0;
+            vertexAttributesAsFloats[i*9 + 7] = -1;
         }
 
         this.VBO = gl.createBuffer();
@@ -263,7 +275,7 @@ class Mesh
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
         gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
 
-        let vertexSize = 5*4 + 1*4;
+        let vertexSize = (3+2+3)*4 + 4*1; // (Pos, UV, Normal) + Color
 
         let a_Position = gl.getAttribLocation( material.shader.program, "a_Position" );
         gl.enableVertexAttribArray( a_Position );
@@ -276,11 +288,18 @@ class Mesh
             gl.vertexAttribPointer( a_UV, 2, gl.FLOAT, false, vertexSize, 12 )
         }
 
+        let a_Normal = gl.getAttribLocation( material.shader.program, "a_Normal" );
+        if( a_Normal != -1 )
+        {
+            gl.enableVertexAttribArray( a_Normal );
+            gl.vertexAttribPointer( a_Normal, 3, gl.FLOAT, false, vertexSize, 20 )
+        }
+
         let a_Color = gl.getAttribLocation( material.shader.program, "a_Color" );
         if( a_Color != -1 )
         {
             gl.enableVertexAttribArray( a_Color );
-            gl.vertexAttribPointer( a_Color, 4, gl.UNSIGNED_BYTE, true, vertexSize, 20 )
+            gl.vertexAttribPointer( a_Color, 4, gl.UNSIGNED_BYTE, true, vertexSize, 32 )
         }
 
         // Set up shader and uniforms.
@@ -315,6 +334,8 @@ class Mesh
 
         if( a_UV != -1 )
             gl.disableVertexAttribArray( a_UV );
+        if( a_Normal != -1 )
+            gl.disableVertexAttribArray( a_Normal );
         if( a_Color != -1 )
             gl.disableVertexAttribArray( a_Color );
     }

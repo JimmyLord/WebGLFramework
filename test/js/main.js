@@ -23,9 +23,12 @@ class MainProject
         this.scene.init( true );
         
         // Set up some entities.
-        this.scene.add( new Entity( new vec3(0), new vec3(0), resources.meshes["circle"], resources.materials["red"] ) );
-        this.scene.add( new Entity( new vec3(0), new vec3(0), resources.meshes["triangle"], resources.materials["green"] ) );
-        this.scene.add( new Entity( new vec3(0), new vec3(0), resources.meshes["cube"], resources.materials["vertexColor"] ) );
+        this.scene.add( new Entity( new vec3(0), new vec3(0), resources.meshes["circle"], resources.materials["redLit"] ) );
+        this.scene.add( new Entity( new vec3(0), new vec3(0), resources.meshes["triangle"], resources.materials["greenLit"] ) );
+        this.scene.add( new Entity( new vec3(0), new vec3(0), resources.meshes["cube"], resources.materials["vertexColorLit"] ) );
+
+        this.lights = [];
+        this.lights.push( new Light( new vec3(0,3,-3), new color(1,1,1,1) ) );
     }
 
     update(deltaTime, currentTime)

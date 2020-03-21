@@ -36,7 +36,13 @@ class Scene
             resources.materials["blue"] = new Material( resources.shaders["uniformColor"], new color( 0, 0, 1, 1 ), null );
             resources.materials["white"] = new Material( resources.shaders["uniformColor"], new color( 1, 1, 1, 1 ), null );
             //resources.materials["testTexture"] = new Material( resources.shaders["texture"], new color( 0, 0, 0, 1 ), resources.textures["testTexture"] );
-            resources.materials["vertexColor"] = new Material( resources.shaders["vertexColor"], new color( 0, 0, 1, 1 ), null );
+            resources.materials["vertexColor"] = new Material( resources.shaders["vertexColor"], new color( 1, 1, 1, 1 ), null );
+
+            resources.materials["redLit"] = new Material( resources.shaders["uniformColorLit"], new color( 1, 0, 0, 1 ), null );
+            resources.materials["greenLit"] = new Material( resources.shaders["uniformColorLit"], new color( 0, 1, 0, 1 ), null );
+            resources.materials["blueLit"] = new Material( resources.shaders["uniformColorLit"], new color( 0, 0, 1, 1 ), null );
+            resources.materials["whiteLit"] = new Material( resources.shaders["uniformColorLit"], new color( 1, 1, 1, 1 ), null );
+            resources.materials["vertexColorLit"] = new Material( resources.shaders["vertexColorLit"], new color( 1, 1, 1, 1 ), null );
         }
     }
 

@@ -32,7 +32,7 @@ class Shader
         let success = gl.getShaderParameter( shader, gl.COMPILE_STATUS );
         if( success == false )
         {
-            log( gl.getShaderInfoLog( shader ) );
+            console.log( gl.getShaderInfoLog( shader ) );
             gl.deleteShader( shader );
         }
         return shader;
@@ -49,7 +49,7 @@ class Shader
         let success = gl.getProgramParameter( program, gl.LINK_STATUS );
         if( success == false )
         {
-            log( gl.getProgramInfoLog( program ) );
+            console.log( gl.getProgramInfoLog( program ) );
             gl.deleteProgram( program );
         }       
         return program;
