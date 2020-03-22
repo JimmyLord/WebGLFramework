@@ -16,12 +16,12 @@ class Entity
         this.material = null;
     }
 
-    draw(camera)
+    draw(camera, lights)
     {
         let matWorld = new mat4;
         matWorld.setIdentity();
         matWorld.createSRT( this.scale, this.rotation, this.position );
 
-        this.mesh.draw( camera, matWorld, this.material );
+        this.mesh.draw( camera, matWorld, this.material, lights );
     }
 }

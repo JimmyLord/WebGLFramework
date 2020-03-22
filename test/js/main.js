@@ -27,8 +27,7 @@ class MainProject
         this.scene.add( new Entity( new vec3(0), new vec3(0), resources.meshes["triangle"], resources.materials["greenLit"] ) );
         this.scene.add( new Entity( new vec3(0), new vec3(0), resources.meshes["cube"], resources.materials["vertexColorLit"] ) );
 
-        this.lights = [];
-        this.lights.push( new Light( new vec3(0,3,-3), new color(1,1,1,1) ) );
+        this.scene.lights.push( new Light( new vec3(0,0,-2), new color(1,1,1,1) ) );
     }
 
     update(deltaTime, currentTime)
@@ -58,11 +57,16 @@ class MainProject
 
         this.framework.drawImGuiTestWindow();
 
-        this.framework.imgui.window( "ImGui Test" );
-        if( this.framework.imgui.checkbox( "Follow mouse", this.objectFollowsMouse ) )
+        let imgui = this.framework.imgui;
+        imgui.window( "ImGui Test" );
+        this.scene.orthoHeight = imgui.dragNumber( "Cam:", this.scene.orthoHeight, 0.01, 2 );
+        if( imgui.checkbox( "Follow mouse", this.objectFollowsMouse ) )
         {
             this.objectFollowsMouse = !this.objectFollowsMouse;
         }
+        this.scene.lights[0].position.x = imgui.dragNumber( "LightX:", this.scene.lights[0].position.x, 0.01, 2 );
+        this.scene.lights[0].position.y = imgui.dragNumber( "LightY:", this.scene.lights[0].position.y, 0.01, 2 );
+        this.scene.lights[0].position.z = imgui.dragNumber( "LightZ:", this.scene.lights[0].position.z, 0.01, 2 );
     }
 
     draw()

@@ -53,9 +53,6 @@ class FrameworkMain
         let resources = new ResourceManager( gl );
         this.resources = resources;
 
-        // Set up an ortho height for the default scene camera for the imgui test window.
-        this.orthoHeight = 2;
-    
         // Set up some basic GL state.
         gl.enable( gl.DEPTH_TEST );
         gl.depthFunc( gl.LEQUAL );
@@ -122,6 +119,8 @@ class FrameworkMain
         this.imgui.text( "Pos:   " + Math.trunc( this.imgui.windows["ImGui Test"].position.x ) + "," + Math.trunc( this.imgui.windows["ImGui Test"].position.y ) );
         this.imgui.text( "Size:  " + Math.trunc( this.imgui.windows["ImGui Test"].size.x ) + "," + Math.trunc( this.imgui.windows["ImGui Test"].size.y ) );
         this.imgui.text( "Mouse: " + this.lastMousePosition.x + "," + this.lastMousePosition.y );
+
+        this.imgui.window( "ImGui Test" );
         this.imgui.text( "UI Scale:" );
         this.imgui.sameLine();
         if( this.imgui.button( "1" ) ) { this.imgui.scale = 1; this.imgui.markStateDirty(); }
@@ -129,9 +128,6 @@ class FrameworkMain
         if( this.imgui.button( "1.5" ) ) { this.imgui.scale = 1.5; this.imgui.markStateDirty(); }
         this.imgui.sameLine();
         if( this.imgui.button( "2" ) ) { this.imgui.scale = 2; this.imgui.markStateDirty(); }
-
-        this.imgui.window( "ImGui Test" );
-        this.orthoHeight = this.imgui.dragNumber( "Cam:", this.orthoHeight, 0.01, 2 );
     }
 
     registerDoMCallbacks()

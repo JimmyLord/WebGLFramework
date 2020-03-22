@@ -264,7 +264,7 @@ class Mesh
         this.primitiveType = gl.TRIANGLE_FAN;
     }
 
-    draw(camera, matWorld, material)
+    draw(camera, matWorld, material, lights)
     {
         let gl = this.gl;
 
@@ -324,6 +324,16 @@ class Mesh
             gl.activeTexture( gl.TEXTURE0 + textureUnit );
             gl.bindTexture( gl.TEXTURE_2D, material.texture.textureID );
             gl.uniform1i( u_TextureAlbedo, textureUnit );
+        }
+
+        // Lights.
+        if( lights != null && lights.length > 0 )
+        {
+            let u_LightPos = gl.getUniformLocation( material.shader.program, "u_LightPosition[0]" );
+            gl.uniform3f( u_LightPos, lights[0].position.x, lights[0].position.y, lights[0].position.z );
+
+            let u_LightColor = gl.getUniformLocation( material.shader.program, "u_LightColor[0]" );
+            gl.uniform3f( u_LightColor, lights[0].color.r, lights[0].color.g, lights[0].color.b );
         }
 
         // Draw.

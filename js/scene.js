@@ -4,6 +4,7 @@ class Scene
     {
         this.framework = framework;
         this.entities = [];
+        this.lights = [];
         this.camera = null;
     }
 
@@ -58,20 +59,18 @@ class Scene
 
     update(deltaTime, currentTime)
     {
-        this.camera.desiredHeight = this.framework.orthoHeight;
+        this.camera.desiredHeight = this.orthoHeight;
 
         this.camera.update();
     }
 
     draw(camera)
     {
-        this.entities.forEach( entity => entity.draw( camera ) );
+        this.entities.forEach( entity => entity.draw( camera, this.lights ) );
     }
 
     add(entity)
     {
         this.entities.push( entity );
     }
-
-
 }

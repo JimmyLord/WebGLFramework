@@ -42,8 +42,8 @@ class ResourceManager
             uniform mat4 u_MatProj;
 
             varying vec2 v_UV;
-            varying vec3 v_Normal;
             varying vec4 v_Color;
+            varying vec3 v_WSNormal;
             varying vec3 v_WSPosition;
 
             void main()
@@ -51,8 +51,8 @@ class ResourceManager
                 gl_Position = u_MatProj * u_MatView * u_MatWorld * a_Position;
 
                 v_UV = a_UV;
-                v_Normal = (u_MatWorld * vec4(a_Normal, 0)).xyz;
                 v_Color = a_Color;
+                v_WSNormal = (u_MatWorld * vec4(a_Normal, 0)).xyz; // TODO: Pass in a rotation matrix.
                 v_WSPosition = (u_MatWorld * a_Position).xyz;
             }
         `;
@@ -96,33 +96,55 @@ class ResourceManager
             precision mediump float;
             
             uniform vec4 u_Color;
-            uniform vec3 u_LightPositions[4];
-            uniform vec3 u_LightColors[4];
+            uniform vec3 u_LightPosition[4];
+            uniform vec3 u_LightColor[4];
             
-            varying vec3 v_Normal;
+            varying vec3 v_WSNormal;
             varying vec3 v_WSPosition;
 
             void main()
             {
-                //gl_FragColor = u_Color;
-                gl_FragColor = vec4( v_Normal, 1 );
+                vec3 normal = normalize( v_WSNormal );
+
+                vec3 lightDir = u_LightPosition[0] - v_WSPosition;
+                float distance = length( lightDir );
+
+                lightDir = normalize( lightDir );
+                float diffusePerc = dot( normal, lightDir );
+                diffusePerc /= distance;
+
+                gl_FragColor = vec4( u_Color.xyz * u_LightColor[0] * diffusePerc, 1 );
+
+                // Debug.
+                //gl_FragColor = vec4( v_WSNormal, 1 );
             }
         `;
 
         let vertexColorLitFragShaderSource = `
             precision mediump float;
             
-            uniform vec3 u_LightPositions[4];
-            uniform vec3 u_LightColors[4];
+            uniform vec3 u_LightPosition[4];
+            uniform vec3 u_LightColor[4];
 
-            varying vec3 v_Normal;
             varying vec4 v_Color;
+            varying vec3 v_WSNormal;
             varying vec3 v_WSPosition;
 
             void main()
             {
-                gl_FragColor = v_Color;
-                gl_FragColor = vec4( v_Normal, 1 );
+                vec3 normal = normalize( v_WSNormal );
+
+                vec3 lightDir = u_LightPosition[0] - v_WSPosition;
+                float distance = length( lightDir );
+
+                lightDir = normalize( lightDir );
+                float diffusePerc = dot( normal, lightDir );
+                diffusePerc /= distance;
+
+                gl_FragColor = vec4( v_Color.rgb * u_LightColor[0] * diffusePerc, 1 );
+
+                // Debug.
+                //gl_FragColor = vec4( v_WSNormal, 1 );
             }
         `;
 
