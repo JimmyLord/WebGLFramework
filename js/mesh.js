@@ -336,6 +336,9 @@ class Mesh
             gl.uniform3f( u_LightColor, lights[0].color.r, lights[0].color.g, lights[0].color.b );
         }
 
+        let u_CameraPosition = gl.getUniformLocation( material.shader.program, "u_CameraPosition" );
+        gl.uniform3f( u_CameraPosition, camera.position.x, camera.position.y, camera.position.z );
+
         // Draw.
         if( this.numIndices == 0 )
             gl.drawArrays( this.primitiveType, 0, this.numVerts );

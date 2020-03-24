@@ -96,6 +96,7 @@ class ResourceManager
             precision mediump float;
             
             uniform vec4 u_Color;
+            uniform vec3 u_CameraPosition;
             uniform vec3 u_LightPosition[4];
             uniform vec3 u_LightColor[4];
             
@@ -104,25 +105,39 @@ class ResourceManager
 
             void main()
             {
+                vec3 materialColor = u_Color.xyz;
                 vec3 normal = normalize( v_WSNormal );
 
-                vec3 lightDir = u_LightPosition[0] - v_WSPosition;
-                float distance = length( lightDir );
+                vec3 dirToLight = u_LightPosition[0] - v_WSPosition;
+                float distance = length( dirToLight );
+                dirToLight = normalize( dirToLight );
 
-                lightDir = normalize( lightDir );
-                float diffusePerc = dot( normal, lightDir );
+                // Diffuse.
+                float diffusePerc = dot( normal, dirToLight );
                 diffusePerc /= distance;
+                vec3 diffuseColor = materialColor * u_LightColor[0] * diffusePerc;
 
-                gl_FragColor = vec4( u_Color.xyz * u_LightColor[0] * diffusePerc, 1 );
+                // Specular
+                vec3 dirToCamera = u_CameraPosition - v_WSPosition;
+                dirToCamera = normalize( dirToCamera );
+                vec3 halfVector = (dirToCamera + dirToLight) / 2.0;
+                float specularPerc = dot( normal, halfVector );
+                specularPerc /= distance;
+                specularPerc = pow( specularPerc, 50.0 );
+                vec3 specularColor = u_LightColor[0] * specularPerc;
+
+                gl_FragColor = vec4( diffuseColor + specularColor, 1 );
 
                 // Debug.
                 //gl_FragColor = vec4( v_WSNormal, 1 );
+                //gl_FragColor = vec4( u_CameraPosition, 1 );
             }
         `;
 
         let vertexColorLitFragShaderSource = `
             precision mediump float;
             
+            uniform vec3 u_CameraPosition;
             uniform vec3 u_LightPosition[4];
             uniform vec3 u_LightColor[4];
 
@@ -132,19 +147,32 @@ class ResourceManager
 
             void main()
             {
+                vec3 materialColor = v_Color.rgb;
                 vec3 normal = normalize( v_WSNormal );
 
-                vec3 lightDir = u_LightPosition[0] - v_WSPosition;
-                float distance = length( lightDir );
+                vec3 dirToLight = u_LightPosition[0] - v_WSPosition;
+                float distance = length( dirToLight );
+                dirToLight = normalize( dirToLight );
 
-                lightDir = normalize( lightDir );
-                float diffusePerc = dot( normal, lightDir );
+                // Diffuse.
+                float diffusePerc = dot( normal, dirToLight );
                 diffusePerc /= distance;
+                vec3 diffuseColor = materialColor * u_LightColor[0] * diffusePerc;
 
-                gl_FragColor = vec4( v_Color.rgb * u_LightColor[0] * diffusePerc, 1 );
+                // Specular
+                vec3 dirToCamera = u_CameraPosition - v_WSPosition;
+                dirToCamera = normalize( dirToCamera );
+                vec3 halfVector = (dirToCamera + dirToLight) / 2.0;
+                float specularPerc = dot( normal, halfVector );
+                specularPerc /= distance;
+                specularPerc = pow( specularPerc, 50.0 );
+                vec3 specularColor = u_LightColor[0] * specularPerc;
+
+                gl_FragColor = vec4( diffuseColor + specularColor, 1 );
 
                 // Debug.
                 //gl_FragColor = vec4( v_WSNormal, 1 );
+                //gl_FragColor = vec4( u_CameraPosition, 1 );
             }
         `;
 
