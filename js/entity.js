@@ -1,10 +1,10 @@
 class Entity
 {
-    constructor(position, rotation, mesh, material)
+    constructor(position, rotation, scale, mesh, material)
     {
         this.position = position;
         this.rotation = rotation;
-        this.scale = new vec3( 1 );
+        this.scale = scale;
         this.mesh = mesh;
         this.material = material;
     }

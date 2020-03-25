@@ -28,6 +28,8 @@ class Scene
             resources.meshes["circle"].createCircle( 200, 0.2 );
             resources.meshes["cube"] = new Mesh( gl );
             resources.meshes["cube"].createCube( new vec3( 1, 1, 1 ) );
+            resources.meshes["rectangle"] = new Mesh( gl );
+            resources.meshes["rectangle"].createBox( new vec2( 1, 1 ) );
 
             //resources.textures["testTexture"] = new Texture( gl );
             //resources.textures["testTexture"].loadFromFile( "data/textures/test.png" );
