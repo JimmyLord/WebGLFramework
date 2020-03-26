@@ -108,25 +108,32 @@ class ResourceManager
                 vec3 materialColor = u_Color.xyz;
                 vec3 normal = normalize( v_WSNormal );
 
-                vec3 dirToLight = u_LightPosition[0] - v_WSPosition;
-                float distance = length( dirToLight );
-                dirToLight = normalize( dirToLight );
+                vec3 finalColor = vec3(0,0,0);
 
-                // Diffuse.
-                float diffusePerc = dot( normal, dirToLight );
-                diffusePerc /= distance;
-                vec3 diffuseColor = materialColor * u_LightColor[0] * diffusePerc;
+                for( int i=0; i<4; i++ )
+                {
+                    vec3 dirToLight = u_LightPosition[i] - v_WSPosition;
+                    float distance = length( dirToLight );
+                    dirToLight = normalize( dirToLight );
 
-                // Specular
-                vec3 dirToCamera = u_CameraPosition - v_WSPosition;
-                dirToCamera = normalize( dirToCamera );
-                vec3 halfVector = (dirToCamera + dirToLight) / 2.0;
-                float specularPerc = dot( normal, halfVector );
-                specularPerc /= distance;
-                specularPerc = pow( specularPerc, 50.0 );
-                vec3 specularColor = u_LightColor[0] * specularPerc;
+                    // Diffuse.
+                    float diffusePerc = max( 0.0, dot( normal, dirToLight ) );
+                    diffusePerc /= distance;
+                    vec3 diffuseColor = materialColor * u_LightColor[i] * diffusePerc;
 
-                gl_FragColor = vec4( diffuseColor + specularColor, 1 );
+                    // Specular
+                    vec3 dirToCamera = u_CameraPosition - v_WSPosition;
+                    dirToCamera = normalize( dirToCamera );
+                    vec3 halfVector = (dirToCamera + dirToLight) / 2.0;
+                    float specularPerc = max( 0.0, dot( normal, halfVector ) );
+                    specularPerc /= distance;
+                    specularPerc = pow( specularPerc, 50.0 );
+                    vec3 specularColor = u_LightColor[i] * specularPerc;
+
+                    finalColor += diffuseColor + specularColor;
+                }
+
+                gl_FragColor = vec4( finalColor, 1 );
 
                 // Debug.
                 //gl_FragColor = vec4( v_WSNormal, 1 );
@@ -150,25 +157,32 @@ class ResourceManager
                 vec3 materialColor = v_Color.rgb;
                 vec3 normal = normalize( v_WSNormal );
 
-                vec3 dirToLight = u_LightPosition[0] - v_WSPosition;
-                float distance = length( dirToLight );
-                dirToLight = normalize( dirToLight );
+                vec3 finalColor = vec3(0,0,0);
 
-                // Diffuse.
-                float diffusePerc = dot( normal, dirToLight );
-                diffusePerc /= distance;
-                vec3 diffuseColor = materialColor * u_LightColor[0] * diffusePerc;
+                for( int i=0; i<4; i++ )
+                {
+                    vec3 dirToLight = u_LightPosition[i] - v_WSPosition;
+                    float distance = length( dirToLight );
+                    dirToLight = normalize( dirToLight );
 
-                // Specular
-                vec3 dirToCamera = u_CameraPosition - v_WSPosition;
-                dirToCamera = normalize( dirToCamera );
-                vec3 halfVector = (dirToCamera + dirToLight) / 2.0;
-                float specularPerc = dot( normal, halfVector );
-                specularPerc /= distance;
-                specularPerc = pow( specularPerc, 50.0 );
-                vec3 specularColor = u_LightColor[0] * specularPerc;
+                    // Diffuse.
+                    float diffusePerc = max( 0.0, dot( normal, dirToLight ) );
+                    diffusePerc /= distance;
+                    vec3 diffuseColor = materialColor * u_LightColor[i] * diffusePerc;
 
-                gl_FragColor = vec4( diffuseColor + specularColor, 1 );
+                    // Specular
+                    vec3 dirToCamera = u_CameraPosition - v_WSPosition;
+                    dirToCamera = normalize( dirToCamera );
+                    vec3 halfVector = (dirToCamera + dirToLight) / 2.0;
+                    float specularPerc = max( 0.0, dot( normal, halfVector ) );
+                    specularPerc /= distance;
+                    specularPerc = pow( specularPerc, 50.0 );
+                    vec3 specularColor = u_LightColor[i] * specularPerc;
+
+                    finalColor += diffuseColor + specularColor;
+                }
+
+                gl_FragColor = vec4( finalColor, 1 );
 
                 // Debug.
                 //gl_FragColor = vec4( v_WSNormal, 1 );

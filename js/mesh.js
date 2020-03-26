@@ -271,6 +271,9 @@ class Mesh
         if( this.VBO == null )
             return;
 
+        if( material == null )
+            return;
+
         // Set up VBO and attributes.
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
         gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
@@ -329,11 +332,24 @@ class Mesh
         // Lights.
         if( lights != null && lights.length > 0 )
         {
-            let u_LightPos = gl.getUniformLocation( material.shader.program, "u_LightPosition[0]" );
-            gl.uniform3f( u_LightPos, lights[0].position.x, lights[0].position.y, lights[0].position.z );
+            let i=0;
+            for( ; i<lights.length; i++ )
+            {
+                let u_LightPos = gl.getUniformLocation( material.shader.program, "u_LightPosition[" + i + "]" );
+                gl.uniform3f( u_LightPos, lights[i].position.x, lights[i].position.y, lights[i].position.z );
 
-            let u_LightColor = gl.getUniformLocation( material.shader.program, "u_LightColor[0]" );
-            gl.uniform3f( u_LightColor, lights[0].color.r, lights[0].color.g, lights[0].color.b );
+                let u_LightColor = gl.getUniformLocation( material.shader.program, "u_LightColor[" + i + "]" );
+                gl.uniform3f( u_LightColor, lights[i].color.r, lights[i].color.g, lights[i].color.b );
+            }
+            
+            for( ; i<4; i++ )
+            {
+                let u_LightPos = gl.getUniformLocation( material.shader.program, "u_LightPosition[" + i + "]" );
+                gl.uniform3f( u_LightPos, 0, 0, 0 );
+
+                let u_LightColor = gl.getUniformLocation( material.shader.program, "u_LightColor[" + i + "]" );
+                gl.uniform3f( u_LightColor, 0, 0, 0 );
+            }
         }
 
         let u_CameraPosition = gl.getUniformLocation( material.shader.program, "u_CameraPosition" );

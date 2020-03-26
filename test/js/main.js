@@ -33,6 +33,8 @@ class MainProject
         this.scene.add( new Entity( new vec3(0,5,5), new vec3(90,0,0), new vec3(10,10,10), resources.meshes["rectangle"], resources.materials["whiteLit"] ) );
 
         this.scene.lights.push( new Light( new vec3(0,0,-2), new color(1,1,1,1) ) );
+        this.scene.lights.push( new Light( new vec3(4,0,9), new color(0,1,0,1) ) );
+        this.scene.lights.push( new Light( new vec3(-4,0,9), new color(0,0,1,1) ) );
 
         this.scene.camera.isOrtho = false;
     }
