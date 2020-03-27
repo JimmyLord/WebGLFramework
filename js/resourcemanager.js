@@ -31,6 +31,35 @@ class ResourceManager
 
     createSomeShaders(gl)
     {
+        let shaderSourceMediumP = `
+            precision mediump float;
+        `;
+
+        let shaderSourceLightFunctions = `
+            vec3 calculatePointLightContribution(vec3 materialColor, vec3 surfacePos, vec3 normal, vec3 camPos, vec3 lightPos, vec3 lightColor)
+            {
+                vec3 dirToLight = lightPos - surfacePos;
+                float distance = length( dirToLight );
+                dirToLight = normalize( dirToLight );
+
+                // Diffuse.
+                float diffusePerc = max( 0.0, dot( normal, dirToLight ) );
+                diffusePerc /= distance;
+                vec3 diffuseColor = materialColor * lightColor * diffusePerc;
+
+                // Specular
+                vec3 dirToCamera = camPos - surfacePos;
+                dirToCamera = normalize( dirToCamera );
+                vec3 halfVector = (dirToCamera + dirToLight) / 2.0;
+                float specularPerc = max( 0.0, dot( normal, halfVector ) );
+                specularPerc /= distance;
+                specularPerc = pow( specularPerc, 50.0 );
+                vec3 specularColor = lightColor * specularPerc;
+
+                return diffuseColor + specularColor;
+            }
+        `;
+
         let generalVertShaderSource = `
             attribute vec4 a_Position;
             attribute vec2 a_UV;
@@ -58,8 +87,6 @@ class ResourceManager
         `;
 
         let uniformColorFragShaderSource = `
-            precision mediump float;
-            
             uniform vec4 u_Color;
 
             void main()
@@ -69,8 +96,6 @@ class ResourceManager
         `;
 
         let vertexColorFragShaderSource = `
-            precision mediump float;
-            
             varying vec4 v_Color;
 
             void main()
@@ -80,8 +105,6 @@ class ResourceManager
         `;
 
         let textureFragShaderSource = `
-            precision mediump float;
-            
             uniform sampler2D u_TextureAlbedo;
 
             varying vec2 v_UV;
@@ -93,8 +116,6 @@ class ResourceManager
         `;
 
         let uniformColorLitFragShaderSource = `
-            precision mediump float;
-            
             uniform vec4 u_Color;
             uniform vec3 u_CameraPosition;
             uniform vec3 u_LightPosition[4];
@@ -112,25 +133,8 @@ class ResourceManager
 
                 for( int i=0; i<4; i++ )
                 {
-                    vec3 dirToLight = u_LightPosition[i] - v_WSPosition;
-                    float distance = length( dirToLight );
-                    dirToLight = normalize( dirToLight );
-
-                    // Diffuse.
-                    float diffusePerc = max( 0.0, dot( normal, dirToLight ) );
-                    diffusePerc /= distance;
-                    vec3 diffuseColor = materialColor * u_LightColor[i] * diffusePerc;
-
-                    // Specular
-                    vec3 dirToCamera = u_CameraPosition - v_WSPosition;
-                    dirToCamera = normalize( dirToCamera );
-                    vec3 halfVector = (dirToCamera + dirToLight) / 2.0;
-                    float specularPerc = max( 0.0, dot( normal, halfVector ) );
-                    specularPerc /= distance;
-                    specularPerc = pow( specularPerc, 50.0 );
-                    vec3 specularColor = u_LightColor[i] * specularPerc;
-
-                    finalColor += diffuseColor + specularColor;
+                    finalColor += calculatePointLightContribution( materialColor, v_WSPosition, normal,
+                                      u_CameraPosition, u_LightPosition[i], u_LightColor[i] );
                 }
 
                 gl_FragColor = vec4( finalColor, 1 );
@@ -142,8 +146,6 @@ class ResourceManager
         `;
 
         let vertexColorLitFragShaderSource = `
-            precision mediump float;
-            
             uniform vec3 u_CameraPosition;
             uniform vec3 u_LightPosition[4];
             uniform vec3 u_LightColor[4];
@@ -161,25 +163,8 @@ class ResourceManager
 
                 for( int i=0; i<4; i++ )
                 {
-                    vec3 dirToLight = u_LightPosition[i] - v_WSPosition;
-                    float distance = length( dirToLight );
-                    dirToLight = normalize( dirToLight );
-
-                    // Diffuse.
-                    float diffusePerc = max( 0.0, dot( normal, dirToLight ) );
-                    diffusePerc /= distance;
-                    vec3 diffuseColor = materialColor * u_LightColor[i] * diffusePerc;
-
-                    // Specular
-                    vec3 dirToCamera = u_CameraPosition - v_WSPosition;
-                    dirToCamera = normalize( dirToCamera );
-                    vec3 halfVector = (dirToCamera + dirToLight) / 2.0;
-                    float specularPerc = max( 0.0, dot( normal, halfVector ) );
-                    specularPerc /= distance;
-                    specularPerc = pow( specularPerc, 50.0 );
-                    vec3 specularColor = u_LightColor[i] * specularPerc;
-
-                    finalColor += diffuseColor + specularColor;
+                    finalColor += calculatePointLightContribution( materialColor, v_WSPosition, normal,
+                                      u_CameraPosition, u_LightPosition[i], u_LightColor[i] );
                 }
 
                 gl_FragColor = vec4( finalColor, 1 );
@@ -190,10 +175,10 @@ class ResourceManager
             }
         `;
 
-        this.shaders["uniformColor"] = new Shader( gl, generalVertShaderSource, uniformColorFragShaderSource );
-        this.shaders["vertexColor"] = new Shader( gl, generalVertShaderSource, vertexColorFragShaderSource );
-        this.shaders["texture"] = new Shader( gl, generalVertShaderSource, textureFragShaderSource );
-        this.shaders["uniformColorLit"] = new Shader( gl, generalVertShaderSource, uniformColorLitFragShaderSource );
-        this.shaders["vertexColorLit"] = new Shader( gl, generalVertShaderSource, vertexColorLitFragShaderSource );
+        this.shaders["uniformColor"]    = new Shader( gl, shaderSourceMediumP + generalVertShaderSource, shaderSourceMediumP + uniformColorFragShaderSource );
+        this.shaders["vertexColor"]     = new Shader( gl, shaderSourceMediumP + generalVertShaderSource, shaderSourceMediumP + vertexColorFragShaderSource );
+        this.shaders["texture"]         = new Shader( gl, shaderSourceMediumP + generalVertShaderSource, shaderSourceMediumP + textureFragShaderSource );
+        this.shaders["uniformColorLit"] = new Shader( gl, shaderSourceMediumP + generalVertShaderSource, shaderSourceMediumP + shaderSourceLightFunctions + uniformColorLitFragShaderSource );
+        this.shaders["vertexColorLit"]  = new Shader( gl, shaderSourceMediumP + generalVertShaderSource, shaderSourceMediumP + shaderSourceLightFunctions + vertexColorLitFragShaderSource );
     }
 }
