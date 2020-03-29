@@ -36,15 +36,16 @@ class ResourceManager
         `;
 
         let shaderSourceLightFunctions = `
-            vec3 calculatePointLightContribution(vec3 materialColor, vec3 surfacePos, vec3 normal, vec3 camPos, vec3 lightPos, vec3 lightColor)
+            vec3 calculatePointLightContribution(vec3 materialColor, vec3 surfacePos, vec3 normal, vec3 camPos, vec3 lightPos, vec3 lightColor, float radius)
             {
                 vec3 dirToLight = lightPos - surfacePos;
-                float distance = length( dirToLight );
+                vec3 shortenedDir = dirToLight / radius;
+                float attenuation = max( 0.0, 1.0 - dot( shortenedDir, shortenedDir ) );
                 dirToLight = normalize( dirToLight );
 
                 // Diffuse.
                 float diffusePerc = max( 0.0, dot( normal, dirToLight ) );
-                diffusePerc /= distance;
+                diffusePerc *= attenuation;
                 vec3 diffuseColor = materialColor * lightColor * diffusePerc;
 
                 // Specular
@@ -52,8 +53,8 @@ class ResourceManager
                 dirToCamera = normalize( dirToCamera );
                 vec3 halfVector = (dirToCamera + dirToLight) / 2.0;
                 float specularPerc = max( 0.0, dot( normal, halfVector ) );
-                specularPerc /= distance;
                 specularPerc = pow( specularPerc, 50.0 );
+                specularPerc *= attenuation;
                 vec3 specularColor = lightColor * specularPerc;
 
                 return diffuseColor + specularColor;
@@ -134,7 +135,7 @@ class ResourceManager
                 for( int i=0; i<4; i++ )
                 {
                     finalColor += calculatePointLightContribution( materialColor, v_WSPosition, normal,
-                                      u_CameraPosition, u_LightPosition[i], u_LightColor[i] );
+                                      u_CameraPosition, u_LightPosition[i], u_LightColor[i], 5.0 );
                 }
 
                 gl_FragColor = vec4( finalColor, 1 );
@@ -164,7 +165,7 @@ class ResourceManager
                 for( int i=0; i<4; i++ )
                 {
                     finalColor += calculatePointLightContribution( materialColor, v_WSPosition, normal,
-                                      u_CameraPosition, u_LightPosition[i], u_LightColor[i] );
+                                      u_CameraPosition, u_LightPosition[i], u_LightColor[i], 5.0 );
                 }
 
                 gl_FragColor = vec4( finalColor, 1 );
