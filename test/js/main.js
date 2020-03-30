@@ -12,6 +12,7 @@ class MainProject
         this.framework = framework;
         this.scene = null;
         this.objectFollowsMouse = true;
+        this.cubeRotates = true;
     }
 
     init()
@@ -32,9 +33,9 @@ class MainProject
         this.scene.add( new Entity( new vec3(0,-5,5), new vec3(-90,0,0), new vec3(10,10,10), resources.meshes["rectangle"], resources.materials["whiteLit"] ) );
         this.scene.add( new Entity( new vec3(0,5,5), new vec3(90,0,0), new vec3(10,10,10), resources.meshes["rectangle"], resources.materials["whiteLit"] ) );
 
-        this.scene.lights.push( new Light( new vec3(0,0,-2), new color(1,1,1,1), 5 ) );
-        this.scene.lights.push( new Light( new vec3(4,0,9), new color(0,1,0,1), 2 ) );
-        this.scene.lights.push( new Light( new vec3(-4,0,9), new color(0,0,1,1), 6 ) );
+        this.scene.lights.push( new Light( new vec3( 0,0,-2), new color(1,1,1,1), 5 ) );
+        this.scene.lights.push( new Light( new vec3( 4,0, 9), new color(0,1,0,1), 2 ) );
+        this.scene.lights.push( new Light( new vec3(-4,0, 9), new color(0,0,1,1), 6 ) );
 
         this.scene.camera.isOrtho = false;
     }
@@ -46,8 +47,11 @@ class MainProject
         this.scene.entities[1].position.x = Math.cos( currentTime/1000 );
         this.scene.entities[1].position.y = Math.sin( currentTime/1000 );
         this.scene.entities[1].rotation.z = -currentTime / 1000 * (180 / Math.PI);
-        this.scene.entities[2].rotation.x += deltaTime * 50;
-        this.scene.entities[2].rotation.y += deltaTime * 100;
+        if( this.cubeRotates )
+        {
+            this.scene.entities[2].rotation.x += deltaTime * 50;
+            this.scene.entities[2].rotation.y += deltaTime * 100;
+        }
 
         let keyStates = this.framework.keyStates;
 
@@ -60,9 +64,14 @@ class MainProject
             dir.y += -1;
         if( keyStates['w'] || keyStates['ArrowUp'] )
             dir.y += 1;
+        if( keyStates['q'] || keyStates['ArrowUp'] )
+            dir.z += 1;
+        if( keyStates['z'] || keyStates['ArrowUp'] )
+            dir.z += 1;
 
         this.scene.entities[2].position.x += dir.x * deltaTime;
         this.scene.entities[2].position.y += dir.y * deltaTime;
+        this.scene.entities[2].position.z += dir.z * deltaTime;
 
         this.framework.drawImGuiTestWindow();
 
@@ -73,6 +82,10 @@ class MainProject
         {
             this.objectFollowsMouse = !this.objectFollowsMouse;
         }
+        if( imgui.checkbox( "Rotate cube", this.cubeRotates ) )
+        {
+            this.cubeRotates = !this.cubeRotates;
+        }        
         //if( imgui.checkbox( "isOrtho", this.scene.camera.isOrtho ) )
         //{
         //    this.scene.camera.isOrtho = !this.scene.camera.isOrtho;
