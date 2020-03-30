@@ -340,6 +340,9 @@ class Mesh
 
                 let u_LightColor = gl.getUniformLocation( material.shader.program, "u_LightColor[" + i + "]" );
                 gl.uniform3f( u_LightColor, lights[i].color.r, lights[i].color.g, lights[i].color.b );
+
+                let u_LightRadius = gl.getUniformLocation( material.shader.program, "u_LightRadius[" + i + "]" );
+                gl.uniform1f( u_LightRadius, lights[i].radius );
             }
             
             for( ; i<4; i++ )
@@ -349,6 +352,9 @@ class Mesh
 
                 let u_LightColor = gl.getUniformLocation( material.shader.program, "u_LightColor[" + i + "]" );
                 gl.uniform3f( u_LightColor, 0, 0, 0 );
+
+                let u_LightRadius = gl.getUniformLocation( material.shader.program, "u_LightRadius[" + i + "]" );
+                gl.uniform1f( u_LightRadius, 1 );
             }
         }
 

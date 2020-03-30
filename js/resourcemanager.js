@@ -121,6 +121,7 @@ class ResourceManager
             uniform vec3 u_CameraPosition;
             uniform vec3 u_LightPosition[4];
             uniform vec3 u_LightColor[4];
+            uniform float u_LightRadius[4];
             
             varying vec3 v_WSNormal;
             varying vec3 v_WSPosition;
@@ -135,7 +136,7 @@ class ResourceManager
                 for( int i=0; i<4; i++ )
                 {
                     finalColor += calculatePointLightContribution( materialColor, v_WSPosition, normal,
-                                      u_CameraPosition, u_LightPosition[i], u_LightColor[i], 5.0 );
+                                      u_CameraPosition, u_LightPosition[i], u_LightColor[i], u_LightRadius[i] );
                 }
 
                 gl_FragColor = vec4( finalColor, 1 );
@@ -150,6 +151,7 @@ class ResourceManager
             uniform vec3 u_CameraPosition;
             uniform vec3 u_LightPosition[4];
             uniform vec3 u_LightColor[4];
+            uniform float u_LightRadius[4];
 
             varying vec4 v_Color;
             varying vec3 v_WSNormal;
@@ -165,7 +167,7 @@ class ResourceManager
                 for( int i=0; i<4; i++ )
                 {
                     finalColor += calculatePointLightContribution( materialColor, v_WSPosition, normal,
-                                      u_CameraPosition, u_LightPosition[i], u_LightColor[i], 5.0 );
+                                      u_CameraPosition, u_LightPosition[i], u_LightColor[i], u_LightRadius[i] );
                 }
 
                 gl_FragColor = vec4( finalColor, 1 );
