@@ -35,7 +35,7 @@ class Camera
         }
     }
 
-    convertMouseToOrtho( canvas, x, y )
+    convertMouseToOrtho(canvas, x, y)
     {
         let orthoScaleX = this.matProj.m[0];
         let orthoOffsetX = this.matProj.m[12];

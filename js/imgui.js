@@ -551,6 +551,16 @@ class ImGui
         return this.activeWindow.expanded;
     }
 
+    endWindow(forceResize)
+    {
+        if( forceResize )
+        {
+            this.activeWindow.size.set( this.activeWindow.previousLineEndPosition.minus( this.activeWindow.position ) );
+            this.activeWindow.size.x += this.padding.x;
+            this.activeWindow.size.y += this.padding.y + 8 + this.padding.y + this.padding.y;
+        }
+    }
+
     addBoxToArray(verts, indices, x, y, w, h, r, g, b, a)
     {
         let numVerts = verts.length/8;
