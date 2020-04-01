@@ -26,7 +26,7 @@ class Camera
             // If orthographic.
             let halfHeight = this.desiredHeight / 2;
             let halfWidth = halfHeight * this.aspectRatio;
-            this.matProj.createOrthoInfiniteZ( -halfWidth, halfWidth, -halfHeight, halfHeight );
+            this.matProj.createOrtho( -halfWidth, halfWidth, -halfHeight, halfHeight, -1000, 1000 );
         }
         else
         {

@@ -153,6 +153,16 @@ class mat4
         this.m[ 3] = 0; this.m[ 7] = 0; this.m[11] = 0; this.m[15] = 1;
     }
 
+    createOrtho(left, right, bottom, top, near, far)
+    {
+        this.m[ 0] = 2 / (right-left);
+                        this.m[ 4] = 0; this.m[ 8] = 0; this.m[12] = -((right+left)/(right-left));
+        this.m[ 1] = 0; this.m[ 5] = 2 / (top-bottom);
+                                        this.m[ 9] = 0; this.m[13] = -((top+bottom)/(top-bottom));
+        this.m[ 2] = 0; this.m[ 6] = 0; this.m[10] = 2 / (far-near); this.m[14] = -((far+near)/(far-near));
+        this.m[ 3] = 0; this.m[ 7] = 0; this.m[11] = 0; this.m[15] = 1;
+    }
+
     createPerspectiveVFoV(fovDegrees, aspect, near, far)
     {
         let fov = 1.0 / Math.tan( fovDegrees/2.0 * Math.PI/180.0 );

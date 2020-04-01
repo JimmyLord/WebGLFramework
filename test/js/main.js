@@ -77,7 +77,6 @@ class MainProject
 
         let imgui = this.framework.imgui;
         imgui.window( "ImGui Test" );
-        this.scene.orthoHeight = imgui.dragNumber( "Cam:", this.scene.orthoHeight, 0.01, 2 );
         if( imgui.checkbox( "Follow mouse", this.objectFollowsMouse ) )
         {
             this.objectFollowsMouse = !this.objectFollowsMouse;
@@ -86,13 +85,17 @@ class MainProject
         {
             this.cubeRotates = !this.cubeRotates;
         }        
-        //if( imgui.checkbox( "isOrtho", this.scene.camera.isOrtho ) )
-        //{
-        //    this.scene.camera.isOrtho = !this.scene.camera.isOrtho;
-        //}
         this.scene.lights[0].position.x = imgui.dragNumber( "LightX:", this.scene.lights[0].position.x, 0.01, 2 );
         this.scene.lights[0].position.y = imgui.dragNumber( "LightY:", this.scene.lights[0].position.y, 0.01, 2 );
         this.scene.lights[0].position.z = imgui.dragNumber( "LightZ:", this.scene.lights[0].position.z, 0.01, 2 );
+
+        imgui.window( "Camera" );
+        if( imgui.checkbox( "isOrtho", this.scene.camera.isOrtho ) )
+        {
+            this.scene.camera.isOrtho = !this.scene.camera.isOrtho;
+        }
+        this.scene.orthoHeight = imgui.dragNumber( "OrthoHeight:", this.scene.orthoHeight, 0.01, 2 );
+        this.scene.camera.position.z = imgui.dragNumber( "Z:", this.scene.camera.position.z, 0.01, 2 );
     }
 
     draw()
