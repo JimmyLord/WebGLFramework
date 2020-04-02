@@ -96,7 +96,7 @@ class MainProject
         }
         this.scene.orthoHeight = imgui.dragNumber( "OrthoHeight:", this.scene.orthoHeight, 0.01, 2 );
         this.scene.camera.position.z = imgui.dragNumber( "Z:", this.scene.camera.position.z, 0.01, 2 );
-        imgui.endWindow( true );
+        //imgui.endWindow( true );
     }
 
     draw()

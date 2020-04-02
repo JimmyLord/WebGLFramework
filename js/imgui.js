@@ -8,6 +8,7 @@ class ImGui
         // Persistent values.
         this.drawList = [];
         this.windows = {};
+        this.frameCount = 0;
         this.currentTime = 0;
         this.ownsMouse = false;
         this.lastTimeMouseClicked = [ 0, 0, 0 ];
@@ -163,6 +164,7 @@ class ImGui
 
     loadState(imguiState)
     {
+        // return;
         let state = null;
         try { state = JSON.parse( imguiState ); }
         catch( e ) { return; }
@@ -223,8 +225,15 @@ class ImGui
         return state;
     }
 
+    setIfBigger(vec, nx, ny)
+    {
+        if( nx > vec.x ) vec.x = nx;
+        if( ny > vec.y ) vec.y = ny;
+    }
+
     newFrame(deltaTime)
     {
+        this.frameCount++;
         this.currentTime += deltaTime;
 
         this.isHoveringWindow = false;
@@ -265,6 +274,13 @@ class ImGui
                         }
                     }
                 }
+            }
+
+            // If this window didn't have a size, resize it to the biggest size it's been.
+            this.activeWindow = this.windows[key];
+            if( this.activeWindow.size.x == 0 )
+            {
+                this.forceResize();
             }
 
             // Reset their frame persistent values.
@@ -474,8 +490,10 @@ class ImGui
             this.activeWindow = this.windows[name];
             
             this.activeWindow.position.setF32( 20 + 150*windowCount, 20 );
-            this.activeWindow.size.setF32( 120, 90 );
+            this.activeWindow.size.setF32( 0, 0 );
+            this.activeWindow.maxExtents.setF32( 0, 0 );
             this.activeWindow.cursor.set( this.activeWindow.position );
+            console.log( "frameCount: " + this.frameCount );
         }
         
         this.activeWindow = this.windows[name];
@@ -551,14 +569,11 @@ class ImGui
         return this.activeWindow.expanded;
     }
 
-    endWindow(forceResize)
+    forceResize()
     {
-        if( forceResize )
-        {
-            this.activeWindow.size.set( this.activeWindow.previousLineEndPosition.minus( this.activeWindow.position ) );
-            this.activeWindow.size.x += this.padding.x;
-            this.activeWindow.size.y += this.padding.y + 8 + this.padding.y + this.padding.y;
-        }
+        this.activeWindow.size.set( this.activeWindow.maxExtents.minus( this.activeWindow.position ) );
+        this.activeWindow.size.x += this.padding.x;
+        this.activeWindow.size.y += this.padding.y + 8 + this.padding.y;
     }
 
     addBoxToArray(verts, indices, x, y, w, h, r, g, b, a)
@@ -623,6 +638,7 @@ class ImGui
         this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
         this.activeWindow.previousLineEndPosition.setF32( x-this.padding.x, y-this.padding.y );
+        this.setIfBigger( this.activeWindow.maxExtents, x, y + 8 + this.padding.y );
 
         this.activeWindow.cursor.setF32( x, y+h );
         this.activeWindow.cursor.y += this.padding.y;
@@ -667,6 +683,7 @@ class ImGui
         this.activeWindow.cursor.x += this.padding.x;
         this.text( label );
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
+        this.setIfBigger( this.activeWindow.maxExtents, x + w, y + 8 + this.padding.y );
 
         // Check if was pressed this frame.
         if( isHovering &&
@@ -729,6 +746,7 @@ class ImGui
 
         this.activeWindow.cursor.x += this.padding.x;
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
+        this.setIfBigger( this.activeWindow.maxExtents, x + w, y + 8 + this.padding.y );
         this.activeWindow.cursor.x = this.activeWindow.position.x;
         this.activeWindow.cursor.y += this.padding.y + 8 + this.padding.y;
         
@@ -797,6 +815,7 @@ class ImGui
 
         this.activeWindow.cursor.x += this.padding.x;
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
+        this.setIfBigger( this.activeWindow.maxExtents, x + w, y + 8 + this.padding.y );
         this.activeWindow.cursor.x = this.activeWindow.position.x;
         this.activeWindow.cursor.y += this.padding.y + 8 + this.padding.y;
         
@@ -834,6 +853,7 @@ class Window
         this.rect = new Rect(0,0,0,0);
 
         this.expanded = true;
+        this.maxExtents = new vec2(0);
     }
 }
 
