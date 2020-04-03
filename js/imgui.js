@@ -28,6 +28,7 @@ class ImGui
         this.scale = 2;
         this.padding = new vec2(2);
         this.doubleClickTime = 0.3;
+        this.minDragBoxWidth = 60;
 
         // Inputs.
         this.mousePosition = new vec2(0);
@@ -164,13 +165,14 @@ class ImGui
 
     loadState(imguiState)
     {
-        // return;
+        //return;
         let state = null;
         try { state = JSON.parse( imguiState ); }
         catch( e ) { return; }
 
         this.scale = state.scale;
         this.doubleClickTime = state.doubleClickTime;
+        this.minDragBoxWidth = state.minDragBoxWidth;
 
         for( let key in state.windows )
         {
@@ -211,6 +213,7 @@ class ImGui
         let state = {
             scale: this.scale,
             doubleClickTime: this.doubleClickTime,
+            minDragBoxWidth: this.minDragBoxWidth,
         }
 
         state.windows = {};
@@ -783,6 +786,8 @@ class ImGui
         let buttonTopPadding = 1;
         let offsetx = this.activeWindow.cursor.x - this.activeWindow.position.x;
         let boxWidth = (this.activeWindow.size.x - offsetx) - this.padding.x*2;
+        if( boxWidth < this.minDragBoxWidth )
+            boxWidth = this.minDragBoxWidth;
         let midPoint = boxWidth/2 - this.valueAsString.length*8/2;
 
         // Background.
