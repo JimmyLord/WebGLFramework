@@ -14,6 +14,7 @@ class ImGui
         this.lastTimeMouseClicked = [ 0, 0, 0 ];
         this.mouseChange = new vec2(0);
         this.lastMousePosition = new vec2(0);
+        this.unusedKeyBuffer = null;
         this.activeWindow = null;
         this.activeControl = null;
         this.windowBeingMoved = null;
@@ -33,6 +34,7 @@ class ImGui
         // Inputs.
         this.mousePosition = new vec2(0);
         this.mouseButtons = [ false, false, false ];
+        this.keyBuffer = [];
         
         // Outputs.
         this.isHoveringWindow = false;
@@ -238,6 +240,10 @@ class ImGui
     {
         this.frameCount++;
         this.currentTime += deltaTime;
+
+        // Backup our keyBuffer for use this frame and clear the array.
+        this.unusedKeyBuffer = this.keyBuffer;
+        this.keyBuffer = [];
 
         this.isHoveringWindow = false;
 
@@ -832,6 +838,16 @@ class ImGui
             this.isHoveringControl = true;
             this.windowBeingMoved = null;
             this.windowBeingResized = null;
+        }
+
+        // If we're hovering over this control, empty the unusedKeyBuffer into it.
+        // TODO: Swap the drag for an input box or something on click.
+        if( isHovering )
+        {
+            if( this.unusedKeyBuffer.length > 0 )
+            {
+                value = Number( this.unusedKeyBuffer );
+            }
         }
 
         // If mouse held.

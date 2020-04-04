@@ -213,6 +213,8 @@ class FrameworkMain
         {
             this.runnableObject.onKeyDown( event.key );
         }
+
+        this.imgui.keyBuffer.push( event.key );
     }
 
     onKeyUp(event)
