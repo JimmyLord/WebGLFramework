@@ -12,11 +12,14 @@ class ImGui
         this.currentTime = 0;
         this.ownsMouse = false;
         this.lastTimeMouseClicked = [ 0, 0, 0 ];
+        this.mouseDoubleClickedThisFrame = [ false, false, false ];
         this.mouseChange = new vec2(0);
         this.lastMousePosition = new vec2(0);
         this.unusedKeyBuffer = null;
         this.activeWindow = null;
         this.activeControl = null;
+        this.controlInEditMode = null;
+        this.activeControlTextBuffer = [];
         this.windowBeingMoved = null;
         this.windowBeingResized = null;
         this.windowMoved = false;
@@ -256,6 +259,15 @@ class ImGui
         this.mouseChangeUnscaled = this.mouseChange.times( this.scale );
         this.lastMousePosition.setF32( this.mousePosition.x, this.mousePosition.y );
 
+        this.mouseDoubleClickedThisFrame[0] = false;
+        if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
+        {
+            if( this.currentTime - this.lastTimeMouseClicked[0] < this.doubleClickTime )
+            {
+                this.mouseDoubleClickedThisFrame[0] = true;
+            }
+        }
+
         // Loop through all windows.
         for( let key in this.windows )
         {
@@ -276,7 +288,7 @@ class ImGui
                     let titleH = 8 + this.padding.y*2;
                     if( this.mousePosition.y < this.windows[key].rect.y + titleH )
                     {
-                        if( this.currentTime - this.lastTimeMouseClicked[0] < this.doubleClickTime )
+                        if( this.mouseDoubleClickedThisFrame[0] )
                         {
                             this.windowBeingMoved.expanded = !this.windowBeingMoved.expanded;
                             this.windowBeingMoved = null;
@@ -783,7 +795,7 @@ class ImGui
         this.text( label );
         this.sameLine();
         this.activeWindow.cursor.x += this.padding.x;
-        this.valueAsString = value.toFixed( decimalPlaces );
+        let valueAsString = value.toFixed( decimalPlaces );
 
         // Vars.
         let verts = [];
@@ -794,7 +806,7 @@ class ImGui
         let boxWidth = (this.activeWindow.size.x - offsetx) - this.padding.x*2;
         if( boxWidth < this.minDragBoxWidth )
             boxWidth = this.minDragBoxWidth;
-        let midPoint = boxWidth/2 - this.valueAsString.length*8/2;
+        let midPoint = boxWidth/2 - valueAsString.length*8/2;
 
         // Background.
         let x = this.activeWindow.cursor.x + this.padding.x;
@@ -805,7 +817,11 @@ class ImGui
         let isHovering = false;
         let rgb = new vec3(0,96,0);
         let rect = new Rect( x, y, w, h );
-        if( rect.contains( this.mousePosition ) ) // is hovering.
+        if( this.controlInEditMode == label )
+        {
+            rgb.setF32( 100, 0, 0 );
+        }
+        else if( rect.contains( this.mousePosition ) ) // is hovering.
         {
             isHovering = true;
             rgb.setF32( 0, 160, 0 );
@@ -820,8 +836,13 @@ class ImGui
         this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
         // Value.
+        if( this.controlInEditMode == label )
+        {
+            valueAsString = this.activeControlTextBuffer.join( "" );
+        }
+
         this.activeWindow.cursor.x += midPoint;
-        this.text( this.valueAsString );
+        this.text( valueAsString );
         this.sameLine();
 
         this.activeWindow.cursor.x += this.padding.x;
@@ -840,13 +861,54 @@ class ImGui
             this.windowBeingResized = null;
         }
 
-        // If we're hovering over this control, empty the unusedKeyBuffer into it.
-        // TODO: Swap the drag for an input box or something on click.
-        if( isHovering )
+        let doneWithEditMode = false;
+
+        // If we're not hovering the control and mouse is clicked, exit edit mode.
+        if( isHovering == false )
         {
-            if( this.unusedKeyBuffer.length > 0 )
+            if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
+                doneWithEditMode = true;
+        }
+
+        // If hovering and double-clicked, switch to edit mode.
+        if( isHovering && this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
+        {
+            if( this.mouseDoubleClickedThisFrame[0] )
             {
-                value = Number( this.unusedKeyBuffer );
+                this.controlInEditMode = label;
+                this.activeControlTextBuffer.length = 0;
+            }
+        }
+
+        // If this control is in edit mode, empty the unusedKeyBuffer into it.
+        if( this.controlInEditMode == label )
+        {
+            for( let i=0; i<this.unusedKeyBuffer.length; i++ )
+            {
+                if( this.unusedKeyBuffer[i] == "Backspace" )
+                {
+                    if( this.activeControlTextBuffer.length > 0 )
+                    {
+                        this.activeControlTextBuffer.length = this.activeControlTextBuffer.length-1;
+                    }
+                }
+                else if( this.unusedKeyBuffer[i] == "Enter" )
+                {
+                    doneWithEditMode = true;
+                }
+                else
+                {
+                    this.activeControlTextBuffer.push( this.unusedKeyBuffer[i] );
+                }
+            }
+
+            let string = this.activeControlTextBuffer.join( "" );
+            value = Number( string );
+
+            if( doneWithEditMode )
+            {
+                this.controlInEditMode = null;
+                this.activeControlTextBuffer.length = 0;
             }
         }
 
