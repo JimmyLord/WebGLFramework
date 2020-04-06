@@ -20,6 +20,7 @@ class ImGui
         this.activeControl = null;
         this.controlInEditMode = null;
         this.activeControlTextBuffer = [];
+        this.activeControlTextBufferSelected = false; // TODO: Allow only parts of text to be selected and overwritten. and display something.
         this.windowBeingMoved = null;
         this.windowBeingResized = null;
         this.windowMoved = false;
@@ -806,7 +807,6 @@ class ImGui
         let boxWidth = (this.activeWindow.size.x - offsetx) - this.padding.x*2;
         if( boxWidth < this.minDragBoxWidth )
             boxWidth = this.minDragBoxWidth;
-        let midPoint = boxWidth/2 - valueAsString.length*8/2;
 
         // Background.
         let x = this.activeWindow.cursor.x + this.padding.x;
@@ -835,12 +835,12 @@ class ImGui
         this.addBoxToArray( verts, indices, x,y,w,h, rgb.x,rgb.y,rgb.z,255 );
         this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
-        // Value.
+        // Draw value.
         if( this.controlInEditMode == label )
         {
             valueAsString = this.activeControlTextBuffer.join( "" );
         }
-
+        let midPoint = boxWidth/2 - valueAsString.length*8/2;
         this.activeWindow.cursor.x += midPoint;
         this.text( valueAsString );
         this.sameLine();
@@ -876,7 +876,8 @@ class ImGui
             if( this.mouseDoubleClickedThisFrame[0] )
             {
                 this.controlInEditMode = label;
-                this.activeControlTextBuffer.length = 0;
+                this.activeControlTextBuffer = valueAsString.split( "" );
+                this.activeControlTextBufferSelected = true;
             }
         }
 
@@ -887,6 +888,12 @@ class ImGui
             {
                 if( this.unusedKeyBuffer[i] == "Backspace" )
                 {
+                    if( this.activeControlTextBufferSelected )
+                    {
+                        this.activeControlTextBuffer.length = 0;
+                        this.activeControlTextBufferSelected = false;
+                    }
+
                     if( this.activeControlTextBuffer.length > 0 )
                     {
                         this.activeControlTextBuffer.length = this.activeControlTextBuffer.length-1;
@@ -896,14 +903,29 @@ class ImGui
                 {
                     doneWithEditMode = true;
                 }
+                else if( this.unusedKeyBuffer[i].length == 1 )
+                {
+                    if( this.activeControlTextBufferSelected )
+                    {
+                        this.activeControlTextBuffer.length = 0;
+                        this.activeControlTextBufferSelected = false;
+                    }
+
+                    this.activeControlTextBuffer.push( this.unusedKeyBuffer[i] );
+                }
                 else
                 {
-                    this.activeControlTextBuffer.push( this.unusedKeyBuffer[i] );
+                    this.activeControlTextBufferSelected = false;
                 }
             }
 
-            let string = this.activeControlTextBuffer.join( "" );
-            value = Number( string );
+            if( this.activeControlTextBuffer.length > 0 )
+            {
+                let string = this.activeControlTextBuffer.join( "" );
+                let newValue = Number( string );
+                if( isNaN( newValue ) == false )
+                    value = newValue;
+            }
 
             if( doneWithEditMode )
             {
