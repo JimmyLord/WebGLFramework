@@ -113,6 +113,18 @@ class MainProject
             this.scene.entities[0].position.x = orthoX;
             this.scene.entities[0].position.y = orthoY;
         }
+
+        this.scene.camera.onMouseMove( buttonID, x, y, orthoX, orthoY );
+    }
+
+    onMouseDown(buttonID, x, y, orthoX, orthoY)
+    {
+        this.scene.camera.onMouseDown( buttonID, x, y, orthoX, orthoY );
+    }
+
+    onMouseUp(buttonID, x, y, orthoX, orthoY)
+    {
+        this.scene.camera.onMouseUp( buttonID, x, y, orthoX, orthoY );
     }
 
     shutdown()

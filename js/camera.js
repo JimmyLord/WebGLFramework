@@ -9,6 +9,13 @@ class Camera
 
         this.matView = new mat4;
         this.matProj = new mat4;
+
+        // Ortho 2D camera settings.
+        this.zoom = 1;
+
+        // Temp values for mouse/keyboard interaction.
+        this.panning = false;
+        this.oldMousePos = new vec2( -1, -1 );
     }
 
     free()
@@ -24,15 +31,38 @@ class Camera
         if( this.isOrtho )
         {
             // If orthographic.
-            let halfHeight = this.desiredHeight / 2;
+            let halfHeight = (this.desiredHeight * this.zoom) / 2;
             let halfWidth = halfHeight * this.aspectRatio;
-            this.matProj.createOrtho( -halfWidth, halfWidth, -halfHeight, halfHeight, -1000, 1000 );
+            this.matProj.createOrtho( -halfWidth, halfWidth, -halfHeight, +halfHeight, -1000, 1000 );
         }
         else
         {
             // If perspective.
             this.matProj.createPerspectiveVFoV( 45.0, this.aspectRatio, 0.01, 100.0 );
         }
+    }
+
+    onMouseMove(buttonID, x, y, orthoX, orthoY)
+    {
+        if( this.oldMousePos.x != -1 && this.panning )
+        {
+            this.position.x += (this.oldMousePos.x - x) * 0.01;
+            this.position.y += (this.oldMousePos.y - y)*-1 * 0.01;
+        }
+        
+        this.oldMousePos.setF32( x, y );
+    }
+
+    onMouseDown(buttonID, x, y, orthoX, orthoY)
+    {
+        if( buttonID == 1 )
+            this.panning = true;
+    }
+
+    onMouseUp(buttonID, x, y, orthoX, orthoY)
+    {
+        if( buttonID == 1 )
+            this.panning = false;
     }
 
     convertMouseToOrtho(canvas, x, y)
