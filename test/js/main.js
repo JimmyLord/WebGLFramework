@@ -127,6 +127,11 @@ class MainProject
         this.scene.camera.onMouseUp( buttonID, x, y, orthoX, orthoY );
     }
 
+    onMouseWheel(direction)
+    {
+        this.scene.camera.onMouseWheel( direction );
+    }
+
     shutdown()
     {
         this.scene.shutdown();

@@ -133,11 +133,12 @@ class FrameworkMain
     registerDoMCallbacks()
     {
         // Register input callbacks.
-        document.addEventListener( "mousemove", (event) => this.onMouseMove(event), false );
-        document.addEventListener( "mousedown", (event) => this.onMouseDown(event), false );
-        document.addEventListener( "mouseup",   (event) => this.onMouseUp(event),   false );
-        document.addEventListener( "keydown",   (event) => this.onKeyDown(event),   false );
-        document.addEventListener( "keyup",     (event) => this.onKeyUp(event),     false );
+        document.addEventListener( "mousemove", (event) => this.onMouseMove(event),  false );
+        document.addEventListener( "mousedown", (event) => this.onMouseDown(event),  false );
+        document.addEventListener( "mouseup",   (event) => this.onMouseUp(event),    false );
+        document.addEventListener( "wheel",     (event) => this.onMouseWheel(event), false );
+        document.addEventListener( "keydown",   (event) => this.onKeyDown(event),    false );
+        document.addEventListener( "keyup",     (event) => this.onKeyUp(event),      false );
     
         // Set up extra vars for callbacks below... fix this.
         let fullFrame = this.fullFrame;
@@ -203,6 +204,16 @@ class FrameworkMain
         }
 
         this.imgui.mouseButtons[ event.which-1 ] = false;
+    }
+
+    onMouseWheel(event)
+    {
+        let direction = Math.sign( event.deltaY );
+
+        if( this.runnableObject.onMouseWheel )
+        {
+            this.runnableObject.onMouseWheel( direction );
+        }
     }
 
     onKeyDown(event)

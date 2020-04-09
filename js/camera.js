@@ -65,6 +65,11 @@ class Camera
             this.panning = false;
     }
 
+    onMouseWheel(direction)
+    {
+        this.zoom += direction;
+    }
+
     convertMouseToOrtho(canvas, x, y)
     {
         let orthoScaleX = this.matProj.m[0];
