@@ -42,7 +42,7 @@ class Camera
         }
     }
 
-    onMouseMove(buttonID, x, y, orthoX, orthoY)
+    onMouseMove(buttonID, x, y)
     {
         if( this.oldMousePos.x != -1 && this.panning )
         {
@@ -53,13 +53,13 @@ class Camera
         this.oldMousePos.setF32( x, y );
     }
 
-    onMouseDown(buttonID, x, y, orthoX, orthoY)
+    onMouseDown(buttonID, x, y)
     {
         if( buttonID == 1 )
             this.panning = true;
     }
 
-    onMouseUp(buttonID, x, y, orthoX, orthoY)
+    onMouseUp(buttonID, x, y)
     {
         if( buttonID == 1 )
             this.panning = false;
