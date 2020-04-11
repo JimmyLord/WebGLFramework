@@ -46,8 +46,8 @@ class Camera
     {
         if( this.oldMousePos.x != -1 && this.panning )
         {
-            this.position.x += (this.oldMousePos.x - x) * 0.01;
-            this.position.y += (this.oldMousePos.y - y)*-1 * 0.01;
+            this.position.x += (this.oldMousePos.x - x) * 0.01 * (this.zoom * this.desiredHeight / 10.0);
+            this.position.y += (this.oldMousePos.y - y)*-1 * 0.01 * (this.zoom * this.desiredHeight / 10.0);
         }
         
         this.oldMousePos.setF32( x, y );
@@ -67,7 +67,9 @@ class Camera
 
     onMouseWheel(direction)
     {
-        this.zoom += direction;
+        this.zoom += direction * 0.1;
+        if( this.zoom < 0.1 )
+            this.zoom = 0.1;
     }
 
     convertMouseToOrtho(canvas, x, y)
@@ -77,8 +79,14 @@ class Camera
         let orthoScaleY = this.matProj.m[5];
         let orthoOffsetY = this.matProj.m[13];
 
+        // Transform from canvas coordinates to view space coordinates.
         let orthoX = ((x / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
         let orthoY = (((canvas.height - y) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
+
+        // Transform from view space coordinates to world space coordinates.
+        // TODO: Fix for view rotation if we ever spin the camera.
+        orthoX += this.position.x;
+        orthoY += this.position.y;
 
         return [orthoX, orthoY];
     }
