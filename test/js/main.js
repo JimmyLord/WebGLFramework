@@ -55,11 +55,13 @@ class MainProject
         if( this.stateIsDirty )
         {
             console.log( "Saving State." );
-            this.framework.storage["cameraState"] = JSON.stringify( this.scene.camera );
+            if( this.scene.camera )
+            {
+                this.framework.storage["cameraState"] = JSON.stringify( this.scene.camera );
+            }
             this.stateIsDirty = false;
         }
     }
-
 
     update(deltaTime, currentTime)
     {

@@ -30,6 +30,9 @@ class Camera
         try { state = JSON.parse( jsonString ); }
         catch( e ) { return; }
 
+        if( state == null )
+            return;
+
         this.isOrtho = state.isOrtho;
         this.zoom = state.zoom;
         this.desiredHeight = state.desiredHeight;
