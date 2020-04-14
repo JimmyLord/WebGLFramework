@@ -24,6 +24,30 @@ class Camera
         this.matProj = null;
     }
 
+    fromJSON(jsonString)
+    {
+        let state = null;
+        try { state = JSON.parse( jsonString ); }
+        catch( e ) { return; }
+
+        this.isOrtho = state.isOrtho;
+        this.zoom = state.zoom;
+        this.desiredHeight = state.desiredHeight;
+        this.position.setF32( state.position["x"], state.position["y"], state.position["z"] );
+    }
+
+    toJSON()
+    {
+        let state = {
+            isOrtho: this.isOrtho,
+            zoom: this.zoom,
+            desiredHeight: this.desiredHeight,
+            position: this.position,
+        }
+
+        return state;
+    }
+
     update()
     {
         this.matView.createView2D( this.position );
@@ -44,13 +68,17 @@ class Camera
 
     onMouseMove(buttonID, x, y)
     {
+        let changed = false;
+
         if( this.oldMousePos.x != -1 && this.panning )
         {
             this.position.x += (this.oldMousePos.x - x) * 0.01 * (this.zoom * this.desiredHeight / 10.0);
             this.position.y += (this.oldMousePos.y - y)*-1 * 0.01 * (this.zoom * this.desiredHeight / 10.0);
+            changed = true;
         }
         
         this.oldMousePos.setF32( x, y );
+        return changed;
     }
 
     onMouseDown(buttonID, x, y)
@@ -70,6 +98,8 @@ class Camera
         this.zoom += direction * 0.1;
         if( this.zoom < 0.1 )
             this.zoom = 0.1;
+
+        return true;
     }
 
     convertMouseToOrtho(canvas, x, y)

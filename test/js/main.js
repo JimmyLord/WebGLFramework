@@ -13,6 +13,9 @@ class MainProject
         this.scene = null;
         this.objectFollowsMouse = true;
         this.cubeRotates = true;
+
+        // Save state.
+        this.stateIsDirty = false;
     }
 
     init()
@@ -38,10 +41,31 @@ class MainProject
         this.scene.lights.push( new Light( new vec3(-4,0, 9), new color(0,0,1,1), 6 ) );
 
         this.scene.camera.isOrtho = false;
+
+        this.loadState();
     }
+
+    loadState()
+    {
+        this.scene.camera.fromJSON( this.framework.storage["cameraState"] );
+    }
+
+    saveState()
+    {
+        if( this.stateIsDirty )
+        {
+            console.log( "Saving State." );
+            this.framework.storage["cameraState"] = JSON.stringify( this.scene.camera );
+            this.stateIsDirty = false;
+        }
+    }
+
 
     update(deltaTime, currentTime)
     {
+        // TODO: Don't call this every frame.
+        this.saveState();
+
         this.scene.update(deltaTime, currentTime);
 
         this.scene.entities[1].position.x = Math.cos( currentTime/1000 );
@@ -93,9 +117,11 @@ class MainProject
         if( imgui.checkbox( "isOrtho", this.scene.camera.isOrtho ) )
         {
             this.scene.camera.isOrtho = !this.scene.camera.isOrtho;
+            this.stateIsDirty = true;
         }
         this.scene.orthoHeight = imgui.dragNumber( "OrthoHeight:", this.scene.orthoHeight, 0.01, 2 );
         this.scene.camera.position.z = imgui.dragNumber( "Z:", this.scene.camera.position.z, 0.01, 2 );
+        this.stateIsDirty = true;
         //imgui.endWindow( true );
     }
 
@@ -114,22 +140,22 @@ class MainProject
             this.scene.entities[0].position.y = orthoY;
         }
 
-        this.scene.camera.onMouseMove( buttonID, x, y );
+        this.stateIsDirty = this.scene.camera.onMouseMove( buttonID, x, y );
     }
 
     onMouseDown(buttonID, x, y)
     {
-        this.scene.camera.onMouseDown( buttonID, x, y );
+        this.stateIsDirty = this.scene.camera.onMouseDown( buttonID, x, y );
     }
 
     onMouseUp(buttonID, x, y)
     {
-        this.scene.camera.onMouseUp( buttonID, x, y );
+        this.stateIsDirty = this.scene.camera.onMouseUp( buttonID, x, y );
     }
 
     onMouseWheel(direction)
     {
-        this.scene.camera.onMouseWheel( direction );
+        this.stateIsDirty = this.scene.camera.onMouseWheel( direction );
     }
 
     shutdown()
