@@ -132,41 +132,48 @@ class FrameworkMain
 
     registerDoMCallbacks()
     {
-        // Register input callbacks.
-        document.addEventListener( "mousemove", (event) => this.onMouseMove(event),  false );
-        document.addEventListener( "mousedown", (event) => this.onMouseDown(event),  false );
-        document.addEventListener( "mouseup",   (event) => this.onMouseUp(event),    false );
-        document.addEventListener( "wheel",     (event) => this.onMouseWheel(event), false );
-        document.addEventListener( "keydown",   (event) => this.onKeyDown(event),    false );
-        document.addEventListener( "keyup",     (event) => this.onKeyUp(event),      false );
-    
-        // Set up extra vars for callbacks below... fix this.
-        let fullFrame = this.fullFrame;
-        let framework = this;
+        // Register window events.
+        window.addEventListener( "beforeunload", (event) => this.onBeforeUnload(event), false );
+        window.addEventListener( "unload",       (event) => this.onUnload(event),       false );
+        window.addEventListener( "resize",       (event) => this.onResize(event),       false );
 
-        // Set up document events.
-        window.onresize = function()
+        // Register document events.
+        document.addEventListener( "mousemove",    (event) => this.onMouseMove(event),    false );
+        document.addEventListener( "mousedown",    (event) => this.onMouseDown(event),    false );
+        document.addEventListener( "mouseup",      (event) => this.onMouseUp(event),      false );
+        document.addEventListener( "wheel",        (event) => this.onMouseWheel(event),   false );
+        document.addEventListener( "keydown",      (event) => this.onKeyDown(event),      false );
+        document.addEventListener( "keyup",        (event) => this.onKeyUp(event),        false );
+    }
+
+    onBeforeUnload(event)
+    {
+        if( this.runnableObject.onBeforeUnload )
         {
-            if( fullFrame )
-            {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-
-                // Correct the canvas size for requested pixel ratio.
-                this.canvas.width *= window.devicePixelRatio;
-                this.canvas.height *= window.devicePixelRatio;
-                this.canvas.style.width = (this.canvas.width / window.devicePixelRatio) + 'px';
-                this.canvas.style.height = (this.canvas.height / window.devicePixelRatio) + 'px';
-            }
+            this.runnableObject.onBeforeUnload();
         }
-    
-        window.onbeforeunload = function()
-        {
-            framework.shutdown();
-            // return false; // If false is returned, the browser will pop-up a confirmation on unload.
-        };
+    }
+
+    onUnload(event)
+    {
+        this.shutdown();
     }
     
+    onresize(event)
+    {
+        if( this.fullFrame )
+        {
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+
+            // Correct the canvas size for requested pixel ratio.
+            this.canvas.width *= window.devicePixelRatio;
+            this.canvas.height *= window.devicePixelRatio;
+            this.canvas.style.width = (this.canvas.width / window.devicePixelRatio) + 'px';
+            this.canvas.style.height = (this.canvas.height / window.devicePixelRatio) + 'px';
+        }
+    }
+
     onMouseMove(event)
     {
         let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;

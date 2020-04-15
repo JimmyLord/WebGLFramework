@@ -65,8 +65,8 @@ class MainProject
 
     update(deltaTime, currentTime)
     {
-        // TODO: Don't call this every frame.
-        this.saveState();
+        if( this.framework == null )
+            return;
 
         this.scene.update(deltaTime, currentTime);
 
@@ -130,6 +130,11 @@ class MainProject
     draw()
     {
         this.scene.draw( this.scene.camera );
+    }
+
+    onBeforeUnload()
+    {
+        this.saveState();
     }
 
     onMouseMove(buttonID, x, y)
