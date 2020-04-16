@@ -159,7 +159,7 @@ class FrameworkMain
         this.shutdown();
     }
     
-    onresize(event)
+    onResize(event)
     {
         if( this.fullFrame )
         {
