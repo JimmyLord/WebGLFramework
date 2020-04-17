@@ -859,7 +859,7 @@ class ImGui
         return false;
     }
 
-    dragNumber(label, value, increment, decimalPlaces)
+    dragNumber(label, value, increment, decimalPlaces, minLimit, maxLimit)
     {
         // if( this.activeWindow.expanded == false )
         //     return;
@@ -1019,6 +1019,9 @@ class ImGui
         {
             value += this.mouseChangeUnscaled.x * increment;
         }
+
+        if( minLimit != undefined ) { if( value < minLimit ) value = minLimit; }
+        if( maxLimit != undefined ) { if( value > maxLimit ) value = maxLimit; }
 
         return value;
     }
