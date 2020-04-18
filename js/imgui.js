@@ -267,8 +267,8 @@ class ImGui
             window.cursor.set( window.position );
             
             // If the window is offscreen, force it back to 0,0.
-            if( window.position.x + window.size.x < 0 || window.position.x >= this.canvas.w ||
-                window.position.y + window.size.y < 0 || window.position.y >= this.canvas.h )
+            if( window.position.x + window.size.x < 0 || window.position.x >= this.canvas.width / this.scale ||
+                window.position.y + window.size.y < 0 || window.position.y >= this.canvas.height / this.scale )
             {
                 window.position.setF32( 0, 0 );
             }
@@ -599,8 +599,8 @@ class ImGui
         this.activeWindow.activeThisFrame = true;
 
         // If the window is offscreen, force it back to 0,0.
-        if( this.activeWindow.position.x + this.activeWindow.size.x < 0 || this.activeWindow.position.x >= this.canvas.w ||
-            this.activeWindow.position.y + this.activeWindow.size.y < 0 || this.activeWindow.position.y >= this.canvas.h )
+        if( this.activeWindow.position.x + this.activeWindow.size.x < 0 || this.activeWindow.position.x >= this.canvas.width / this.scale ||
+            this.activeWindow.position.y + this.activeWindow.size.y < 0 || this.activeWindow.position.y >= this.canvas.height / this.scale )
         {
             this.activeWindow.position.setF32( 0, 0 );
         }
