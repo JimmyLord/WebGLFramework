@@ -576,6 +576,29 @@ class ImGui
         this.activeWindow.cursor.set( this.activeWindow.previousLineEndPosition );
     }
 
+    initWindow(name, onlySetIfNew, position, size, maxExtents)
+    {
+        let existed = true;
+
+        if( this.windows[name] == undefined )
+        {
+            this.windows[name] = new Window();
+            existed = false;
+        }
+
+        if( onlySetIfNew == false || existed == false )
+        {
+            if( position != undefined )
+                this.windows[name].position.set( position );
+
+            if( size != undefined )
+                this.windows[name].size.set( size );
+
+            if( maxExtents != undefined )
+                this.windows[name].maxExtents.set( maxExtents );
+        }
+    }
+
     // Return true is window is expanded.
     window(name)
     {
@@ -592,7 +615,6 @@ class ImGui
             this.activeWindow.size.setF32( 0, 0 );
             this.activeWindow.maxExtents.setF32( 0, 0 );
             this.activeWindow.cursor.set( this.activeWindow.position );
-            console.log( "frameCount: " + this.frameCount );
         }
         
         this.activeWindow = this.windows[name];
