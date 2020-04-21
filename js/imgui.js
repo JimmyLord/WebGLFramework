@@ -913,13 +913,17 @@ class ImGui
         let isHovering = false;
         let rgb = new vec3(0,96,0);
         let rect = new Rect( x, y, w, h );
+        if( rect.contains( this.mousePosition ) ) // is hovering.
+        {
+            isHovering = true;
+        }
+
         if( this.controlInEditMode == label )
         {
             rgb.setF32( 100, 0, 0 );
         }
-        else if( rect.contains( this.mousePosition ) ) // is hovering.
+        else if( isHovering )
         {
-            isHovering = true;
             rgb.setF32( 0, 160, 0 );
 
             if( this.mouseButtons[0] == true ) // is pressing.
@@ -951,8 +955,8 @@ class ImGui
         this.setIfBigger( this.activeWindow.maxExtents, x + w, y + 8 + this.padding.y );
         this.activeWindow.cursor.x = this.activeWindow.position.x;
         this.activeWindow.cursor.y += this.padding.y + 8 + this.padding.y;
-        
-        // Check if was pressed this frame.
+
+        // Check if the control was pressed this frame.
         if( isHovering &&
             ( ( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) ) )
         {
@@ -974,7 +978,7 @@ class ImGui
         // If hovering and double-clicked, switch to edit mode.
         if( isHovering && this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
         {
-            if( this.mouseDoubleClickedThisFrame[0] )
+            if( this.controlInEditMode != label && this.mouseDoubleClickedThisFrame[0] )
             {
                 this.controlInEditMode = label;
                 this.activeControlTextBuffer = valueAsString.split( "" );
