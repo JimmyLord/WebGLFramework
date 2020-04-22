@@ -576,13 +576,14 @@ class ImGui
         this.activeWindow.cursor.set( this.activeWindow.previousLineEndPosition );
     }
 
-    initWindow(name, onlySetIfNew, position, size, maxExtents)
+    initWindow(name, onlySetIfNew, position, size)
     {
         let existed = true;
 
         if( this.windows[name] == undefined )
         {
             this.windows[name] = new Window();
+            this.windows[name].maxExtents.setF32( 0, 0 );
             existed = false;
         }
 
@@ -593,9 +594,6 @@ class ImGui
 
             if( size != undefined )
                 this.windows[name].size.set( size );
-
-            if( maxExtents != undefined )
-                this.windows[name].maxExtents.set( maxExtents );
         }
     }
 
