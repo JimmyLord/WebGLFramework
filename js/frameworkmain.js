@@ -17,7 +17,8 @@ class FrameworkMain
         }
 
         // Get local storage.
-        this.storage = window.localStorage;
+        try { this.storage = window.localStorage }
+        catch( e ) { this.storage = null; }
 
         // Set some members.
         this.gl = gl;
@@ -47,7 +48,10 @@ class FrameworkMain
         
         // Create an imgui instance.
         this.imgui = new ImGui( this.gl, this.canvas );
-        this.imgui.loadState( this.storage.imguiState );
+        if( this.storage != null )
+        {
+            this.imgui.loadState( this.storage.imguiState );
+        }
     
         // Set up some base common resources.
         let resources = new ResourceManager( gl );
@@ -106,7 +110,13 @@ class FrameworkMain
         requestAnimationFrame( (currentTime) => this.update( currentTime ) );
 
         this.imgui.draw();
-        this.imgui.saveState( this.storage, "imguiState" );
+        if( this.storage != null )
+        {
+            if( this.framework.storage != null )
+            {
+                this.imgui.saveState( this.storage, "imguiState" );
+            }
+        }
     }
 
     drawImGuiTestWindow()

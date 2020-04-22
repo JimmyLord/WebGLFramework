@@ -47,7 +47,10 @@ class MainProject
 
     loadState()
     {
-        this.scene.camera.fromJSON( this.framework.storage["cameraState"] );
+        if( this.framework.storage != null )
+        {
+            this.scene.camera.fromJSON( this.framework.storage["cameraState"] );
+        }
     }
 
     saveState()
@@ -57,7 +60,10 @@ class MainProject
             console.log( "Saving State." );
             if( this.scene.camera )
             {
-                this.framework.storage["cameraState"] = JSON.stringify( this.scene.camera );
+                if( this.framework.storage != null )
+                {
+                    this.framework.storage["cameraState"] = JSON.stringify( this.scene.camera );
+                }
             }
             this.stateIsDirty = false;
         }
