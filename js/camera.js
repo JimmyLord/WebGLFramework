@@ -69,7 +69,7 @@ class Camera
         }
     }
 
-    onMouseMove(buttonID, x, y)
+    onMouseMove(x, y)
     {
         let changed = false;
 

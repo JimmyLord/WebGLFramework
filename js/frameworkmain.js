@@ -112,10 +112,7 @@ class FrameworkMain
         this.imgui.draw();
         if( this.storage != null )
         {
-            if( this.framework.storage != null )
-            {
-                this.imgui.saveState( this.storage, "imguiState" );
-            }
+            this.imgui.saveState( this.storage, "imguiState" );
         }
     }
 
@@ -191,10 +188,15 @@ class FrameworkMain
 
         if( this.runnableObject.onMouseMove )
         {
-            this.runnableObject.onMouseMove( event.which-1, x, y );
+            this.runnableObject.onMouseMove( x, y );
         }
 
         this.lastMousePosition.setF32( Math.trunc(x), Math.trunc(y) );
+
+        // Cancel default event action.
+        if( event.preventDefault ) event.preventDefault();
+        else event.returnValue = false;
+        return false;
     }
 
     onMouseDown(event)
@@ -208,6 +210,11 @@ class FrameworkMain
         }
 
         this.imgui.mouseButtons[ event.which-1 ] = true;
+
+        // Cancel default event action.
+        if( event.preventDefault ) event.preventDefault();
+        else event.returnValue = false;
+        return false;
     }
 
     onMouseUp(event)
@@ -221,6 +228,11 @@ class FrameworkMain
         }
 
         this.imgui.mouseButtons[ event.which-1 ] = false;
+
+        // Cancel default event action.
+        if( event.preventDefault ) event.preventDefault();
+        else event.returnValue = false;
+        return false;
     }
 
     onMouseWheel(event)

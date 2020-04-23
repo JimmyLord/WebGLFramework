@@ -143,7 +143,7 @@ class MainProject
         this.saveState();
     }
 
-    onMouseMove(buttonID, x, y)
+    onMouseMove(x, y)
     {
         if( this.objectFollowsMouse )
         {
@@ -153,7 +153,7 @@ class MainProject
             this.scene.entities[0].position.y = orthoY;
         }
 
-        this.stateIsDirty = this.scene.camera.onMouseMove( buttonID, x, y );
+        this.stateIsDirty = this.scene.camera.onMouseMove( x, y );
     }
 
     onMouseDown(buttonID, x, y)
