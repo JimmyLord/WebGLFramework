@@ -7,6 +7,17 @@ class FrameworkMain
 {
     constructor()
     {
+        // Temp hacks for iPad.
+        let iPad = false;
+        let userAgent = navigator.userAgent.toLowerCase(); 
+        if( userAgent.indexOf('safari') != -1 )
+        { 
+            if( userAgent.indexOf('chrome') == -1 )
+            {
+                iPad = true;
+            }
+        }
+
         // Get the canvas and the OpenGL context.
         this.canvas = document.getElementById( document.currentScript.getAttribute( "canvasName" ) );
         let gl = this.canvas.getContext( "webgl2" );
@@ -19,6 +30,12 @@ class FrameworkMain
         // Get local storage.
         try { this.storage = window.localStorage }
         catch( e ) { this.storage = null; }
+
+        // Disable local storage on safari, temp hack for ipad testing.
+        if( iPad )
+        {
+            this.storage = null;
+        }
 
         // Set some members.
         this.gl = gl;
@@ -51,6 +68,11 @@ class FrameworkMain
         if( this.storage != null )
         {
             this.imgui.loadState( this.storage.imguiState );
+        }
+
+        if( iPad )
+        {
+            this.imgui.scale = 4;
         }
     
         // Set up some base common resources.
@@ -151,6 +173,8 @@ class FrameworkMain
         document.addEventListener( "wheel",        (event) => this.onMouseWheel(event),   false );
         document.addEventListener( "keydown",      (event) => this.onKeyDown(event),      false );
         document.addEventListener( "keyup",        (event) => this.onKeyUp(event),        false );
+        document.addEventListener( "touchstart",   (event) => this.onTouchStart(event),   false );
+        document.addEventListener( "touchend",     (event) => this.onTouchEnd(event),     false );
     }
 
     onBeforeUnload(event)
@@ -181,6 +205,38 @@ class FrameworkMain
         }
     }
 
+    onTouchStart(event)
+    {
+        let fakeMouseEvent = {
+            which: 1,
+            layerX: event.touches[0].clientX,
+            layerY: event.touches[0].clientY,
+        }
+        this.onMouseDown( fakeMouseEvent );
+
+        //console.log( event.touches[0] );
+
+        //// Cancel default event action.
+        //if( event.preventDefault ) event.preventDefault();
+        //else event.returnValue = false;
+        //return false;
+    }
+
+    onTouchEnd(event)
+    {
+        let fakeMouseEvent = {
+            which: 1,
+            layerX: 0,
+            layerY: 0,
+        }
+        this.onMouseUp( fakeMouseEvent );
+
+        //// Cancel default event action.
+        //if( event.preventDefault ) event.preventDefault();
+        //else event.returnValue = false;
+        //return false;
+    }
+
     onMouseMove(event)
     {
         let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
@@ -201,6 +257,8 @@ class FrameworkMain
 
     onMouseDown(event)
     {
+        //console.log( "onMouseDown" );
+
         let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
         let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
 
@@ -219,6 +277,8 @@ class FrameworkMain
 
     onMouseUp(event)
     {
+        //console.log( "onMouseUp" );
+
         let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
         let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
 
