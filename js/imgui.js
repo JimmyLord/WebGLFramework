@@ -850,12 +850,12 @@ class ImGui
             }
         }
 
-        this.addBoxToArray( verts, indices, x,y,w,h, rgb.x,rgb.y,rgb.z,255 );
+        this.addBoxToArray( verts, indices, x,y,w-1,h-1, rgb.x,rgb.y,rgb.z,255 );
 
         if( isChecked )
         {
             rgb.setF32( 255, 255, 0 );
-            this.addBoxToArray( verts, indices, x+2,y+2,w-4,h-4, rgb.x,rgb.y,rgb.z,255 );
+            this.addBoxToArray( verts, indices, x+2,y+2,w-5,h-5, rgb.x,rgb.y,rgb.z,255 );
         }
 
         this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
