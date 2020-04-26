@@ -41,6 +41,8 @@ class FrameworkMain
         this.gl = gl;
         this.keyStates = new Map;
         this.lastMousePosition = new vec2(0);
+        this.simulateMouseWithFirstFinger = true;
+        this.touches = []; // Array of TouchPoint classes.
 
         // Set the size of the canvas.
         this.fullFrame = false;
@@ -174,7 +176,9 @@ class FrameworkMain
         document.addEventListener( "keydown",      (event) => this.onKeyDown(event),      false );
         document.addEventListener( "keyup",        (event) => this.onKeyUp(event),        false );
         document.addEventListener( "touchstart",   (event) => this.onTouchStart(event),   false );
+        document.addEventListener( "touchmove",    (event) => this.onTouchMove(event),    false );
         document.addEventListener( "touchend",     (event) => this.onTouchEnd(event),     false );
+        document.addEventListener( "touchcancel",  (event) => this.onTouchCancel(event),  false );
     }
 
     onBeforeUnload(event)
@@ -205,25 +209,110 @@ class FrameworkMain
         }
     }
 
-    onTouchStart(event)
+    // Touch helpers.
+    getFirstTouchPoint()
     {
-        let fakeMouseEvent = {
-            which: 1,
-            layerX: event.touches[0].clientX,
-            layerY: event.touches[0].clientY,
+        for( let i=0; i<this.touches.length; i++ )
+        {
+            if( this.touches[i].wasFirstFinger )
+                return this.touches[i];
         }
 
-        this.hackMouseX = event.touches[0].clientX;
-        this.hackMouseY = event.touches[0].clientY;
-        
-        //console.log( fakeMouseEvent );
+        return null;
+    }
 
-        this.onMouseMove( fakeMouseEvent );
-        this.imgui.lastMousePosition.setF32( event.touches[0].clientX, event.touches[0].clientY );
-        this.imgui.lastMousePosition.divideBy( this.imgui.scale / window.devicePixelRatio );
-        this.onMouseDown( fakeMouseEvent );
+    getTouchPointByID(id)
+    {
+        for( let i=0; i<this.touches.length; i++ )
+        {
+            if( this.touches[i].id == id )
+                return this.touches[i];
+        }
 
-        //console.log( event.touches[0] );
+        return null;
+    }
+
+    removeTouch(id)
+    {
+        for( let i=0; i<this.touches.length; i++ )
+        {
+            if( this.touches[i].id == id )
+            {
+                this.touches.splice( i, 1 );
+                i--;
+            }
+        }
+    }
+
+    onTouchStart(event)
+    {
+        let changedTouches = event.changedTouches;
+        for( let i=0; i<changedTouches.length; i++ )
+        {
+            let t = new TouchPoint( changedTouches[i].clientX, changedTouches[i].clientY, changedTouches[i].identifier, this.touches.length == 0 );
+            this.touches.push( t );
+        }
+
+        if( this.simulateMouseWithFirstFinger )
+        {
+            // If this is the first finger down, then send out some mouse events to the runnableObject.
+            let firstTouch = this.getFirstTouchPoint();
+
+            if( firstTouch !== null )
+            {
+                let fakeMouseEvent = {
+                    which: 1,
+                    layerX: firstTouch.x,
+                    layerY: firstTouch.y,
+                }
+
+                this.onMouseMove( fakeMouseEvent );
+                this.imgui.lastMousePosition.setF32( firstTouch.x, firstTouch.y );
+                this.imgui.lastMousePosition.divideBy( this.imgui.scale / window.devicePixelRatio );
+                this.onMouseDown( fakeMouseEvent );
+
+                //console.log( "Mouse Down: " + firstTouch.y );
+            }
+        }
+
+        //// Cancel default event action.
+        //if( event.preventDefault ) event.preventDefault();
+        //else event.returnValue = false;
+        //return false;
+    }
+
+    onTouchMove(event)
+    {
+        let changedTouches = event.changedTouches;
+        for( let i=0; i<changedTouches.length; i++ )
+        {
+            let t = this.getTouchPointByID( changedTouches[i].identifier );
+            if( t !== null )
+            {
+                t.set( changedTouches[i].clientX, changedTouches[i].clientY );
+            }
+        }
+
+        if( this.simulateMouseWithFirstFinger )
+        {
+            // If this is the first finger down, then send out some mouse events to the runnableObject.
+            let firstTouch = this.getFirstTouchPoint();
+
+            if( firstTouch !== null )
+            {
+                let fakeMouseEvent = {
+                    which: 1,
+                    layerX: firstTouch.x,
+                    layerY: firstTouch.y,
+                }
+
+                this.onMouseMove( fakeMouseEvent );
+                //this.imgui.lastMousePosition.setF32( firstTouch.x, firstTouch.y );
+                //this.imgui.lastMousePosition.divideBy( this.imgui.scale / window.devicePixelRatio );
+
+                //console.log( "Mouse Move: " + firstTouch.y );
+            }
+        }
 
         //// Cancel default event action.
         //if( event.preventDefault ) event.preventDefault();
@@ -233,16 +322,58 @@ class FrameworkMain
 
     onTouchEnd(event)
     {
-        let fakeMouseEvent = {
-            which: 1,
-            layerX: this.hackMouseX,
-            layerY: this.hackMouseY,
+        let changedTouches = event.changedTouches;
+        for( let i=0; i<changedTouches.length; i++ )
+        {
+            let t = this.getTouchPointByID( changedTouches[i].identifier );
+            if( t !== null )
+            {
+                t.set( changedTouches[i].clientX, changedTouches[i].clientY );
+            }
         }
 
-        //console.log( fakeMouseEvent );
+        if( this.simulateMouseWithFirstFinger )
+        {
+            // If this is the first finger down, then send out some mouse events to the runnableObject.
+            let firstTouch = this.getFirstTouchPoint();
 
-        //this.onMouseMove( fakeMouseEvent );
-        this.onMouseUp( fakeMouseEvent );
+            if( firstTouch !== null )
+            {
+                let fakeMouseEvent = {
+                    which: 1,
+                    layerX: firstTouch.x,
+                    layerY: firstTouch.y,
+                }
+
+                this.onMouseMove( fakeMouseEvent );
+                //this.imgui.lastMousePosition.setF32( firstTouch.x, firstTouch.y );
+                //this.imgui.lastMousePosition.divideBy( this.imgui.scale / window.devicePixelRatio );
+                this.onMouseUp( fakeMouseEvent );
+
+                //console.log( "Mouse Up: " + firstTouch.y );
+            }
+        }
+
+        // Remove these touches from the list.
+        for( let i=0; i<changedTouches.length; i++ )
+        {
+            this.removeTouch( changedTouches[i].identifier );
+        }
+
+        //// Cancel default event action.
+        //if( event.preventDefault ) event.preventDefault();
+        //else event.returnValue = false;
+        //return false;
+    }
+
+    onTouchCancel(event)
+    {
+        // Remove these touches from the list.
+        let changedTouches = event.changedTouches;
+        for( let i=0; i<changedTouches.length; i++ )
+        {
+            this.removeTouch( changedTouches[i].identifier );
+        }
 
         //// Cancel default event action.
         //if( event.preventDefault ) event.preventDefault();
@@ -359,5 +490,26 @@ class FrameworkMain
         }
 
         log( "Shutdown!" );
+    }
+}
+
+class TouchPoint
+{
+    constructor(x, y, id, wasFirst)
+    {
+        this.x = x;
+        this.y = y;
+        this.id = id;
+        this.wasFirstFinger = wasFirst;
+    }
+
+    set(x, y, id, wasFirst)
+    {
+        this.x = x;
+        this.y = y;
+        if( id !== undefined )
+            this.id = id;
+        if( wasFirst !== undefined )
+            this.wasFirstFinger = wasFirst;
     }
 }
