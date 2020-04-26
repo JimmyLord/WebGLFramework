@@ -212,6 +212,15 @@ class FrameworkMain
             layerX: event.touches[0].clientX,
             layerY: event.touches[0].clientY,
         }
+
+        this.hackMouseX = event.touches[0].clientX;
+        this.hackMouseY = event.touches[0].clientY;
+        
+        //console.log( fakeMouseEvent );
+
+        this.onMouseMove( fakeMouseEvent );
+        this.imgui.lastMousePosition.setF32( event.touches[0].clientX, event.touches[0].clientY );
+        this.imgui.lastMousePosition.divideBy( this.imgui.scale / window.devicePixelRatio );
         this.onMouseDown( fakeMouseEvent );
 
         //console.log( event.touches[0] );
@@ -226,9 +235,13 @@ class FrameworkMain
     {
         let fakeMouseEvent = {
             which: 1,
-            layerX: 0,
-            layerY: 0,
+            layerX: this.hackMouseX,
+            layerY: this.hackMouseY,
         }
+
+        //console.log( fakeMouseEvent );
+
+        //this.onMouseMove( fakeMouseEvent );
         this.onMouseUp( fakeMouseEvent );
 
         //// Cancel default event action.
@@ -247,6 +260,7 @@ class FrameworkMain
             this.runnableObject.onMouseMove( x, y );
         }
 
+        this.imgui.mousePosition.setF32( x, y );
         this.lastMousePosition.setF32( Math.trunc(x), Math.trunc(y) );
 
         // Cancel default event action.
@@ -267,6 +281,7 @@ class FrameworkMain
             this.runnableObject.onMouseDown( event.which-1, x, y );
         }
 
+        this.imgui.mousePosition.setF32( x, y );
         this.imgui.mouseButtons[ event.which-1 ] = true;
 
         // Cancel default event action.
@@ -287,6 +302,7 @@ class FrameworkMain
             this.runnableObject.onMouseUp( event.which-1, x, y );
         }
 
+        this.imgui.mousePosition.setF32( x, y );
         this.imgui.mouseButtons[ event.which-1 ] = false;
 
         // Cancel default event action.
