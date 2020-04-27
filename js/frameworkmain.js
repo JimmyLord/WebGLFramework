@@ -267,8 +267,7 @@ class FrameworkMain
                 }
 
                 this.onMouseMove( fakeMouseEvent );
-                this.imgui.lastMousePosition.setF32( firstTouch.x, firstTouch.y );
-                this.imgui.lastMousePosition.divideBy( this.imgui.scale / window.devicePixelRatio );
+                this.imgui.setLastMousePosition( firstTouch.x * window.devicePixelRatio, firstTouch.y * window.devicePixelRatio );
                 this.onMouseDown( fakeMouseEvent );
 
                 //console.log( "Mouse Down: " + firstTouch.y );
@@ -307,8 +306,6 @@ class FrameworkMain
                 }
 
                 this.onMouseMove( fakeMouseEvent );
-                //this.imgui.lastMousePosition.setF32( firstTouch.x, firstTouch.y );
-                //this.imgui.lastMousePosition.divideBy( this.imgui.scale / window.devicePixelRatio );
 
                 //console.log( "Mouse Move: " + firstTouch.y );
             }
@@ -346,8 +343,6 @@ class FrameworkMain
                 }
 
                 this.onMouseMove( fakeMouseEvent );
-                //this.imgui.lastMousePosition.setF32( firstTouch.x, firstTouch.y );
-                //this.imgui.lastMousePosition.divideBy( this.imgui.scale / window.devicePixelRatio );
                 this.onMouseUp( fakeMouseEvent );
 
                 //console.log( "Mouse Up: " + firstTouch.y );

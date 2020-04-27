@@ -317,6 +317,26 @@ class ImGui
         if( ny > vec.y ) vec.y = ny;
     }
 
+    setLastMousePosition(x, y)
+    {
+        this.mousePosition.setF32( x/this.scale, y/this.scale );
+        this.lastMousePosition.setF32( x/this.scale, y/this.scale );
+
+        // Loop through all windows to see if we're hovering over one.
+        this.isHoveringWindow = false;
+        for( let key in this.windows )
+        {
+            // Find which window is hovered and if it was clicked.
+            if( this.windows[key].activeThisFrame && this.windows[key].rect.contains( this.mousePosition ) )
+            {
+                if( this.mouseButtons[0] == false || this.ownsMouse == true )
+                {
+                    this.isHoveringWindow = true;
+                }
+            }
+        }
+    }
+
     newFrame(deltaTime)
     {
         this.frameCount++;
