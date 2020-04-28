@@ -40,7 +40,8 @@ class FrameworkMain
         // Set some members.
         this.gl = gl;
         this.keyStates = new Map;
-        this.lastMousePosition = new vec2(0);
+        this.mousePosition = new vec2(0);
+        this.mouseButtons = [ false, false, false ];
         this.simulateMouseWithFirstFinger = true;
         this.touches = []; // Array of TouchPoint classes.
 
@@ -106,7 +107,9 @@ class FrameworkMain
         let deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
 
-        this.imgui.mousePosition.setF32( this.lastMousePosition.x, this.lastMousePosition.y );
+        this.imgui.mousePosition.set( this.mousePosition );
+        for( let i=0; i<this.mouseButtons.length; i++ )
+            this.imgui.mouseButtons[i] = this.mouseButtons[i];
         this.imgui.newFrame( deltaTime );
 
         if( this.runnableObject.update )
@@ -149,7 +152,7 @@ class FrameworkMain
         this.imgui.text( "st" );
         this.imgui.text( "Pos:   " + Math.trunc( this.imgui.windows["ImGui Test"].position.x ) + "," + Math.trunc( this.imgui.windows["ImGui Test"].position.y ) );
         this.imgui.text( "Size:  " + Math.trunc( this.imgui.windows["ImGui Test"].size.x ) + "," + Math.trunc( this.imgui.windows["ImGui Test"].size.y ) );
-        this.imgui.text( "Mouse: " + this.lastMousePosition.x + "," + this.lastMousePosition.y );
+        this.imgui.text( "Mouse: " + this.mousePosition.x + "," + this.mousePosition.y );
 
         this.imgui.window( "ImGui Test" );
         this.imgui.text( "UI Scale:" );
@@ -386,8 +389,7 @@ class FrameworkMain
             this.runnableObject.onMouseMove( x, y );
         }
 
-        this.imgui.mousePosition.setF32( x, y );
-        this.lastMousePosition.setF32( Math.trunc(x), Math.trunc(y) );
+        this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
 
         // Cancel default event action.
         if( event.preventDefault ) event.preventDefault();
@@ -407,8 +409,8 @@ class FrameworkMain
             this.runnableObject.onMouseDown( event.which-1, x, y );
         }
 
-        this.imgui.mousePosition.setF32( x, y );
-        this.imgui.mouseButtons[ event.which-1 ] = true;
+        this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
+        this.mouseButtons[ event.which-1 ] = true;
 
         // Cancel default event action.
         if( event.preventDefault ) event.preventDefault();
@@ -428,8 +430,8 @@ class FrameworkMain
             this.runnableObject.onMouseUp( event.which-1, x, y );
         }
 
-        this.imgui.mousePosition.setF32( x, y );
-        this.imgui.mouseButtons[ event.which-1 ] = false;
+        this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
+        this.mouseButtons[ event.which-1 ] = false;
 
         // Cancel default event action.
         if( event.preventDefault ) event.preventDefault();
