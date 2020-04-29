@@ -98,9 +98,18 @@ class Camera
 
     onMouseWheel(direction)
     {
-        this.zoom += direction * 0.1;
-        if( this.zoom < 0.1 )
-            this.zoom = 0.1;
+        if( this.isOrtho )
+        {
+            this.zoom += direction * 0.1;
+            if( this.zoom < 0.1 )
+                this.zoom = 0.1;
+        }
+        else
+        {
+            let change = direction * -0.3;
+            let at = this.matView.getAt();
+            this.position.add( at.times( change ) );
+        }
 
         return true;
     }

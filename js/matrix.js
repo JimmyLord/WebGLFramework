@@ -1,3 +1,8 @@
+// Values are stored column major.
+// m[ 0] m[ 4] m[ 8] m[12]       Sx  0  0 Tx
+// m[ 1] m[ 5] m[ 9] m[13]  --\   0 Sy  0 Ty
+// m[ 2] m[ 6] m[10] m[14]  --/   0  0 Sz Tz
+// m[ 3] m[ 7] m[11] m[15]        0  0  0  1
 class mat4
 {
     constructor()
@@ -181,5 +186,20 @@ class mat4
     
         this.m[14] = near * far * inverseRange * 2;
         this.m[12] = this.m[13] = this.m[15] = 0.0;
+    }
+
+    getUp()
+    {
+        return new vec3( this.m[ 4], this.m[ 5], this.m[ 6] );
+    }
+
+    getRight()
+    {
+        return new vec3( this.m[ 0], this.m[ 1], this.m[ 2] );
+    }
+
+    getAt()
+    {
+        return new vec3( this.m[ 8], this.m[ 9], this.m[10] );
     }
 }
