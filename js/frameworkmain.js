@@ -39,6 +39,9 @@ class FrameworkMain
 
         // Set some members.
         this.gl = gl;
+        this.frameCountInLastSecond = 0;
+        this.timeToNextFPSUpdate = 1;
+        this.FPS = 0;
         this.keyStates = new Map;
         this.mousePosition = new vec2(0);
         this.mouseButtons = [ false, false, false ];
@@ -107,10 +110,21 @@ class FrameworkMain
         let deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
 
+        this.timeToNextFPSUpdate -= deltaTime;
+        if( this.timeToNextFPSUpdate <= 0.001 )
+        {
+            this.FPS = this.frameCountInLastSecond;
+            this.frameCountInLastSecond = 0;
+            this.timeToNextFPSUpdate = 1;
+        }
+        this.frameCountInLastSecond++;
+
         this.imgui.mousePosition.set( this.mousePosition );
         for( let i=0; i<this.mouseButtons.length; i++ )
             this.imgui.mouseButtons[i] = this.mouseButtons[i];
         this.imgui.newFrame( deltaTime );
+
+        this.imgui.addStringToDrawList( "FPS " + this.FPS, this.canvas.width/this.imgui.scale - 8*6 - 2, 2 );
 
         if( this.runnableObject.update )
         {

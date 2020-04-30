@@ -725,17 +725,9 @@ class ImGui
         verts.push( x+w,y+h,   0,0,   r,g,b,a );
     }
 
-    text(str)
+    addStringToDrawList(str, x, y, rect)
     {
-        // if( this.activeWindow.expanded == false )
-        //     return;
-
         let gl = this.gl;
-
-        this.activeWindow.cursor.x += this.padding.x;
-        this.activeWindow.cursor.y += this.padding.y;
-        let x = this.activeWindow.cursor.x;
-        let y = this.activeWindow.cursor.y;
 
         let w = 8;
         let h = 8;
@@ -752,8 +744,8 @@ class ImGui
                 x += w;
                 continue;
             }
-			if( c == 97+6 || c == 97+9 || c == 97+15 || c == 97+16 || c == 97+24 ) // g/j/p/q/y
-				y += 2;
+            if( c == 97+6 || c == 97+9 || c == 97+15 || c == 97+16 || c == 97+24 ) // g/j/p/q/y
+                y += 2;
             c -= this.firstChar;
             let cx = Math.trunc( c % this.numCols );
             let cy = Math.trunc( c / this.numCols );
@@ -766,12 +758,32 @@ class ImGui
 
             x += w;
             c += this.firstChar;
-			if( c == 97+6 || c == 97+9 || c == 97+15 || c == 97+16 || c == 97+24 ) // g/j/p/q/y
-				y -= 2;
+            if( c == 97+6 || c == 97+9 || c == 97+15 || c == 97+16 || c == 97+24 ) // g/j/p/q/y
+                y -= 2;
             count++;
         }
 
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+        if( rect === undefined )
+            rect = new Rect( 0, 0, 10000, 10000 );
+
+        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, rect ) );
+
+        return [x,y];
+    }
+
+    text(str)
+    {
+        // if( this.activeWindow.expanded == false )
+        //     return;
+
+        this.activeWindow.cursor.x += this.padding.x;
+        this.activeWindow.cursor.y += this.padding.y;
+        let x = this.activeWindow.cursor.x;
+        let y = this.activeWindow.cursor.y;
+
+        let h = 8;
+
+        [x, y] = this.addStringToDrawList( str, x, y, this.activeWindow.rect );
 
         this.activeWindow.previousLineEndPosition.setF32( x-this.padding.x, y-this.padding.y );
         this.setIfBigger( this.activeWindow.maxExtents, x, y + 8 + this.padding.y );
