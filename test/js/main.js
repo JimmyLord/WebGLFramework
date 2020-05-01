@@ -16,6 +16,10 @@ class MainProject
 
         // Save state.
         this.stateIsDirty = false;
+
+        // Framework settings.
+        this.framework.showFPSCounter = true;
+        this.framework.autoRefresh = true;
     }
 
     init()
@@ -101,6 +105,11 @@ class MainProject
         if( keyStates['z'] || keyStates['ArrowUp'] )
             dir.z += 1;
 
+        if( dir.length() != 0 )
+        {
+            this.framework.refresh();
+        }
+
         this.scene.entities[2].position.x += dir.x * deltaTime;
         this.scene.entities[2].position.y += dir.y * deltaTime;
         this.scene.entities[2].position.z += dir.z * deltaTime;
@@ -109,6 +118,10 @@ class MainProject
 
         let imgui = this.framework.imgui;
         imgui.window( "ImGui Test" );
+        if( imgui.checkbox( "Auto refresh", this.framework.autoRefresh ) )
+        {
+            this.framework.autoRefresh = !this.framework.autoRefresh;
+        }
         if( imgui.checkbox( "Follow mouse", this.objectFollowsMouse ) )
         {
             this.objectFollowsMouse = !this.objectFollowsMouse;
@@ -154,21 +167,35 @@ class MainProject
         }
 
         this.stateIsDirty = this.scene.camera.onMouseMove( x, y );
+        this.framework.refresh();
     }
 
     onMouseDown(buttonID, x, y)
     {
         this.stateIsDirty = this.scene.camera.onMouseDown( buttonID, x, y );
+        this.framework.refresh();
     }
 
     onMouseUp(buttonID, x, y)
     {
         this.stateIsDirty = this.scene.camera.onMouseUp( buttonID, x, y );
+        this.framework.refresh();
     }
 
     onMouseWheel(direction)
     {
         this.stateIsDirty = this.scene.camera.onMouseWheel( direction );
+        this.framework.refresh();
+    }
+
+    onKeyDown(keyCode)
+    {
+        this.framework.refresh();
+    }
+
+    onKeyUp(keyCode)
+    {
+        this.framework.refresh();
     }
 
     shutdown()

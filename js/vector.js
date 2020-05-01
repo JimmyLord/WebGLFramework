@@ -33,6 +33,8 @@ class vec2
     divideByVec3(o)     { this.x /= o.x; this.y /= o.y; }
     divideBy(o)         { this.x /= o; this.y /= o; }
 
+    length()            { return Math.sqrt( this.x*this.x + this.y*this.y ); }
+
     distanceFrom(o)
     {
         let d = this.minus( o );
@@ -81,6 +83,8 @@ class vec3
 
     divideByVec3(o)     { this.x /= o.x; this.y /= o.y; this.z /= o.z; }
     divideBy(o)         { this.x /= o; this.y /= o; this.z /= o; }
+
+    length()            { return Math.sqrt( this.x*this.x + this.y*this.y + this.z*this.z ); }
 
     distanceFrom(o)
     {

@@ -7,6 +7,10 @@ class FrameworkMain
 {
     constructor()
     {
+        // Settings.
+        this.showFPSCounter = false;
+        this.autoRefresh = true;
+
         // Temp hacks for iPad.
         let iPad = false;
         let userAgent = navigator.userAgent.toLowerCase(); 
@@ -47,6 +51,7 @@ class FrameworkMain
         this.mouseButtons = [ false, false, false ];
         this.simulateMouseWithFirstFinger = true;
         this.touches = []; // Array of TouchPoint classes.
+        this.lastTimeRefreshCalled = 0;
 
         // Set the size of the canvas.
         this.fullFrame = false;
@@ -124,7 +129,10 @@ class FrameworkMain
             this.imgui.mouseButtons[i] = this.mouseButtons[i];
         this.imgui.newFrame( deltaTime );
 
-        this.imgui.addStringToDrawList( "FPS " + this.FPS, this.canvas.width/this.imgui.scale - 8*6 - 2, 2 );
+        if( this.showFPSCounter )
+        {
+            this.imgui.addStringToDrawList( "FPS " + this.FPS, this.canvas.width/this.imgui.scale - 8*6 - 2, 2 );
+        }
 
         if( this.runnableObject.update )
         {
@@ -147,13 +155,30 @@ class FrameworkMain
             this.runnableObject.draw();
         }
 
-        // Restart the update/draw cycle.
-        requestAnimationFrame( (currentTime) => this.update( currentTime ) );
-
         this.imgui.draw();
         if( this.storage != null )
         {
             this.imgui.saveState( this.storage, "imguiState" );
+        }
+
+        // Restart the update/draw cycle.
+        if( this.autoRefresh )
+        {
+            this.lastTimeRefreshCalled = this.lastTime;
+            requestAnimationFrame( (currentTime) => this.update( currentTime ) );
+        }
+    }
+
+    refresh()
+    {
+        if( this.autoRefresh )
+            return;
+
+        // Only allow refresh to be called once for the current frame.
+        if( this.lastTimeRefreshCalled != this.lastTime )
+        {
+            this.lastTimeRefreshCalled = this.lastTime;
+            requestAnimationFrame( (currentTime) => this.update( currentTime ) );
         }
     }
 
