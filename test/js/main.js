@@ -20,6 +20,7 @@ class MainProject
         // Framework settings.
         this.framework.showFPSCounter = true;
         this.framework.autoRefresh = true;
+        this.framework.maxDeltaTime = 1.0/10.0;
     }
 
     init()
@@ -121,6 +122,10 @@ class MainProject
         if( imgui.checkbox( "Auto refresh", this.framework.autoRefresh ) )
         {
             this.framework.autoRefresh = !this.framework.autoRefresh;
+            if( this.framework.autoRefresh == true )
+                this.framework.maxDeltaTime = 1.0/10.0;
+            else
+                this.framework.maxDeltaTime = 1.0/60.0;
         }
         if( imgui.checkbox( "Follow mouse", this.objectFollowsMouse ) )
         {

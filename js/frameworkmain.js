@@ -10,6 +10,7 @@ class FrameworkMain
         // Settings.
         this.showFPSCounter = false;
         this.autoRefresh = true;
+        this.maxDeltaTime = 0; // Prevent deltaTime from getting bigger than this. 0 for unlimited.
 
         // Temp hacks for iPad.
         let iPad = false;
@@ -114,6 +115,10 @@ class FrameworkMain
     {
         let deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
+
+        // Limit deltaTime, so no bit time steps will happen if framerate drops too low.
+        if( this.maxDeltaTime != 0 && deltaTime > this.maxDeltaTime )
+            deltaTime = this.maxDeltaTime;
 
         this.timeToNextFPSUpdate -= deltaTime;
         if( this.timeToNextFPSUpdate <= 0.001 )
