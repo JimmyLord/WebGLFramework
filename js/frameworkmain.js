@@ -12,6 +12,22 @@ class FrameworkMain
         this.autoRefresh = true;
         this.maxDeltaTime = 0; // Prevent deltaTime from getting bigger than this. 0 for unlimited.
 
+        // Public members.
+        this.runningTime = 0;
+        this.FPS = 0;
+
+        // Internal members.
+        this.frameCountInLastSecond = 0;
+        this.timeToNextFPSUpdate = 1;
+        this.lastTimeRefreshCalled = 0;
+
+        // Input state.
+        this.keyStates = new Map;
+        this.mousePosition = new vec2(0);
+        this.mouseButtons = [ false, false, false ];
+        this.simulateMouseWithFirstFinger = true;
+        this.touches = []; // Array of TouchPoint classes.
+
         // Temp hacks for iPad.
         let iPad = false;
         let userAgent = navigator.userAgent.toLowerCase(); 
@@ -31,6 +47,7 @@ class FrameworkMain
             log( "Failed to get WebGL context from canvas." );
             return;
         }
+        this.gl = gl;
 
         // Get local storage.
         try { this.storage = window.localStorage }
@@ -41,18 +58,6 @@ class FrameworkMain
         {
             this.storage = null;
         }
-
-        // Set some members.
-        this.gl = gl;
-        this.frameCountInLastSecond = 0;
-        this.timeToNextFPSUpdate = 1;
-        this.FPS = 0;
-        this.keyStates = new Map;
-        this.mousePosition = new vec2(0);
-        this.mouseButtons = [ false, false, false ];
-        this.simulateMouseWithFirstFinger = true;
-        this.touches = []; // Array of TouchPoint classes.
-        this.lastTimeRefreshCalled = 0;
 
         // Set the size of the canvas.
         this.fullFrame = false;
@@ -120,6 +125,8 @@ class FrameworkMain
         if( this.maxDeltaTime != 0 && deltaTime > this.maxDeltaTime )
             deltaTime = this.maxDeltaTime;
 
+        this.runningTime += deltaTime;
+
         this.timeToNextFPSUpdate -= deltaTime;
         if( this.timeToNextFPSUpdate <= 0.001 )
         {
@@ -141,7 +148,7 @@ class FrameworkMain
 
         if( this.runnableObject.update )
         {
-            this.runnableObject.update( deltaTime, currentTime );
+            this.runnableObject.update( deltaTime, this.runningTime );
         }
 
         this.draw();

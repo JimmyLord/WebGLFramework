@@ -74,16 +74,16 @@ class MainProject
         }
     }
 
-    update(deltaTime, currentTime)
+    update(deltaTime, runningTime)
     {
         if( this.framework == null )
             return;
 
-        this.scene.update(deltaTime, currentTime);
+        this.scene.update( deltaTime, runningTime );
 
-        this.scene.entities[1].position.x = Math.cos( currentTime/1000 );
-        this.scene.entities[1].position.y = Math.sin( currentTime/1000 );
-        this.scene.entities[1].rotation.z = -currentTime / 1000 * (180 / Math.PI);
+        this.scene.entities[1].position.x = Math.cos( runningTime );
+        this.scene.entities[1].position.y = Math.sin( runningTime );
+        this.scene.entities[1].rotation.z = -runningTime * (180 / Math.PI);
         if( this.cubeRotates )
         {
             this.scene.entities[2].rotation.x += deltaTime * 50;
