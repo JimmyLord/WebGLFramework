@@ -138,7 +138,9 @@ class FrameworkMain
 
         this.imgui.mousePosition.set( this.mousePosition );
         for( let i=0; i<this.mouseButtons.length; i++ )
+        {
             this.imgui.mouseButtons[i] = this.mouseButtons[i];
+        }
         this.imgui.newFrame( deltaTime );
 
         if( this.showFPSCounter )

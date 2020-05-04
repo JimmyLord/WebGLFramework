@@ -393,13 +393,19 @@ class ImGui
                         }
                     }
                 }
+
+                if( this.mouseButtons[1] == true && this.oldMouseButtons[1] == false ) // Middle button clicked.
+                {
+                    this.forceResize( this.windows[key] );
+                    this.stateIsDirty = true;
+                }
             }
 
             // If this window didn't have a size, resize it to the biggest size it's been.
             this.activeWindow = this.windows[key];
             if( this.activeWindow.size.x == 0 )
             {
-                this.forceResize();
+                this.forceResize( this.activeWindow );
             }
 
             // Reset their frame persistent values.
@@ -697,10 +703,13 @@ class ImGui
             let rect = this.activeWindow.rect;
             this.activeWindow.cursor.x = rect.x + rect.w - 12; // padding + 8 + padding.
             this.activeWindow.cursor.y = rect.y + rect.h - 12; // padding + 8 + padding.
+            let oldMaxX = this.activeWindow.maxExtents.x;
+            let oldMaxY = this.activeWindow.maxExtents.y;
             if( this.button( " " ) )
             {
                 this.windowBeingResized = this.activeWindow;
             }
+            this.activeWindow.maxExtents.setF32( oldMaxX, oldMaxY );
             this.activeWindow.cursor.x = x;
             this.activeWindow.cursor.y = y;
         }
@@ -708,11 +717,11 @@ class ImGui
         return this.activeWindow.expanded;
     }
 
-    forceResize()
+    forceResize(window)
     {
-        this.activeWindow.size.set( this.activeWindow.maxExtents.minus( this.activeWindow.position ) );
-        this.activeWindow.size.x += this.padding.x;
-        this.activeWindow.size.y += this.padding.y + 8 + this.padding.y;
+        window.size.set( window.maxExtents.minus( window.position ) );
+        window.size.x += this.padding.x;
+        window.size.y += this.padding.y + 8 + this.padding.y;
     }
 
     addBoxToArray(verts, indices, x, y, w, h, r, g, b, a)
@@ -977,12 +986,15 @@ class ImGui
             if( this.currentTime % 1.0 < 0.5 )
                 valueAsString += String.fromCharCode( 31 );
         }
+        let oldMaxX = this.activeWindow.maxExtents.x;
+        let oldMaxY = this.activeWindow.maxExtents.y;
         this.text( valueAsString );
+        this.activeWindow.maxExtents.setF32( oldMaxX, oldMaxY );
         this.sameLine();
 
         this.activeWindow.cursor.x += this.padding.x;
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
-        this.setIfBigger( this.activeWindow.maxExtents, x + w, y + 8 + this.padding.y );
+        this.setIfBigger( this.activeWindow.maxExtents, x + 20, y + 8 + this.padding.y );
         this.activeWindow.cursor.x = this.activeWindow.position.x;
         this.activeWindow.cursor.y += this.padding.y + 8 + this.padding.y;
 
