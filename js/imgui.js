@@ -436,6 +436,7 @@ class ImGui
             if( this.mouseChange.x != 0 || this.mouseChange.y != 0 )
             {
                 this.windowBeingMoved.position.add( this.mouseChange );
+                this.windowBeingMoved.maxExtents.add( this.mouseChange );
                 this.windowMoved = true;
                 this.windowBeingMoved.cursor.set( this.windowBeingMoved.position );
             }
@@ -446,6 +447,12 @@ class ImGui
             if( this.mouseChange.x != 0 || this.mouseChange.y != 0 )
             {
                 this.windowBeingResized.size.add( this.mouseChange );
+                if( this.windowBeingResized.size.x < 16 )
+                    this.windowBeingResized.size.x = 16;
+                if( this.windowBeingResized.size.y < 16 )
+                    this.windowBeingResized.size.y = 16;
+
+                this.windowBeingResized.maxExtents.setF32( 0, 0 );
                 this.windowMoved = true;
                 //this.windowBeingMoved.cursor.set( this.windowBeingMoved.position );
             }
@@ -992,9 +999,15 @@ class ImGui
         this.activeWindow.maxExtents.setF32( oldMaxX, oldMaxY );
         this.sameLine();
 
+        let minWidth = 40;
+        if( minWidth < valueAsString.length*8 )
+        {
+            minWidth = valueAsString.length*8 + this.padding.x * 2;
+        }
+
         this.activeWindow.cursor.x += this.padding.x;
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
-        this.setIfBigger( this.activeWindow.maxExtents, x + 20, y + 8 + this.padding.y );
+        this.setIfBigger( this.activeWindow.maxExtents, x + minWidth, y + 8 + this.padding.y );
         this.activeWindow.cursor.x = this.activeWindow.position.x;
         this.activeWindow.cursor.y += this.padding.y + 8 + this.padding.y;
 
