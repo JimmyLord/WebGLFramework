@@ -950,55 +950,84 @@ class ImGui
         if( boxWidth < this.minDragBoxWidth )
             boxWidth = this.minDragBoxWidth;
 
-        // Background.
         let x = this.activeWindow.cursor.x + this.padding.x;
         let y = this.activeWindow.cursor.y + buttonTopPadding;
         let w = boxWidth;
         let h = buttonTopPadding + 8 + this.padding.y;
 
         let isHovering = false;
-        let rgb = new vec3(0,96,0);
+
         let rect = new Rect( x, y, w, h );
-        if( rect.contains( this.mousePosition ) ) // is hovering.
-        {
-            isHovering = true;
-        }
 
-        if( this.controlInEditMode == label )
+        // Draw background and determine if mouse if hovering over it.
         {
-            rgb.setF32( 100, 0, 0 );
-        }
-        else if( isHovering )
-        {
-            rgb.setF32( 0, 160, 0 );
 
-            if( this.mouseButtons[0] == true ) // is pressing.
+            let rgb = new vec3(0,96,0);
+            if( rect.contains( this.mousePosition ) ) // is hovering.
             {
-                rgb.setF32( 0, 220, 0 );
+                isHovering = true;
             }
+
+            if( this.controlInEditMode == label )
+            {
+                rgb.setF32( 100, 0, 0 );
+            }
+            else if( isHovering )
+            {
+                rgb.setF32( 0, 160, 0 );
+
+                if( this.mouseButtons[0] == true ) // is pressing.
+                {
+                    rgb.setF32( 0, 220, 0 );
+                }
+            }
+
+            this.addBoxToArray( verts, indices, x,y,w,h, rgb.x,rgb.y,rgb.z,255 );
         }
 
-        this.addBoxToArray( verts, indices, x,y,w,h, rgb.x,rgb.y,rgb.z,255 );
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
-
-        // Draw value.
+        // Calculate some values for the text string.
         if( this.controlInEditMode == label )
         {
             valueAsString = this.activeControlTextBuffer.join( "" );
         }
-        let midPoint = boxWidth/2 - valueAsString.length*8/2;
-        this.activeWindow.cursor.x += midPoint;
-        if( this.controlInEditMode == label ) // Blinking cursor
-        {
-            if( this.currentTime % 1.0 < 0.5 )
-                valueAsString += String.fromCharCode( 31 );
-        }
-        let oldMaxX = this.activeWindow.maxExtents.x;
-        let oldMaxY = this.activeWindow.maxExtents.y;
-        this.text( valueAsString );
-        this.activeWindow.maxExtents.setF32( oldMaxX, oldMaxY );
-        this.sameLine();
+        let textWidth = valueAsString.length*8;
+        let textStartPoint = boxWidth/2 - textWidth/2;
 
+        // Draw a highlight around the selected text by drawing a second bg block.
+        if( this.controlInEditMode == label && this.activeControlTextBufferSelected == true )
+        {
+            let h = buttonTopPadding + 8 + this.padding.y;
+
+            let rgb = new vec3(200,60,0);
+
+            this.addBoxToArray( verts, indices, x + textStartPoint,y,textWidth,h, rgb.x,rgb.y,rgb.z,255 );
+        }
+
+        // Add BG verts to draw list.
+        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+
+        // Draw value as text.
+        {
+            this.activeWindow.cursor.x += textStartPoint;
+
+            // Add a blinking cursor if we're editing this piece of text.
+            if( this.controlInEditMode == label )
+            {
+                if( this.currentTime % 1.0 < 0.5 )
+                    valueAsString += String.fromCharCode( 31 );
+            }
+
+            // Draw text without affecting maxExtents.
+            let oldMaxX = this.activeWindow.maxExtents.x;
+            let oldMaxY = this.activeWindow.maxExtents.y;
+            this.text( valueAsString );
+            this.activeWindow.maxExtents.setF32( oldMaxX, oldMaxY );
+
+            // Place cursor at end of text.
+            this.sameLine();
+        }
+
+        // Adjust extents and cursor position.
         let minWidth = 40;
         if( minWidth < valueAsString.length*8 )
         {
