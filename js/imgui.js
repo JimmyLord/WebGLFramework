@@ -265,6 +265,8 @@ class ImGui
             window.position.setF32( state.windows[key].position["x"], state.windows[key].position["y"] );
             window.size.setF32( state.windows[key].size["x"], state.windows[key].size["y"] );
             window.cursor.set( window.position );
+            window.cursor.hasFrame = state.windows[key].hasFrame;
+            window.cursor.takesInput = state.windows[key].takesInput;
             
             // If the window is offscreen, force it back to 0,0.
             if( window.position.x + window.size.x < 0 || window.position.x >= this.canvas.width / this.scale ||
@@ -306,6 +308,8 @@ class ImGui
             state.windows[key] = {};
             state.windows[key].position = this.windows[key].position;
             state.windows[key].size = this.windows[key].size;
+            state.windows[key].hasFrame = this.windows[key].hasFrame;
+            state.windows[key].takesInput = this.windows[key].takesInput;
         }
 
         return state;
@@ -327,7 +331,8 @@ class ImGui
         for( let key in this.windows )
         {
             // Find which window is hovered and if it was clicked.
-            if( this.windows[key].activeThisFrame && this.windows[key].rect.contains( this.mousePosition ) )
+            if( this.windows[key].activeThisFrame && this.windows[key].takesInput &&
+                this.windows[key].rect.contains( this.mousePosition ) )
             {
                 if( this.mouseButtons[0] == false || this.ownsMouse == true )
                 {
@@ -370,7 +375,8 @@ class ImGui
         for( let key in this.windows )
         {
             // Find which window is hovered and if it was clicked.
-            if( this.windows[key].activeThisFrame && this.windows[key].rect.contains( this.mousePosition ) )
+            if( this.windows[key].activeThisFrame && this.windows[key].takesInput &&
+                this.windows[key].rect.contains( this.mousePosition ) )
             {
                 if( this.mouseButtons[0] == false || this.ownsMouse == true )
                 {
@@ -609,7 +615,7 @@ class ImGui
         this.activeWindow.cursor.set( this.activeWindow.previousLineEndPosition );
     }
 
-    initWindow(name, onlySetIfNew, position, size)
+    initWindow(name, onlySetIfNew, position, size, hasFrame, takesInput)
     {
         let existed = true;
 
@@ -617,6 +623,8 @@ class ImGui
         {
             this.windows[name] = new Window();
             this.windows[name].maxExtents.setF32( 0, 0 );
+            this.windows[name].hasFrame = true;
+            this.windows[name].takesInput = true;
             existed = false;
         }
 
@@ -627,6 +635,12 @@ class ImGui
 
             if( size != undefined )
                 this.windows[name].size.set( size );
+
+            if( hasFrame != undefined )
+                this.windows[name].hasFrame = hasFrame;
+
+            if( takesInput != undefined )
+                this.windows[name].takesInput = takesInput;
         }
     }
 
@@ -646,6 +660,8 @@ class ImGui
             this.activeWindow.size.setF32( 0, 0 );
             this.activeWindow.maxExtents.setF32( 0, 0 );
             this.activeWindow.cursor.set( this.activeWindow.position );
+            this.activeWindow.hasFrame = true;
+            this.activeWindow.takesInput = true;
         }
         
         this.activeWindow = this.windows[name];
@@ -659,66 +675,78 @@ class ImGui
         }
 
         // If we're adding the window for the first time, add a title and BG.
-        if( this.activeWindow.cursor.y == this.activeWindow.position.y )
+        if( this.activeWindow.hasFrame == false )
         {
-            let verts = [];
-            let indices = [];
-            
             let x = this.activeWindow.position.x;
             let y = this.activeWindow.position.y;
             
             let w = this.activeWindow.size.x;
-            
-            let titleH = 8 + this.padding.y*2;
-            
-            // Draw the title box.
-            let h = titleH;
-            this.addBoxToArray( verts, indices, x,y,w,h, 0,0,0,200 );
-
+            let h = this.activeWindow.size.y;
             this.activeWindow.rect.set( x, y, w, h );
+        }
+        else
+        {
+            if( this.activeWindow.cursor.y == this.activeWindow.position.y )
+            {
+                let verts = [];
+                let indices = [];
+            
+                let x = this.activeWindow.position.x;
+                let y = this.activeWindow.position.y;
+            
+                let w = this.activeWindow.size.x;
+            
+                let titleH = 8 + this.padding.y*2;
+            
+                // Draw the title box.
+                let h = titleH;
+                this.addBoxToArray( verts, indices, x,y,w,h, 0,0,0,200 );
 
+                this.activeWindow.rect.set( x, y, w, h );
+
+                if( this.activeWindow.expanded )
+                {
+                    // Draw the BG box.
+                    y += titleH;
+                    h = this.activeWindow.size.y - titleH;
+                    this.addBoxToArray( verts, indices, x,y,w,h, 0,0,255,200 );
+
+                    // Define scissor rect, y is lower left.
+                    let rx = this.activeWindow.position.x;
+                    let ry = this.activeWindow.position.y;
+                    let rw = this.activeWindow.size.x;
+                    let rh = this.activeWindow.size.y;
+                    this.activeWindow.rect.set( rx, ry, rw, rh );
+                }
+
+                this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+
+                if( this.checkbox( "", this.activeWindow.expanded ) )
+                {
+                    this.activeWindow.expanded = !this.activeWindow.expanded;
+                }
+                this.sameLine();
+                this.text( name );
+            }
+
+            // Button at bottom right to resize window.
             if( this.activeWindow.expanded )
             {
-                // Draw the BG box.
-                y += titleH;
-                h = this.activeWindow.size.y - titleH;
-                this.addBoxToArray( verts, indices, x,y,w,h, 0,0,255,200 );
-
-                // Define scissor rect, y is lower left.
-                let rx = this.activeWindow.position.x;
-                let ry = this.activeWindow.position.y;
-                let rw = this.activeWindow.size.x;
-                let rh = this.activeWindow.size.y;
-                this.activeWindow.rect.set( rx, ry, rw, rh );
+                let x = this.activeWindow.cursor.x;
+                let y = this.activeWindow.cursor.y;
+                let rect = this.activeWindow.rect;
+                this.activeWindow.cursor.x = rect.x + rect.w - 12; // padding + 8 + padding.
+                this.activeWindow.cursor.y = rect.y + rect.h - 12; // padding + 8 + padding.
+                let oldMaxX = this.activeWindow.maxExtents.x;
+                let oldMaxY = this.activeWindow.maxExtents.y;
+                if( this.button( " " ) )
+                {
+                    this.windowBeingResized = this.activeWindow;
+                }
+                this.activeWindow.maxExtents.setF32( oldMaxX, oldMaxY );
+                this.activeWindow.cursor.x = x;
+                this.activeWindow.cursor.y = y;
             }
-
-            this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
-
-            if( this.checkbox( "", this.activeWindow.expanded ) )
-            {
-                this.activeWindow.expanded = !this.activeWindow.expanded;
-            }
-            this.sameLine();
-            this.text( name );
-        }
-
-        // Button at bottom right to resize window.
-        if( this.activeWindow.expanded )
-        {
-            let x = this.activeWindow.cursor.x;
-            let y = this.activeWindow.cursor.y;
-            let rect = this.activeWindow.rect;
-            this.activeWindow.cursor.x = rect.x + rect.w - 12; // padding + 8 + padding.
-            this.activeWindow.cursor.y = rect.y + rect.h - 12; // padding + 8 + padding.
-            let oldMaxX = this.activeWindow.maxExtents.x;
-            let oldMaxY = this.activeWindow.maxExtents.y;
-            if( this.button( " " ) )
-            {
-                this.windowBeingResized = this.activeWindow;
-            }
-            this.activeWindow.maxExtents.setF32( oldMaxX, oldMaxY );
-            this.activeWindow.cursor.x = x;
-            this.activeWindow.cursor.y = y;
         }
 
         return this.activeWindow.expanded;

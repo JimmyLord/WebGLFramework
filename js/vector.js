@@ -9,17 +9,17 @@ class vec2
     set(o)              { this.x = o.x; this.y = o.y; }
     setF32(x, y)        { this.x = x; this.y = y; }
 
-    plus(o)             { return new vec3( this.x + o.x, this.y + o.y ); }
-    plusF32(o)          { return new vec3( this.x + o, this.y + o ); }
+    plus(o)             { return new vec2( this.x + o.x, this.y + o.y ); }
+    plusF32(o)          { return new vec2( this.x + o, this.y + o ); }
 
-    minus(o)            { return new vec3( this.x - o.x, this.y - o.y ); }
-    minusF32(o)         { return new vec3( this.x - o, this.y - o ); }
+    minus(o)            { return new vec2( this.x - o.x, this.y - o.y ); }
+    minusF32(o)         { return new vec2( this.x - o, this.y - o ); }
 
-    timesVec3(o)        { return new vec3( this.x * o.x, this.y * o.y ); }
-    times(o)            { return new vec3( this.x * o, this.y * o ); }
+    timesVec3(o)        { return new vec2( this.x * o.x, this.y * o.y ); }
+    times(o)            { return new vec2( this.x * o, this.y * o ); }
 
-    dividedByVec3(o)    { return new vec3( this.x / o.x, this.y / o.y ); }
-    dividedBy(o)        { return new vec3( this.x / o, this.y / o ); }
+    dividedByVec2(o)    { return new vec2( this.x / o.x, this.y / o.y ); }
+    dividedBy(o)        { return new vec2( this.x / o, this.y / o ); }
 
     add(o)              { this.x += o.x; this.y += o.y; }
     addF32(o)           { this.x += o; this.y += o; }
@@ -45,6 +45,12 @@ class vec2
     {
         let d = this.minus( o );
         return d.x*d.x + d.y*d.y;
+    }
+
+    getNormalized()
+    {
+        let len = this.length();
+        return new vec2( this.x / len, this.y / len );
     }
 }
 

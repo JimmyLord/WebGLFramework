@@ -132,4 +132,23 @@ class Camera
 
         return [orthoX, orthoY];
     }
+
+    convertOrthoToScreen(canvas, orthoX, orthoY)
+    {
+        let orthoScaleX = this.matProj.m[0];
+        let orthoOffsetX = this.matProj.m[12];
+        let orthoScaleY = this.matProj.m[5];
+        let orthoOffsetY = this.matProj.m[13];
+
+        // Transform from world space coordinates to view space coordinates.
+        // TODO: Fix for view rotation if we ever spin the camera.
+        orthoX -= this.position.x;
+        orthoY -= this.position.y;
+
+        // Transform from view space coordinates to canvas coordinates.
+        let x = (orthoX + (1 + orthoOffsetX) / orthoScaleX) / 2 * orthoScaleX * canvas.width;
+        let y = ((orthoY + (1 + orthoOffsetY) / orthoScaleY) / 2 * orthoScaleY * canvas.height - canvas.height) * -1;
+
+        return [x, y];
+    }
 }
