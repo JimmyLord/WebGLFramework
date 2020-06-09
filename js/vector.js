@@ -15,7 +15,7 @@ class vec2
     minus(o)            { return new vec2( this.x - o.x, this.y - o.y ); }
     minusF32(o)         { return new vec2( this.x - o, this.y - o ); }
 
-    timesVec3(o)        { return new vec2( this.x * o.x, this.y * o.y ); }
+    timesVec2(o)        { return new vec2( this.x * o.x, this.y * o.y ); }
     times(o)            { return new vec2( this.x * o, this.y * o ); }
 
     dividedByVec2(o)    { return new vec2( this.x / o.x, this.y / o.y ); }
@@ -27,10 +27,10 @@ class vec2
     subtract(o)         { this.x -= o.x; this.y -= o.y; }
     subtractF32(o)      { this.x -= o; this.y -= o; }
 
-    multiplyByVec3(o)   { this.x *= o.x; this.y *= o.y; }
+    multiplyByVec2(o)   { this.x *= o.x; this.y *= o.y; }
     multiplyBy(o)       { this.x *= o; this.y *= o; }
 
-    divideByVec3(o)     { this.x /= o.x; this.y /= o.y; }
+    divideByVec2(o)     { this.x /= o.x; this.y /= o.y; }
     divideBy(o)         { this.x /= o; this.y /= o; }
 
     length()            { return Math.sqrt( this.x*this.x + this.y*this.y ); }
@@ -45,6 +45,13 @@ class vec2
     {
         let d = this.minus( o );
         return d.x*d.x + d.y*d.y;
+    }
+
+    normalize()
+    {
+        let len = this.length();
+        this.x = this.x / len;
+        this.y = this.y / len;
     }
 
     getNormalized()

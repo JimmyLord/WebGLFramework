@@ -265,8 +265,8 @@ class ImGui
             window.position.setF32( state.windows[key].position["x"], state.windows[key].position["y"] );
             window.size.setF32( state.windows[key].size["x"], state.windows[key].size["y"] );
             window.cursor.set( window.position );
-            window.cursor.hasFrame = state.windows[key].hasFrame;
-            window.cursor.takesInput = state.windows[key].takesInput;
+            window.hasFrame = state.windows[key].hasFrame;
+            window.takesInput = state.windows[key].takesInput;
             
             // If the window is offscreen, force it back to 0,0.
             if( window.position.x + window.size.x < 0 || window.position.x >= this.canvas.width / this.scale ||
