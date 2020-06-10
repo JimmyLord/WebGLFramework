@@ -11,6 +11,7 @@ class FrameworkMain
         this.showFPSCounter = false;
         this.autoRefresh = true;
         this.maxDeltaTime = 0; // Prevent deltaTime from getting bigger than this. 0 for unlimited.
+        this.clearColor = new color( 0, 0, 0.4, 1 );
 
         // Public members.
         this.runningTime = 0;
@@ -161,7 +162,7 @@ class FrameworkMain
         let gl = this.gl;
         
         gl.viewport( 0, 0, this.canvas.width, this.canvas.height );
-        gl.clearColor( 0, 0, 0.4, 1 );
+        gl.clearColor( this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a );
         gl.clear( gl.COLOR_BUFFER_BIT );
 
         if( this.runnableObject.draw )

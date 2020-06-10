@@ -231,7 +231,7 @@ class Mesh
         this.primitiveType = gl.TRIANGLES;
     }
 
-    createCircle(numSides, radius)
+    createCircle(numSides, radius, outline)
     {
         let gl = this.gl;
 
@@ -261,7 +261,10 @@ class Mesh
         gl.bufferData( gl.ARRAY_BUFFER, vertexAttributes, gl.STATIC_DRAW );
 
         this.numVerts = numVerts;
-        this.primitiveType = gl.TRIANGLE_FAN;
+        if( outline === true )
+            this.primitiveType = gl.LINE_LOOP;
+        else
+            this.primitiveType = gl.TRIANGLE_FAN;
     }
 
     draw(camera, matWorld, material, lights)
