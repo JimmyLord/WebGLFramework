@@ -28,14 +28,14 @@
         this.stateIsDirty = false;
 
         // Colors.
-        this.colorBG =              new color( 0, 0, 25, 200 );
-        this.colorTitle =           new color( 0, 0, 50, 255 );
-        this.colorButtonNormal =    new vec3( 50, 50, 200 );
-        this.colorButtonHovered =   new vec3( 80, 80, 230 );
-        this.colorButtonPressed =   new vec3( 120, 120, 255 );
-        this.colorCheckbox =        new vec3( 196, 196, 196 );
-        this.colorTextBoxSelected = new vec3( 100, 0, 0 );
-        this.colorTextSelected =    new vec3( 200, 60, 0 );
+        this.colorBG =              new color(   0,   0,  25, 200 );
+        this.colorTitle =           new color(   0,   0,  50, 255 );
+        this.colorButtonNormal =    new color(  50,  50, 200, 255 );
+        this.colorButtonHovered =   new color(  80,  80, 230, 255 );
+        this.colorButtonPressed =   new color( 120, 120, 255, 255 );
+        this.colorCheckbox =        new color( 196, 196, 196, 255 );
+        this.colorTextBoxSelected = new color( 100,   0,   0, 255 );
+        this.colorTextSelected =    new color( 200,  60,   0, 255 );
 
         // Persistent values within single frame.
 
@@ -769,14 +769,14 @@
         window.size.y += this.padding.y + 8 + this.padding.y;
     }
 
-    addBoxToArray(verts, indices, x, y, w, h, r, g, b, a)
+    addBoxToArray(verts, indices, x, y, w, h, color)
     {
         let numVerts = verts.length/8;
         indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
-        verts.push( x+0,y+h,   0,0,   r,g,b,a );
-        verts.push( x+0,y+0,   0,0,   r,g,b,a );
-        verts.push( x+w,y+0,   0,0,   r,g,b,a );
-        verts.push( x+w,y+h,   0,0,   r,g,b,a );
+        verts.push( x+0,y+h,   0,0,   color.r,color.g,color.b,color.a );
+        verts.push( x+0,y+0,   0,0,   color.r,color.g,color.b,color.a );
+        verts.push( x+w,y+0,   0,0,   color.r,color.g,color.b,color.a );
+        verts.push( x+w,y+h,   0,0,   color.r,color.g,color.b,color.a );
     }
 
     addStringToDrawList(str, x, y, rect)
@@ -873,20 +873,20 @@
         let y = this.activeWindow.cursor.y + buttonTopPadding;
 
         let isHovering = false;
-        let rgb = this.colorButtonNormal;
+        let color = this.colorButtonNormal;
         let rect = new Rect( x, y, w, h );
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
             isHovering = true;
-            rgb = this.colorButtonHovered;
+            color = this.colorButtonHovered;
 
             if( this.mouseButtons[0] == true ) // is pressing.
             {
-                rgb = this.colorButtonPressed;
+                color = this.colorButtonPressed;
             }
         }
 
-        this.addBoxToArray( verts, indices, x,y,w,h, rgb.x,rgb.y,rgb.z,255 );
+        this.addBoxToArray( verts, indices, x,y,w,h, color );
         this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
         this.activeWindow.cursor.x += this.padding.x;
@@ -930,25 +930,25 @@
         let y = this.activeWindow.cursor.y + buttonTopPadding;
 
         let isHovering = false;
-        let rgb = this.colorButtonNormal;
+        let color = this.colorButtonNormal;
         let rect = new Rect( x, y, w, h );
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
             isHovering = true;
-            rgb = this.colorButtonHovered;
+            color = this.colorButtonHovered;
 
             if( this.mouseButtons[0] == true ) // is pressing.
             {
-                rgb = this.colorButtonPressed;
+                color = this.colorButtonPressed;
             }
         }
 
-        this.addBoxToArray( verts, indices, x,y,w-1,h-1, rgb.x,rgb.y,rgb.z,255 );
+        this.addBoxToArray( verts, indices, x,y,w-1,h-1, color );
 
         if( isChecked )
         {
-            rgb = this.colorCheckbox;
-            this.addBoxToArray( verts, indices, x+2,y+2,w-5,h-5, rgb.x,rgb.y,rgb.z,255 );
+            color = this.colorCheckbox;
+            this.addBoxToArray( verts, indices, x+2,y+2,w-5,h-5, color );
         }
 
         this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
@@ -1006,7 +1006,7 @@
 
         // Draw background and determine if mouse if hovering over it.
         {
-            let rgb = this.colorButtonNormal;
+            let color = this.colorButtonNormal;
             if( rect.contains( this.mousePosition ) ) // is hovering.
             {
                 isHovering = true;
@@ -1014,19 +1014,19 @@
 
             if( this.controlInEditMode == label )
             {
-                rgb = this.colorTextBoxSelected;
+                color = this.colorTextBoxSelected;
             }
             else if( isHovering )
             {
-                rgb = this.colorButtonHovered;
+                color = this.colorButtonHovered;
 
                 if( this.mouseButtons[0] == true ) // is pressing.
                 {
-                    rgb = this.colorButtonPressed;
+                    color = this.colorButtonPressed;
                 }
             }
 
-            this.addBoxToArray( verts, indices, x,y,w,h, rgb.x,rgb.y,rgb.z,255 );
+            this.addBoxToArray( verts, indices, x,y,w,h, color );
         }
 
         // Calculate some values for the text string.
@@ -1042,9 +1042,9 @@
         {
             let h = buttonTopPadding + 8 + this.padding.y;
 
-            let rgb = this.colorTextSelected;
+            let color = this.colorTextSelected;
 
-            this.addBoxToArray( verts, indices, x + textStartPoint,y,textWidth,h, rgb.x,rgb.y,rgb.z,255 );
+            this.addBoxToArray( verts, indices, x + textStartPoint,y,textWidth,h, color );
         }
 
         // Add BG verts to draw list.
