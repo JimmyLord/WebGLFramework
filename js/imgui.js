@@ -16,6 +16,7 @@
         this.mouseChange = new vec2(0);
         this.lastMousePosition = new vec2(0);
         this.unusedKeyBuffer = null;
+        this.mainMenuBarHeight = 0; // How tall is the main menu bar (0 if no bar is active).
         this.activeWindow = null;
         this.activeControl = null;
         this.controlInEditMode = null;
@@ -33,6 +34,10 @@
         this.colorButtonNormal =    new color(  50,  50, 200, 255 );
         this.colorButtonHovered =   new color(  80,  80, 230, 255 );
         this.colorButtonPressed =   new color( 120, 120, 255, 255 );
+        this.colorMenuBar =         new color(   0,   0,   0, 255 );
+        this.colorMenuItemNormal =  new color(   0,   0,   0, 255 );
+        this.colorMenuItemHovered = new color(  80,  80,  80, 255 );
+        this.colorMenuItemPressed = new color( 120, 120, 120, 255 );
         this.colorCheckbox =        new color( 196, 196, 196, 255 );
         this.colorTextBoxSelected = new color( 100,   0,   0, 255 );
         this.colorTextSelected =    new color( 200,  60,   0, 255 );
@@ -275,6 +280,7 @@
             window.position.setF32( state.windows[key].position["x"], state.windows[key].position["y"] );
             window.size.setF32( state.windows[key].size["x"], state.windows[key].size["y"] );
             window.cursor.set( window.position );
+            window.hasTitle = true;
             window.hasFrame = state.windows[key].hasFrame;
             window.takesInput = state.windows[key].takesInput;
             
@@ -356,6 +362,8 @@
     {
         this.frameCount++;
         this.currentTime += deltaTime;
+        
+        this.mainMenuBarHeight = 0;
 
         // Backup our keyBuffer for use this frame and clear the array.
         this.unusedKeyBuffer = this.keyBuffer;
@@ -625,7 +633,7 @@
         this.activeWindow.cursor.set( this.activeWindow.previousLineEndPosition );
     }
 
-    initWindow(name, onlySetIfNew, position, size, hasFrame, takesInput)
+    initWindow(name, onlySetIfNew, position, size, hasFrame, takesInput, hasTitle)
     {
         let existed = true;
 
@@ -633,6 +641,7 @@
         {
             this.windows[name] = new Window();
             this.windows[name].maxExtents.setF32( 0, 0 );
+            this.windows[name].hasTitle = true;
             this.windows[name].hasFrame = true;
             this.windows[name].takesInput = true;
             existed = false;
@@ -646,12 +655,102 @@
             if( size != undefined )
                 this.windows[name].size.set( size );
 
+            if( hasTitle != undefined )
+                this.windows[name].hasTitle = hasTitle;
+
             if( hasFrame != undefined )
                 this.windows[name].hasFrame = hasFrame;
 
             if( takesInput != undefined )
                 this.windows[name].takesInput = takesInput;
         }
+    }
+
+    mainMenuBar()
+    {
+        let gl = this.gl;
+
+        let name = "__mainMenuBar__";
+
+        //if( this.windows[name] == undefined )
+        {
+            let windowCount = Object.keys( this.windows ).length;
+
+            this.windows[name] = new Window();
+            this.activeWindow = this.windows[name];
+            
+            this.activeWindow.position.setF32( 0, 0 );
+            this.activeWindow.size.setF32( this.canvas.width / this.scale, 8 + this.padding.y*2 - 1 );
+            this.activeWindow.maxExtents.setF32( 0, 0 );
+            this.activeWindow.cursor.set( new vec2( this.activeWindow.position.x, this.activeWindow.position.y-1 ) );
+            this.activeWindow.hasTitle = true;
+            this.activeWindow.hasFrame = true;
+            this.activeWindow.takesInput = true;
+        }
+        
+        this.activeWindow = this.windows[name];
+        this.activeWindow.activeThisFrame = true;
+
+        // Draw the main menu bg.
+        {
+            let verts = [];
+            let indices = [];
+            
+            let w = this.activeWindow.size.x;
+            let h = this.activeWindow.size.y;
+            this.mainMenuBarHeight = h;
+            
+            this.activeWindow.rect.set( 0, 0, w, h );
+
+            this.addBoxToArray( verts, indices, 0,0,w,h, this.colorMenuBar );
+
+            this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+        }
+    }
+
+    menu(name)
+    {
+        this.activeWindow = this.windows["__mainMenuBar__"];
+
+        let backupNormal  = this.colorButtonNormal;
+        let backupHovered = this.colorButtonHovered;
+        let backupPressed = this.colorButtonPressed;
+        this.colorButtonNormal  = this.colorMenuItemNormal;
+        this.colorButtonHovered = this.colorMenuItemHovered;
+        this.colorButtonPressed = this.colorMenuItemPressed;
+
+        let pressed = this.button( name, false );
+
+        this.colorButtonNormal  = backupNormal;
+        this.colorButtonHovered = backupHovered;
+        this.colorButtonPressed = backupPressed;
+
+        this.sameLine();
+
+        if( pressed )
+        {
+            this.currentPopup = name;
+            
+            let popupName = "__Popup_" + name;
+            // TODO: Pop up a menu window below this.
+            this.initWindow( popupName, false, new vec2( 250, 100 ), new vec2( 100, 100 ), true, true, false );
+            this.window( popupName );
+            this.text( "TEST" );
+            this.text( "TEST" );
+            this.text( "TEST" );
+            this.text( "TEST" );
+            this.text( "TEST" );
+            //this.forceResize( this.activeWindow );
+        }
+
+        if( this.currentPopup === name )
+            return true;
+        
+        return false;
+    }
+
+    menuItem()
+    {
     }
 
     // Return true is window is expanded.
@@ -670,6 +769,7 @@
             this.activeWindow.size.setF32( 0, 0 );
             this.activeWindow.maxExtents.setF32( 0, 0 );
             this.activeWindow.cursor.set( this.activeWindow.position );
+            this.activeWindow.hasTitle = true;
             this.activeWindow.hasFrame = true;
             this.activeWindow.takesInput = true;
         }
@@ -692,6 +792,7 @@
             
             let w = this.activeWindow.size.x;
             let h = this.activeWindow.size.y;
+
             this.activeWindow.rect.set( x, y, w, h );
         }
         else
@@ -706,20 +807,22 @@
             
                 let w = this.activeWindow.size.x;
             
-                let titleH = 8 + this.padding.y*2;
+                let titleH = 0;
             
                 // Draw the title box.
-                let h = titleH;
-                this.addBoxToArray( verts, indices, x,y,w,h, this.colorTitle.r,this.colorTitle.g,this.colorTitle.b,this.colorTitle.a );
-
-                this.activeWindow.rect.set( x, y, w, h );
+                if( this.activeWindow.hasTitle )
+                {
+                    titleH = 8 + this.padding.y*2;
+                    this.addBoxToArray( verts, indices, x,y,w,titleH, this.colorTitle );
+                }
+                this.activeWindow.rect.set( x, y, w, titleH );
 
                 if( this.activeWindow.expanded )
                 {
                     // Draw the BG box.
                     y += titleH;
-                    h = this.activeWindow.size.y - titleH;
-                    this.addBoxToArray( verts, indices, x,y,w,h, this.colorBG.r,this.colorBG.g,this.colorBG.b,this.colorBG.a );
+                    let h = this.activeWindow.size.y - titleH;
+                    this.addBoxToArray( verts, indices, x,y,w,h, this.colorBG );
 
                     // Define scissor rect, y is lower left.
                     let rx = this.activeWindow.position.x;
@@ -729,33 +832,47 @@
                     this.activeWindow.rect.set( rx, ry, rw, rh );
                 }
 
+                // Adjust rect for main menu bar, if needed.
+                if( this.activeWindow.rect.y < this.mainMenuBarHeight )
+                {
+                    this.activeWindow.rect.h -= this.mainMenuBarHeight - this.activeWindow.rect.y;
+                    this.activeWindow.rect.y = this.mainMenuBarHeight;
+                }
+
                 this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
-                if( this.checkbox( "", this.activeWindow.expanded ) )
+                if( this.activeWindow.hasTitle )
                 {
-                    this.activeWindow.expanded = !this.activeWindow.expanded;
+                    if( this.checkbox( "", this.activeWindow.expanded ) )
+                    {
+                        this.activeWindow.expanded = !this.activeWindow.expanded;
+                    }
+
+                    this.sameLine();
+                    this.text( name );
                 }
-                this.sameLine();
-                this.text( name );
             }
 
-            // Button at bottom right to resize window.
-            if( this.activeWindow.expanded )
+            if( this.activeWindow.hasTitle )
             {
-                let x = this.activeWindow.cursor.x;
-                let y = this.activeWindow.cursor.y;
-                let rect = this.activeWindow.rect;
-                this.activeWindow.cursor.x = rect.x + rect.w - 12; // padding + 8 + padding.
-                this.activeWindow.cursor.y = rect.y + rect.h - 12; // padding + 8 + padding.
-                let oldMaxX = this.activeWindow.maxExtents.x;
-                let oldMaxY = this.activeWindow.maxExtents.y;
-                if( this.button( " " ) )
+                // Button at bottom right to resize window.
+                if( this.activeWindow.expanded )
                 {
-                    this.windowBeingResized = this.activeWindow;
+                    let x = this.activeWindow.cursor.x;
+                    let y = this.activeWindow.cursor.y;
+                    let rect = this.activeWindow.rect;
+                    this.activeWindow.cursor.x = rect.x + rect.w - 12; // padding + 8 + padding.
+                    this.activeWindow.cursor.y = rect.y + rect.h - 12; // padding + 8 + padding.
+                    let oldMaxX = this.activeWindow.maxExtents.x;
+                    let oldMaxY = this.activeWindow.maxExtents.y;
+                    if( this.button( " " ) )
+                    {
+                        this.windowBeingResized = this.activeWindow;
+                    }
+                    this.activeWindow.maxExtents.setF32( oldMaxX, oldMaxY );
+                    this.activeWindow.cursor.x = x;
+                    this.activeWindow.cursor.y = y;
                 }
-                this.activeWindow.maxExtents.setF32( oldMaxX, oldMaxY );
-                this.activeWindow.cursor.x = x;
-                this.activeWindow.cursor.y = y;
             }
         }
 
