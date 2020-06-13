@@ -6,7 +6,9 @@
         this.canvas = canvas;
 
         // Persistent values.
-        this.drawList = [];
+        this.BGDrawList = [];
+        this.FGDrawList = [];
+        this.drawList = this.BGDrawList;
         this.windows = {};
         this.frameCount = 0;
         this.currentTime = 0;
@@ -29,13 +31,14 @@
         this.stateIsDirty = false;
 
         // Colors.
-        this.colorBG =              new color(   0,   0,  25, 200 );
         this.colorTitle =           new color(   0,   0,  50, 255 );
+        this.colorBG =              new color(   0,   0,  25, 200 );
         this.colorButtonNormal =    new color(  50,  50, 200, 255 );
         this.colorButtonHovered =   new color(  80,  80, 230, 255 );
         this.colorButtonPressed =   new color( 120, 120, 255, 255 );
-        this.colorMenuBar =         new color(   0,   0,   0, 255 );
-        this.colorMenuItemNormal =  new color(   0,   0,   0, 255 );
+        this.colorMenuBar =         new color(  30, 100, 200, 255 );
+        this.colorMenuPopupBG =     new color(   0,   0,   0, 255 );
+        this.colorMenuItemNormal =  new color(   0,   0,   0,   0 );
         this.colorMenuItemHovered = new color(  80,  80,  80, 255 );
         this.colorMenuItemPressed = new color( 120, 120, 120, 255 );
         this.colorCheckbox =        new color( 196, 196, 196, 255 );
@@ -371,7 +374,8 @@
 
         this.isHoveringWindow = false;
 
-        this.drawList.length = 0;
+        this.BGDrawList.length = 0;
+        this.FGDrawList.length = 0;
         this.activeWindow = null;
 
         this.mousePosition.divideBy( this.scale );
@@ -389,6 +393,8 @@
             }
         }
 
+        let popupClicked = false;
+
         // Loop through all windows.
         for( let key in this.windows )
         {
@@ -404,6 +410,11 @@
 
                 if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
                 {
+                    if( key.startsWith( "__Popup__" ) )
+                    {
+                        popupClicked = true;
+                    }
+
                     this.windowBeingMoved = this.windows[key];
 
                     // If double click on a window title, collapse or expand it.
@@ -436,6 +447,14 @@
             this.windows[key].activeThisFrame = false;
             this.windows[key].cursor.set( this.windows[key].position );
             this.windows[key].previousLineEndPosition.setF32( 0, 0 );
+        }
+
+        if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
+        {
+            if( popupClicked == false )
+            {
+                this.currentPopup = null;
+            }
         }
 
         if( this.mouseButtons[0] == true && this.isHoveringWindow == false )
@@ -514,10 +533,14 @@
         gl.enable( gl.BLEND );
         gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
         gl.enable( gl.SCISSOR_TEST );
-        for( let i=0; i<this.drawList.length; i++ )
+        for( let i=0; i<this.BGDrawList.length; i++ )
         {
-            let item = this.drawList[i];
-            
+            let item = this.BGDrawList[i];            
+            this.drawItem( item );
+        }
+        for( let i=0; i<this.FGDrawList.length; i++ )
+        {
+            let item = this.FGDrawList[i];            
             this.drawItem( item );
         }
         gl.disable( gl.SCISSOR_TEST );
@@ -719,38 +742,74 @@
         this.colorButtonHovered = this.colorMenuItemHovered;
         this.colorButtonPressed = this.colorMenuItemPressed;
 
-        let pressed = this.button( name, false );
+        let menuItemPosition = this.activeWindow.cursor.x;
+
+        let pressed = this.button( name, true );
 
         this.colorButtonNormal  = backupNormal;
         this.colorButtonHovered = backupHovered;
         this.colorButtonPressed = backupPressed;
 
         this.sameLine();
+        this.activeWindow.cursor.x += 10;
 
-        if( pressed )
+        let expanded = false;
+
+        if( pressed || this.currentPopup === name )
         {
             this.currentPopup = name;
             
-            let popupName = "__Popup_" + name;
-            // TODO: Pop up a menu window below this.
-            this.initWindow( popupName, false, new vec2( 250, 100 ), new vec2( 100, 100 ), true, true, false );
-            this.window( popupName );
-            this.text( "TEST" );
-            this.text( "TEST" );
-            this.text( "TEST" );
-            this.text( "TEST" );
-            this.text( "TEST" );
-            //this.forceResize( this.activeWindow );
+            // Pop up a menu window below this.
+            let popupName = "__Popup__" + name;
+
+            // Clear all old popups.
+            this.FGDrawList.length = 0;
+            this.drawList = this.FGDrawList;
+
+            let x = menuItemPosition;
+            let y = this.activeWindow.position.y + this.activeWindow.size.y;
+
+            this.backupBG = this.colorBG;
+            this.colorBG = this.colorMenuPopupBG;
+            this.initWindow( popupName, false, new vec2( x, y ), new vec2( 120, 100 ), true, true, false );
+            if( this.window( popupName ) )
+            {
+                this.activeWindow.cursor.y += 2;
+                expanded = true;
+            }
+            this.colorBG = this.backupBG;
+            this.forceResize( this.activeWindow );
         }
 
-        if( this.currentPopup === name )
-            return true;
-        
-        return false;
+        this.drawList = this.BGDrawList;
+        return expanded;
     }
 
-    menuItem()
+    menuItem(label)
     {
+        this.drawList = this.FGDrawList;
+
+        let backupNormal  = this.colorButtonNormal;
+        let backupHovered = this.colorButtonHovered;
+        let backupPressed = this.colorButtonPressed;
+        this.colorButtonNormal  = this.colorMenuItemNormal;
+        this.colorButtonHovered = this.colorMenuItemHovered;
+        this.colorButtonPressed = this.colorMenuItemPressed;
+
+        let pressed = this.button( label );
+
+        this.colorButtonNormal  = backupNormal;
+        this.colorButtonHovered = backupHovered;
+        this.colorButtonPressed = backupPressed;
+
+        this.drawList = this.BGDrawList;
+
+        return pressed;
+    }
+
+    closePopup()
+    {
+        this.currentPopup = null;
     }
 
     // Return true is window is expanded.
