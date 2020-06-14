@@ -24,6 +24,7 @@
         this.controlInEditMode = null;
         this.activeControlTextBuffer = [];
         this.activeControlTextBufferSelected = false; // TODO: Allow only parts of text to be selected and overwritten. and display something.
+        this.windowHovered = null;
         this.windowBeingMoved = null;
         this.windowBeingResized = null;
         this.windowMoved = false;
@@ -278,6 +279,7 @@
         for( let key in state.windows )
         {
             this.windows[key] = new Window();
+            this.windows[key].name = key;
             let window = this.windows[key];
 
             window.position.setF32( state.windows[key].position["x"], state.windows[key].position["y"] );
@@ -372,6 +374,7 @@
         this.unusedKeyBuffer = this.keyBuffer;
         this.keyBuffer = [];
 
+        this.windowHovered = null;
         this.isHoveringWindow = false;
 
         this.BGDrawList.length = 0;
@@ -402,6 +405,8 @@
             if( this.windows[key].activeThisFrame && this.windows[key].takesInput &&
                 this.windows[key].rect.contains( this.mousePosition ) )
             {
+                this.windowHovered = this.windows[key];
+
                 if( this.mouseButtons[0] == false || this.ownsMouse == true )
                 {
                     this.isHoveringWindow = true;
@@ -474,7 +479,7 @@
             this.windowBeingResized = null;
         }
 
-        if( this.isHoveringControl == false && this.windowBeingMoved )
+        if( this.isHoveringControl == false && this.windowBeingMoved && this.windowBeingMoved.isMovable )
         {
             if( this.mouseChange.x != 0 || this.mouseChange.y != 0 )
             {
@@ -504,12 +509,17 @@
         if( false )
         {
             this.window( "TEST" );
-            this.windows["TEST"].position.x = 400;
-            this.windows["TEST"].position.y = 20;
+            this.windows["TEST"].position.x = 300;
+            this.windows["TEST"].position.y = 50;
             this.windows["TEST"].size.x = 250;
+            this.windows["TEST"].size.y = 200;
             this.text( "Delta: " + this.mouseChange.x + " " + this.mouseChange.y );
             this.text( "Mouse Pos: " + this.mousePosition.x + " " + this.mousePosition.y );
             this.text( "Buttons: " + this.mouseButtons );
+            if( this.windowHovered != null )
+            {
+                this.text( "Hovered: " + this.windowHovered.name );
+            }
             if( this.windowBeingMoved )
             {
                 this.text( "Rect XY: " + this.windowBeingMoved.rect.x + " " + this.windowBeingMoved.rect.y );
@@ -663,6 +673,7 @@
         if( this.windows[name] == undefined )
         {
             this.windows[name] = new Window();
+            this.windows[name].name = name;
             this.windows[name].maxExtents.setF32( 0, 0 );
             this.windows[name].hasTitle = true;
             this.windows[name].hasFrame = true;
@@ -695,11 +706,12 @@
 
         let name = "__mainMenuBar__";
 
-        //if( this.windows[name] == undefined )
+        if( this.windows[name] == undefined )
         {
             let windowCount = Object.keys( this.windows ).length;
 
             this.windows[name] = new Window();
+            this.windows[name].name = name;
             this.activeWindow = this.windows[name];
             
             this.activeWindow.position.setF32( 0, 0 );
@@ -709,6 +721,7 @@
             this.activeWindow.hasTitle = true;
             this.activeWindow.hasFrame = true;
             this.activeWindow.takesInput = true;
+            this.activeWindow.isMovable = false;
         }
         
         this.activeWindow = this.windows[name];
@@ -777,6 +790,7 @@
                 this.activeWindow.cursor.y += 2;
                 expanded = true;
             }
+            this.windows[popupName].isMovable = false;
             this.colorBG = this.backupBG;
             this.forceResize( this.activeWindow );
         }
@@ -822,6 +836,7 @@
             let windowCount = Object.keys( this.windows ).length;
 
             this.windows[name] = new Window();
+            this.windows[name].name = name;
             this.activeWindow = this.windows[name];
             
             this.activeWindow.position.setF32( 20 + 150*windowCount, 20 );
@@ -1053,12 +1068,15 @@
         let rect = new Rect( x, y, w, h );
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
-            isHovering = true;
-            color = this.colorButtonHovered;
-
-            if( this.mouseButtons[0] == true ) // is pressing.
+            if( this.activeWindow == this.windowHovered )
             {
-                color = this.colorButtonPressed;
+                isHovering = true;
+                color = this.colorButtonHovered;
+
+                if( this.mouseButtons[0] == true ) // is pressing.
+                {
+                    color = this.colorButtonPressed;
+                }
             }
         }
 
@@ -1070,15 +1088,27 @@
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
         this.setIfBigger( this.activeWindow.maxExtents, x + w, y + 8 + this.padding.y );
 
-        // Check if was pressed this frame.
-        if( isHovering &&
-            ( ( returnTrueIfHeld && this.mouseButtons[0] == true ) ||
-              ( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) ) )
+        if( isHovering )
         {
             this.isHoveringControl = true;
-            this.windowBeingMoved = null;
-            this.windowBeingResized = null;
-            return true;
+
+            // Check if button was triggered.
+            let triggered = false;
+
+            // If mouse button held down while hovering.
+            if( returnTrueIfHeld && this.mouseButtons[0] == true )
+                triggered = true;
+
+            // If mouse click released while hovering.
+            if( this.mouseButtons[0] == false && this.oldMouseButtons[0] == true )
+                triggered = true;
+
+            if( triggered )
+            {
+                this.windowBeingMoved = null;
+                this.windowBeingResized = null;
+                return true;
+            }
         }
 
         return false;
@@ -1110,12 +1140,15 @@
         let rect = new Rect( x, y, w, h );
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
-            isHovering = true;
-            color = this.colorButtonHovered;
-
-            if( this.mouseButtons[0] == true ) // is pressing.
+            if( this.activeWindow == this.windowHovered )
             {
-                color = this.colorButtonPressed;
+                isHovering = true;
+                color = this.colorButtonHovered;
+
+                if( this.mouseButtons[0] == true ) // is pressing.
+                {
+                    color = this.colorButtonPressed;
+                }
             }
         }
 
@@ -1185,7 +1218,10 @@
             let color = this.colorButtonNormal;
             if( rect.contains( this.mousePosition ) ) // is hovering.
             {
-                isHovering = true;
+                if( this.activeWindow == this.windowHovered )
+                {
+                    isHovering = true;
+                }
             }
 
             if( this.controlInEditMode == label )
@@ -1361,6 +1397,7 @@ class Window
 {
     constructor()
     {
+        this.name = null;
         this.position = new vec2( 0, 0 );
         this.size = new vec2( 0, 0 );
     
@@ -1371,6 +1408,7 @@ class Window
 
         this.expanded = true;
         this.maxExtents = new vec2(0);
+        this.isMovable = true;
     }
 }
 
