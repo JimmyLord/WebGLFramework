@@ -285,7 +285,8 @@
             window.position.setF32( state.windows[key].position["x"], state.windows[key].position["y"] );
             window.size.setF32( state.windows[key].size["x"], state.windows[key].size["y"] );
             window.cursor.set( window.position );
-            window.hasTitle = true;
+            window.isMovable = state.windows[key].isMovable;
+            window.hasTitle = state.windows[key].hasTitle;
             window.hasFrame = state.windows[key].hasFrame;
             window.takesInput = state.windows[key].takesInput;
             
@@ -326,11 +327,16 @@
         
         for( let key in this.windows )
         {
-            state.windows[key] = {};
-            state.windows[key].position = this.windows[key].position;
-            state.windows[key].size = this.windows[key].size;
-            state.windows[key].hasFrame = this.windows[key].hasFrame;
-            state.windows[key].takesInput = this.windows[key].takesInput;
+            if( this.windows[key].saveState == true )
+            {
+                state.windows[key] = {};
+                state.windows[key].position = this.windows[key].position;
+                state.windows[key].size = this.windows[key].size;
+                state.windows[key].isMovable = this.windows[key].isMovable;
+                state.windows[key].hasTitle = this.windows[key].hasTitle;
+                state.windows[key].hasFrame = this.windows[key].hasFrame;
+                state.windows[key].takesInput = this.windows[key].takesInput;
+            }
         }
 
         return state;
@@ -437,7 +443,7 @@
                 if( this.mouseButtons[1] == true && this.oldMouseButtons[1] == false ) // Middle button clicked.
                 {
                     this.forceResize( this.windows[key] );
-                    this.stateIsDirty = true;
+                    this.markStateDirty();
                 }
             }
 
@@ -472,7 +478,7 @@
             if( this.windowMoved )
             {
                 this.windowMoved = false;
-                this.stateIsDirty = true;
+                this.markStateDirty();
             }
             this.activeControl = null;
             this.windowBeingMoved = null;
@@ -722,6 +728,7 @@
             this.activeWindow.hasFrame = true;
             this.activeWindow.takesInput = true;
             this.activeWindow.isMovable = false;
+            this.activeWindow.saveState = false;
         }
         
         this.activeWindow = this.windows[name];
@@ -791,8 +798,11 @@
                 expanded = true;
             }
             this.windows[popupName].isMovable = false;
+            this.windows[popupName].saveState = false;
             this.colorBG = this.backupBG;
             this.forceResize( this.activeWindow );
+
+            this.markStateDirty();
         }
 
         this.drawList = this.BGDrawList;
@@ -840,12 +850,7 @@
             this.activeWindow = this.windows[name];
             
             this.activeWindow.position.setF32( 20 + 150*windowCount, 20 );
-            this.activeWindow.size.setF32( 0, 0 );
-            this.activeWindow.maxExtents.setF32( 0, 0 );
             this.activeWindow.cursor.set( this.activeWindow.position );
-            this.activeWindow.hasTitle = true;
-            this.activeWindow.hasFrame = true;
-            this.activeWindow.takesInput = true;
         }
         
         this.activeWindow = this.windows[name];
@@ -939,7 +944,7 @@
                     this.activeWindow.cursor.y = rect.y + rect.h - 12; // padding + 8 + padding.
                     let oldMaxX = this.activeWindow.maxExtents.x;
                     let oldMaxY = this.activeWindow.maxExtents.y;
-                    if( this.button( " " ) )
+                    if( this.button( " ", true ) )
                     {
                         this.windowBeingResized = this.activeWindow;
                     }
@@ -1408,7 +1413,13 @@ class Window
 
         this.expanded = true;
         this.maxExtents = new vec2(0);
+
+        this.saveState = true;
+
+        this.hasTitle = true;
+        this.hasFrame = true;
         this.isMovable = true;
+        this.takesInput = true;
     }
 }
 
