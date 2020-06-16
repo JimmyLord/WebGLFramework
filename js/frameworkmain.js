@@ -226,6 +226,7 @@ class FrameworkMain
         window.addEventListener( "resize",       (event) => this.onResize(event),       false );
 
         // Register document events.
+        document.addEventListener( "mouseover",    (event) => this.onMouseOver(event),    false );
         document.addEventListener( "mousemove",    (event) => this.onMouseMove(event),    false );
         document.addEventListener( "mousedown",    (event) => this.onMouseDown(event),    false );
         document.addEventListener( "mouseup",      (event) => this.onMouseUp(event),      false );
@@ -433,17 +434,34 @@ class FrameworkMain
         //return false;
     }
 
+    onMouseOver(event)
+    {
+        // Should fire when page is loaded... but seems inconsistant on FireFox.
+        // Mainly needed to prevent a bug if mouseDown is sent before mouseMove.
+        //    Imgui won't have had a chance to check if the mouse is hovering over any window or control
+        //    since it doesn't know the mouse position until it's too late.
+        let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
+        let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
+
+        this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
+
+        // Cancel default event action.
+        if( event.preventDefault ) event.preventDefault();
+        else event.returnValue = false;
+        return false;
+    }
+
     onMouseMove(event)
     {
         let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
         let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
 
+        this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
+
         if( this.runnableObject.onMouseMove )
         {
             this.runnableObject.onMouseMove( x, y );
         }
-
-        this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
 
         // Cancel default event action.
         if( event.preventDefault ) event.preventDefault();
@@ -458,13 +476,13 @@ class FrameworkMain
         let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
         let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
 
+        this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
+        this.mouseButtons[ event.which-1 ] = true;
+
         if( this.runnableObject.onMouseDown )
         {
             this.runnableObject.onMouseDown( event.which-1, x, y );
         }
-
-        this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
-        this.mouseButtons[ event.which-1 ] = true;
 
         // Cancel default event action.
         if( event.preventDefault ) event.preventDefault();
@@ -479,13 +497,13 @@ class FrameworkMain
         let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
         let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
 
+        this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
+        this.mouseButtons[ event.which-1 ] = false;
+
         if( this.runnableObject.onMouseUp )
         {
             this.runnableObject.onMouseUp( event.which-1, x, y );
         }
-
-        this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
-        this.mouseButtons[ event.which-1 ] = false;
 
         // Cancel default event action.
         if( event.preventDefault ) event.preventDefault();
@@ -495,6 +513,11 @@ class FrameworkMain
 
     onMouseWheel(event)
     {
+debugger;
+        let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
+        let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
+
+        this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
         let direction = Math.sign( event.deltaY );
 
         if( this.runnableObject.onMouseWheel )

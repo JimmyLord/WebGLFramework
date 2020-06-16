@@ -34,6 +34,7 @@
         // Colors.
         this.colorTitle =           new color(   0,   0,  50, 255 );
         this.colorBG =              new color(   0,   0,  25, 200 );
+        this.colorBGBorder =        new color( 100, 100, 100, 255 );
         this.colorButtonNormal =    new color(  50,  50, 200, 255 );
         this.colorButtonHovered =   new color(  80,  80, 230, 255 );
         this.colorButtonPressed =   new color( 120, 120, 255, 255 );
@@ -51,6 +52,7 @@
         // Settings.
         this.scale = 2;
         this.padding = new vec2(2);
+        this.popupPadding = new vec2(4,5);
         this.doubleClickTime = 0.3;
         this.minDragBoxWidth = 60;
 
@@ -791,10 +793,16 @@
 
             this.backupBG = this.colorBG;
             this.colorBG = this.colorMenuPopupBG;
-            this.initWindow( popupName, false, new vec2( x, y ), new vec2( 120, 100 ), true, true, false );
+            let size = new vec2( 0, 0 );
+            if( this.windows[popupName] )
+            {
+                size.setF32( this.windows[popupName].size.x, this.windows[popupName].size.y );
+            }
+
+            this.initWindow( popupName, false, new vec2( x, y ), size, true, true, false );
             if( this.window( popupName ) )
             {
-                this.activeWindow.cursor.y += 2;
+                this.activeWindow.cursor.y += this.popupPadding.y;
                 expanded = true;
             }
             this.windows[popupName].isMovable = false;
@@ -820,6 +828,10 @@
         this.colorButtonHovered = this.colorMenuItemHovered;
         this.colorButtonPressed = this.colorMenuItemPressed;
 
+        if( this.activeWindow.cursor.x == this.activeWindow.position.x )
+        {
+            this.activeWindow.cursor.x += this.popupPadding.x;
+        }
         let pressed = this.button( label );
 
         this.colorButtonNormal  = backupNormal;
@@ -827,6 +839,11 @@
         this.colorButtonPressed = backupPressed;
 
         this.drawList = this.BGDrawList;
+
+        // Resize the BG to fit the options... will have 1 frame lag.
+        this.activeWindow.size.set( this.activeWindow.maxExtents.minus( this.activeWindow.position ) );
+        this.activeWindow.size.x += this.padding.x + this.popupPadding.x;
+        this.activeWindow.size.y += this.popupPadding.y;
 
         return pressed;
     }
@@ -901,7 +918,12 @@
                     // Draw the BG box.
                     y += titleH;
                     let h = this.activeWindow.size.y - titleH;
-                    this.addBoxToArray( verts, indices, x,y,w,h, this.colorBG );
+                    this.addBoxToArray( verts, indices, x,y,w,h, this.colorBG ); // BG filled.
+                    let t = 1/this.scale; // Border thickness, essentially 1 pixel regardless of UI scale.
+                    this.addBoxToArray( verts, indices, x,    y, t,h, this.colorBGBorder ); // Border left.
+                    this.addBoxToArray( verts, indices, x+w-t,y, t,h, this.colorBGBorder ); // Border right.
+                    this.addBoxToArray( verts, indices, x,y,     w,t, this.colorBGBorder ); // Border top.
+                    this.addBoxToArray( verts, indices, x,y+h-t, w,t, this.colorBGBorder ); // Border bottom.
 
                     // Define scissor rect, y is lower left.
                     let rx = this.activeWindow.position.x;
