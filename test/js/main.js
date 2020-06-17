@@ -135,9 +135,9 @@ class MainProject
         {
             this.cubeRotates = !this.cubeRotates;
         }        
-        this.scene.lights[0].position.x = imgui.dragNumber( "LightX:", this.scene.lights[0].position.x, 0.01, 2 );
-        this.scene.lights[0].position.y = imgui.dragNumber( "LightY:", this.scene.lights[0].position.y, 0.01, 2 );
-        this.scene.lights[0].position.z = imgui.dragNumber( "LightZ:", this.scene.lights[0].position.z, 0.01, 2 );
+        [this.scene.lights[0].position.x] = imgui.dragNumber( "LightX:", this.scene.lights[0].position.x, 0.01, 2 );
+        [this.scene.lights[0].position.y] = imgui.dragNumber( "LightY:", this.scene.lights[0].position.y, 0.01, 2 );
+        [this.scene.lights[0].position.z] = imgui.dragNumber( "LightZ:", this.scene.lights[0].position.z, 0.01, 2 );
 
         imgui.window( "Camera" );
         if( imgui.checkbox( "isOrtho", this.scene.camera.isOrtho ) )
@@ -145,8 +145,8 @@ class MainProject
             this.scene.camera.isOrtho = !this.scene.camera.isOrtho;
             this.stateIsDirty = true;
         }
-        this.scene.orthoHeight = imgui.dragNumber( "OrthoHeight:", this.scene.orthoHeight, 0.01, 2 );
-        this.scene.camera.position.z = imgui.dragNumber( "Z:", this.scene.camera.position.z, 0.01, 2 );
+        [this.scene.orthoHeight] = imgui.dragNumber( "OrthoHeight:", this.scene.orthoHeight, 0.01, 2 );
+        [this.scene.camera.position.z] = imgui.dragNumber( "Z:", this.scene.camera.position.z, 0.01, 2 );
         this.stateIsDirty = true;
         //imgui.endWindow( true );
     }
