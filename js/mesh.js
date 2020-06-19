@@ -8,14 +8,24 @@ class Mesh
         this.numVerts = 0;
         this.numIndices = 0;
         this.primitiveType = gl.POINTS;
+
+        // Only stored if using startShape/addVertex/endShape until endShape is called.
+        this.vertexAttributes = null;
     }
 
     free()
     {
-        let gl = this.gl;
+        this.clear();
 
+        this.gl = null;
+    }
+
+    clear()
+    {
         if( this.VBO == null )
             return;
+
+        let gl = this.gl;
 
         // Manually resize buffer to 1 byte to reduce memory usage on shutdown.
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
@@ -24,14 +34,19 @@ class Mesh
         gl.deleteBuffer( this.VBO )
 
         // Manually resize buffer to 1 byte to reduce memory usage on shutdown.
-        gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
-        gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, 1, gl.STATIC_DRAW );
-        gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null );
-        gl.deleteBuffer( this.IBO )
+        if( this.IBO != null )
+        {
+            gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
+            gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, 1, gl.STATIC_DRAW );
+            gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null );
+            gl.deleteBuffer( this.IBO )
+        }
 
         this.VBO = null;
         this.IBO = null;
-        this.gl = null;
+        this.numVerts = 0;
+        this.numIndices = 0;
+        this.primitiveType = gl.POINTS;
     }
 
     createTriangle(size)
@@ -265,6 +280,63 @@ class Mesh
             this.primitiveType = gl.LINE_LOOP;
         else
             this.primitiveType = gl.TRIANGLE_FAN;
+    }
+
+    startShape(primitiveType, numVerts)
+    {
+        this.clear();
+
+        this.primitiveType = primitiveType;
+
+        let sizeofFloat32 = 4;
+        let sizeofUint8 = 1;
+
+        this.numVerts = 0;
+
+        // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
+        let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
+        this.vertexAttributes = new ArrayBuffer( numVerts * sizeofVertex );
+        this.vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
+    }
+
+    addVertex(pos, uv, normal, color)
+    {
+        let sizeofFloat32 = 4;
+        let sizeofUint8 = 1;
+
+        let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
+
+        let vertexFloatIndex = this.numVerts*9;
+
+        let vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
+        vertexAttributesAsFloats[vertexFloatIndex + 0] = pos.x;
+        vertexAttributesAsFloats[vertexFloatIndex + 1] = pos.y;
+        vertexAttributesAsFloats[vertexFloatIndex + 2] = pos.z;
+        vertexAttributesAsFloats[vertexFloatIndex + 3] = uv.x;
+        vertexAttributesAsFloats[vertexFloatIndex + 4] = uv.y;
+        vertexAttributesAsFloats[vertexFloatIndex + 5] = normal.x;
+        vertexAttributesAsFloats[vertexFloatIndex + 6] = normal.y;
+        vertexAttributesAsFloats[vertexFloatIndex + 7] = normal.z;
+
+        let vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
+        vertexAttributesAsUint8s[vertexFloatIndex*sizeofVertex + 8*4 + 0] = color.r;
+        vertexAttributesAsUint8s[vertexFloatIndex*sizeofVertex + 8*4 + 1] = color.g;
+        vertexAttributesAsUint8s[vertexFloatIndex*sizeofVertex + 8*4 + 2] = color.b;
+        vertexAttributesAsUint8s[vertexFloatIndex*sizeofVertex + 8*4 + 3] = color.a;
+
+        this.numVerts++;
+    }
+
+    endShape()
+    {
+        let gl = this.gl;
+
+        this.VBO = gl.createBuffer();
+        gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
+        gl.bufferData( gl.ARRAY_BUFFER, this.vertexAttributes, gl.STATIC_DRAW );
+
+        this.vertexAttributes = null;
+        this.vertexAttributesAsFloats = null;
     }
 
     draw(camera, matWorld, material, lights)

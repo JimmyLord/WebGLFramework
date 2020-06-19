@@ -513,7 +513,6 @@ class FrameworkMain
 
     onMouseWheel(event)
     {
-debugger;
         let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
         let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
 
