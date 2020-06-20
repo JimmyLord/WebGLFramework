@@ -176,6 +176,11 @@ class FrameworkMain
             this.imgui.saveState( this.storage, "imguiState" );
         }
 
+        if( this.imgui.needsRefresh )
+        {
+            this.autoRefresh = true;
+        }
+
         // Restart the update/draw cycle.
         if( this.autoRefresh )
         {

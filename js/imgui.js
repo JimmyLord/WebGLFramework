@@ -32,20 +32,22 @@
         this.stateIsDirty = false;
 
         // Colors.
-        this.colorTitle =           new color(   0,   0,  50, 255 );
-        this.colorBG =              new color(   0,   0,  25, 200 );
-        this.colorBGBorder =        new color( 100, 100, 100, 255 );
-        this.colorButtonNormal =    new color(  50,  50, 200, 255 );
-        this.colorButtonHovered =   new color(  80,  80, 230, 255 );
-        this.colorButtonPressed =   new color( 120, 120, 255, 255 );
-        this.colorMenuBar =         new color(  30, 100, 200, 255 );
-        this.colorMenuPopupBG =     new color(   0,   0,   0, 255 );
-        this.colorMenuItemNormal =  new color(   0,   0,   0,   0 );
-        this.colorMenuItemHovered = new color(  80,  80,  80, 255 );
-        this.colorMenuItemPressed = new color( 120, 120, 120, 255 );
-        this.colorCheckbox =        new color( 196, 196, 196, 255 );
-        this.colorTextBoxSelected = new color( 100,   0,   0, 255 );
-        this.colorTextSelected =    new color( 200,  60,   0, 255 );
+        this.color = [];
+        this.color["Title"] =           new color(   0,   0,  50, 255 );
+        this.color["BG"] =              new color(   0,   0,  25, 200 );
+        this.color["BGBorder"] =        new color( 100, 100, 100, 255 );
+        this.color["ButtonNormal"] =    new color(  50,  50, 200, 255 );
+        this.color["ButtonHovered"] =   new color(  80,  80, 230, 255 );
+        this.color["ButtonPressed"] =   new color( 120, 120, 255, 255 );
+        this.color["MenuBar"] =         new color(  30, 100, 200, 255 );
+        this.color["MenuPopupBG"] =     new color(   0,   0,   0, 255 );
+        this.color["MenuItemNormal"] =  new color(   0,   0,   0,   0 );
+        this.color["MenuItemHovered"] = new color(  80,  80,  80, 255 );
+        this.color["MenuItemPressed"] = new color( 120, 120, 120, 255 );
+        this.color["Checkbox"] =        new color( 196, 196, 196, 255 );
+        this.color["TextBoxSelected"] = new color( 100,   0,   0, 255 );
+        this.color["TextSelected"] =    new color( 200,  60,   0, 255 );
+        this.colorChangeStack = []; // Will hold a pair of ["name", "previous color"] for each overwrite.
 
         // Persistent values within single frame.
 
@@ -64,6 +66,7 @@
         // Outputs.
         this.isHoveringWindow = false;
         this.isHoveringControl = false;
+        this.needsRefresh = false;
 
         // Resources.
         this.VBO = gl.createBuffer();
@@ -375,6 +378,8 @@
     {
         this.frameCount++;
         this.currentTime += deltaTime;
+
+        this.needsRefresh = false;
         
         this.mainMenuBarHeight = 0;
 
@@ -692,7 +697,10 @@
         if( onlySetIfNew == false || existed == false )
         {
             if( position != undefined )
+            {
                 this.windows[name].position.set( position );
+                this.windows[name].cursor.set( position );
+            }
 
             if( size != undefined )
                 this.windows[name].size.set( size );
@@ -705,6 +713,24 @@
 
             if( takesInput != undefined )
                 this.windows[name].takesInput = takesInput;
+        }
+    }
+
+    pushColorChange(name, newColor)
+    {
+        this.colorChangeStack.push( [ name, new color(this.color[name]) ] );
+        this.color[name].setFromColor( newColor );
+    }
+
+    popColorChange(numPops)
+    {
+        if( numPops === undefined )
+            numPops = 1;
+
+        for( let i=0; i<numPops; i++ )
+        {
+            let entry = this.colorChangeStack.pop();
+            this.color[entry[0]].setFromColor( entry[1] );
         }
     }
 
@@ -747,7 +773,7 @@
             
             this.activeWindow.rect.set( 0, 0, w, h );
 
-            this.addBoxToArray( verts, indices, 0,0,w,h, this.colorMenuBar );
+            this.addBoxToArray( verts, indices, 0,0,w,h, this.color["MenuBar"] );
 
             this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
         }
@@ -757,20 +783,13 @@
     {
         this.activeWindow = this.windows["__mainMenuBar__"];
 
-        let backupNormal  = this.colorButtonNormal;
-        let backupHovered = this.colorButtonHovered;
-        let backupPressed = this.colorButtonPressed;
-        this.colorButtonNormal  = this.colorMenuItemNormal;
-        this.colorButtonHovered = this.colorMenuItemHovered;
-        this.colorButtonPressed = this.colorMenuItemPressed;
-
         let menuItemPosition = this.activeWindow.cursor.x;
 
+        this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
+        this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
+        this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
         let pressed = this.button( name, true );
-
-        this.colorButtonNormal  = backupNormal;
-        this.colorButtonHovered = backupHovered;
-        this.colorButtonPressed = backupPressed;
+        this.popColorChange( 3 );
 
         this.sameLine();
         this.activeWindow.cursor.x += 10;
@@ -791,23 +810,28 @@
             let x = menuItemPosition;
             let y = this.activeWindow.position.y + this.activeWindow.size.y;
 
-            this.backupBG = this.colorBG;
-            this.colorBG = this.colorMenuPopupBG;
             let size = new vec2( 0, 0 );
             if( this.windows[popupName] )
             {
                 size.setF32( this.windows[popupName].size.x, this.windows[popupName].size.y );
             }
+            else
+            {
+                this.needsRefresh = true;
+            }
 
             this.initWindow( popupName, false, new vec2( x, y ), size, true, true, false );
+
+            this.pushColorChange( "BG", this.color["MenuPopupBG"] );
             if( this.window( popupName ) )
             {
                 this.activeWindow.cursor.y += this.popupPadding.y;
                 expanded = true;
             }
+            this.popColorChange();
+
             this.windows[popupName].isMovable = false;
             this.windows[popupName].saveState = false;
-            this.colorBG = this.backupBG;
             this.forceResize( this.activeWindow );
 
             this.markStateDirty();
@@ -821,22 +845,15 @@
     {
         this.drawList = this.FGDrawList;
 
-        let backupNormal  = this.colorButtonNormal;
-        let backupHovered = this.colorButtonHovered;
-        let backupPressed = this.colorButtonPressed;
-        this.colorButtonNormal  = this.colorMenuItemNormal;
-        this.colorButtonHovered = this.colorMenuItemHovered;
-        this.colorButtonPressed = this.colorMenuItemPressed;
-
         if( this.activeWindow.cursor.x == this.activeWindow.position.x )
         {
             this.activeWindow.cursor.x += this.popupPadding.x;
         }
+        this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
+        this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
+        this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
         let pressed = this.button( label );
-
-        this.colorButtonNormal  = backupNormal;
-        this.colorButtonHovered = backupHovered;
-        this.colorButtonPressed = backupPressed;
+        this.popColorChange( 3 );
 
         this.drawList = this.BGDrawList;
 
@@ -910,12 +927,12 @@
                 {
                     titleH = 8 + this.padding.y*2;
                     let h = titleH;
-                    this.addBoxToArray( verts, indices, x,y,w,h, this.colorTitle );
+                    this.addBoxToArray( verts, indices, x,y,w,h, this.color["Title"] );
                     let t = 1/this.scale; // Border thickness, essentially 1 pixel regardless of UI scale.
-                    this.addBoxToArray( verts, indices, x,    y, t,h, this.colorBGBorder ); // Border left.
-                    this.addBoxToArray( verts, indices, x+w-t,y, t,h, this.colorBGBorder ); // Border right.
-                    this.addBoxToArray( verts, indices, x,y,     w,t, this.colorBGBorder ); // Border top.
-                    //this.addBoxToArray( verts, indices, x,y+h-t, w,t, this.colorBGBorder ); // Border bottom.
+                    this.addBoxToArray( verts, indices, x,    y, t,h, this.color["BGBorder"] ); // Border left.
+                    this.addBoxToArray( verts, indices, x+w-t,y, t,h, this.color["BGBorder"] ); // Border right.
+                    this.addBoxToArray( verts, indices, x,y,     w,t, this.color["BGBorder"] ); // Border top.
+                    //this.addBoxToArray( verts, indices, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
                 }
                 this.activeWindow.rect.set( x, y, w, titleH );
 
@@ -924,12 +941,12 @@
                     // Draw the BG box.
                     y += titleH;
                     let h = this.activeWindow.size.y - titleH;
-                    this.addBoxToArray( verts, indices, x,y,w,h, this.colorBG ); // BG filled.
+                    this.addBoxToArray( verts, indices, x,y,w,h, this.color["BG"] ); // BG filled.
                     let t = 1/this.scale; // Border thickness, essentially 1 pixel regardless of UI scale.
-                    this.addBoxToArray( verts, indices, x,    y, t,h, this.colorBGBorder ); // Border left.
-                    this.addBoxToArray( verts, indices, x+w-t,y, t,h, this.colorBGBorder ); // Border right.
-                    //this.addBoxToArray( verts, indices, x,y,     w,t, this.colorBGBorder ); // Border top.
-                    this.addBoxToArray( verts, indices, x,y+h-t, w,t, this.colorBGBorder ); // Border bottom.
+                    this.addBoxToArray( verts, indices, x,    y, t,h, this.color["BGBorder"] ); // Border left.
+                    this.addBoxToArray( verts, indices, x+w-t,y, t,h, this.color["BGBorder"] ); // Border right.
+                    //this.addBoxToArray( verts, indices, x,y,     w,t, this.color["BGBorder"] ); // Border top.
+                    this.addBoxToArray( verts, indices, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
 
                     // Define scissor rect, y is lower left.
                     let rx = this.activeWindow.position.x;
@@ -1097,18 +1114,18 @@
         let y = this.activeWindow.cursor.y + buttonTopPadding;
 
         let isHovering = false;
-        let color = this.colorButtonNormal;
+        let color = this.color["ButtonNormal"];
         let rect = new Rect( x, y, w, h );
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
             if( this.activeWindow == this.windowHovered )
             {
                 isHovering = true;
-                color = this.colorButtonHovered;
+                color = this.color["ButtonHovered"];
 
                 if( this.mouseButtons[0] == true ) // is pressing.
                 {
-                    color = this.colorButtonPressed;
+                    color = this.color["ButtonPressed"];
                 }
             }
         }
@@ -1140,6 +1157,7 @@
             {
                 this.windowBeingMoved = null;
                 this.windowBeingResized = null;
+                this.needsRefresh = true;
                 return true;
             }
         }
@@ -1169,18 +1187,18 @@
         let y = this.activeWindow.cursor.y + buttonTopPadding;
 
         let isHovering = false;
-        let color = this.colorButtonNormal;
+        let color = this.color["ButtonNormal"];
         let rect = new Rect( x, y, w, h );
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
             if( this.activeWindow == this.windowHovered )
             {
                 isHovering = true;
-                color = this.colorButtonHovered;
+                color = this.color["ButtonHovered"];
 
                 if( this.mouseButtons[0] == true ) // is pressing.
                 {
-                    color = this.colorButtonPressed;
+                    color = this.color["ButtonPressed"];
                 }
             }
         }
@@ -1189,7 +1207,7 @@
 
         if( isChecked )
         {
-            color = this.colorCheckbox;
+            color = this.color["Checkbox"];
             this.addBoxToArray( verts, indices, x+2,y+2,w-5,h-5, color );
         }
 
@@ -1208,6 +1226,7 @@
             this.isHoveringControl = true;
             this.windowBeingMoved = null;
             this.windowBeingResized = null;
+            this.needsRefresh = true;
             return true;
         }
 
@@ -1250,7 +1269,7 @@
 
         // Draw background and determine if mouse if hovering over it.
         {
-            let color = this.colorButtonNormal;
+            let color = this.color["ButtonNormal"];
             if( rect.contains( this.mousePosition ) ) // is hovering.
             {
                 if( this.activeWindow == this.windowHovered )
@@ -1261,15 +1280,15 @@
 
             if( this.controlInEditMode == label )
             {
-                color = this.colorTextBoxSelected;
+                color = this.color["TextBoxSelected"];
             }
             else if( isHovering )
             {
-                color = this.colorButtonHovered;
+                color = this.color["ButtonHovered"];
 
                 if( this.mouseButtons[0] == true ) // is pressing.
                 {
-                    color = this.colorButtonPressed;
+                    color = this.color["ButtonPressed"];
                 }
             }
 
@@ -1289,7 +1308,7 @@
         {
             let h = buttonTopPadding + 8 + this.padding.y;
 
-            let color = this.colorTextSelected;
+            let color = this.color["TextSelected"];
 
             this.addBoxToArray( verts, indices, x + textStartPoint,y,textWidth,h, color );
         }
@@ -1424,7 +1443,14 @@
         if( minLimit != undefined ) { if( value < minLimit ) value = minLimit; }
         if( maxLimit != undefined ) { if( value > maxLimit ) value = maxLimit; }
 
-        return [value, value != startValue];
+        let changed = false;
+        if( value != startValue )
+        {
+            changed = true;
+            this.needsRefresh = true;
+        }
+
+        return [value, changed];
     }
 }
 
@@ -1442,7 +1468,7 @@ class Window
         this.rect = new Rect(0,0,0,0);
 
         this.expanded = true;
-        this.maxExtents = new vec2(0);
+        this.maxExtents = new vec2(0); // Stores the lower right screen x/y of the window (not just the biggest size).
 
         this.saveState = true;
 
