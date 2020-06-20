@@ -27,6 +27,7 @@
         this.windowHovered = null;
         this.windowBeingMoved = null;
         this.windowBeingResized = null;
+        this.windowResizeOffset = new vec2(0);
         this.windowMoved = false;
         this.oldMouseButtons = [ false, false, false ];
         this.stateIsDirty = false;
@@ -507,7 +508,8 @@
         {
             if( this.mouseChange.x != 0 || this.mouseChange.y != 0 )
             {
-                this.windowBeingResized.size.add( this.mouseChange );
+                let newSize = this.mousePosition.minus( this.windowBeingResized.position ).plus( this.windowResizeOffset );
+                this.windowBeingResized.size.set( newSize );
                 if( this.windowBeingResized.size.x < 16 )
                     this.windowBeingResized.size.x = 16;
                 if( this.windowBeingResized.size.y < 16 )
@@ -515,7 +517,6 @@
 
                 this.windowBeingResized.maxExtents.setF32( 0, 0 );
                 this.windowMoved = true;
-                //this.windowBeingMoved.cursor.set( this.windowBeingMoved.position );
             }
         }
 
@@ -992,6 +993,7 @@
                     if( this.button( " ", true ) )
                     {
                         this.windowBeingResized = this.activeWindow;
+                        this.windowResizeOffset.setF32( rect.x + rect.w - this.mousePosition.x, rect.y + rect.h - this.mousePosition.y );
                     }
                     this.activeWindow.maxExtents.setF32( oldMaxX, oldMaxY );
                     this.activeWindow.cursor.x = x;
