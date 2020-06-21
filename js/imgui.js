@@ -31,6 +31,7 @@
         this.windowMoved = false;
         this.oldMouseButtons = [ false, false, false ];
         this.stateIsDirty = false;
+        this.fontSize = new vec2(0);
 
         // Colors.
         this.color = [];
@@ -260,6 +261,8 @@
             0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 1,1,1,1,1,1,1,1,1,1,0,
         ] );
 
+        this.fontSize.setF32( 8, 8 );
+
         this.texture = new Texture( this.gl );
         this.firstChar = 33 - 7; // -7 for window BG block + 4 unused spots + 1 blinking cursor (31) + space (32)
         this.numCols = 13;
@@ -437,7 +440,7 @@
                     this.windowBeingMoved = this.windows[key];
 
                     // If double click on a window title, collapse or expand it.
-                    let titleH = 8 + this.padding.y*2;
+                    let titleH = this.fontSize.y + this.padding.y*2;
                     if( this.mousePosition.y < this.windows[key].rect.y + titleH )
                     {
                         if( this.mouseDoubleClickedThisFrame[0] )
@@ -750,7 +753,7 @@
             this.activeWindow = this.windows[name];
             
             this.activeWindow.position.setF32( 0, 0 );
-            this.activeWindow.size.setF32( this.canvas.width / this.scale, 8 + this.padding.y*2 - 1 );
+            this.activeWindow.size.setF32( this.canvas.width / this.scale, this.fontSize.y + this.padding.y*2 - 1 );
             this.activeWindow.maxExtents.setF32( 0, 0 );
             this.activeWindow.cursor.set( new vec2( this.activeWindow.position.x, this.activeWindow.position.y-1 ) );
             this.activeWindow.hasTitle = true;
@@ -926,7 +929,7 @@
                 // Draw the title box.
                 if( this.activeWindow.hasTitle )
                 {
-                    titleH = 8 + this.padding.y*2;
+                    titleH = this.fontSize.y + this.padding.y*2;
                     let h = titleH;
                     this.addBoxToArray( verts, indices, x,y,w,h, this.color["Title"] );
                     let t = 1/this.scale; // Border thickness, essentially 1 pixel regardless of UI scale.
@@ -986,8 +989,8 @@
                     let x = this.activeWindow.cursor.x;
                     let y = this.activeWindow.cursor.y;
                     let rect = this.activeWindow.rect;
-                    this.activeWindow.cursor.x = rect.x + rect.w - 12; // padding + 8 + padding.
-                    this.activeWindow.cursor.y = rect.y + rect.h - 12; // padding + 8 + padding.
+                    this.activeWindow.cursor.x = rect.x + rect.w - (this.padding.x + this.fontSize.x + this.padding.x)
+                    this.activeWindow.cursor.y = rect.y + rect.h - (this.padding.y + this.fontSize.y + this.padding.y)
                     let oldMaxX = this.activeWindow.maxExtents.x;
                     let oldMaxY = this.activeWindow.maxExtents.y;
                     if( this.button( " ", true ) )
@@ -1009,7 +1012,7 @@
     {
         window.size.set( window.maxExtents.minus( window.position ) );
         window.size.x += this.padding.x;
-        window.size.y += this.padding.y + 8 + this.padding.y;
+        window.size.y += this.padding.y + this.fontSize.y + this.padding.y;
     }
 
     addBoxToArray(verts, indices, x, y, w, h, color)
@@ -1026,8 +1029,8 @@
     {
         let gl = this.gl;
 
-        let w = 8;
-        let h = 8;
+        let w = this.fontSize.x;
+        let h = this.fontSize.y;
 
         let verts = [];
         let indices = [];
@@ -1085,12 +1088,12 @@
         let x = this.activeWindow.cursor.x;
         let y = this.activeWindow.cursor.y;
 
-        let h = 8;
+        let h = this.fontSize.y;
 
         [x, y] = this.addStringToDrawList( str, x, y, this.activeWindow.rect );
 
         this.activeWindow.previousLineEndPosition.setF32( x-this.padding.x, y-this.padding.y );
-        this.setIfBigger( this.activeWindow.maxExtents, x, y + 8 + this.padding.y );
+        this.setIfBigger( this.activeWindow.maxExtents, x, y + this.fontSize.y + this.padding.y );
 
         this.activeWindow.cursor.setF32( x, y+h );
         this.activeWindow.cursor.y += this.padding.y;
@@ -1105,9 +1108,9 @@
 
         let gl = this.gl;
 
-        let w = this.padding.x + label.length * 8 + this.padding.x;
+        let w = this.padding.x + label.length * this.fontSize.x + this.padding.x;
         let buttonTopPadding = 1;
-        let h = buttonTopPadding + 8 + this.padding.y;
+        let h = buttonTopPadding + this.fontSize.y + this.padding.y;
 
         let verts = [];
         let indices = [];
@@ -1138,7 +1141,7 @@
         this.activeWindow.cursor.x += this.padding.x;
         this.text( label );
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
-        this.setIfBigger( this.activeWindow.maxExtents, x + w, y + 8 + this.padding.y );
+        this.setIfBigger( this.activeWindow.maxExtents, x + w, y + this.fontSize.y + this.padding.y );
 
         if( isHovering )
         {
@@ -1178,9 +1181,9 @@
         this.sameLine();
         this.activeWindow.cursor.x += this.padding.x;
 
-        let w = this.padding.x + 8 + this.padding.x;
+        let w = this.padding.x + this.fontSize.x + this.padding.x;
         let buttonTopPadding = 1;
-        let h = buttonTopPadding + 8 + this.padding.y;
+        let h = buttonTopPadding + this.fontSize.y + this.padding.y;
 
         let verts = [];
         let indices = [];
@@ -1217,9 +1220,9 @@
 
         this.activeWindow.cursor.x += this.padding.x;
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
-        this.setIfBigger( this.activeWindow.maxExtents, x + w, y + 8 + this.padding.y );
+        this.setIfBigger( this.activeWindow.maxExtents, x + w, y + this.fontSize.y + this.padding.y );
         this.activeWindow.cursor.x = this.activeWindow.position.x;
-        this.activeWindow.cursor.y += this.padding.y + 8 + this.padding.y;
+        this.activeWindow.cursor.y += this.padding.y + this.fontSize.y + this.padding.y;
         
         // Check if was pressed this frame.
         if( isHovering &&
@@ -1263,7 +1266,7 @@
         let x = this.activeWindow.cursor.x + this.padding.x;
         let y = this.activeWindow.cursor.y + buttonTopPadding;
         let w = boxWidth;
-        let h = buttonTopPadding + 8 + this.padding.y;
+        let h = buttonTopPadding + this.fontSize.y + this.padding.y;
 
         let isHovering = false;
 
@@ -1302,13 +1305,13 @@
         {
             valueAsString = this.activeControlTextBuffer.join( "" );
         }
-        let textWidth = valueAsString.length*8;
+        let textWidth = valueAsString.length*this.fontSize.x;
         let textStartPoint = boxWidth/2 - textWidth/2;
 
         // Draw a highlight around the selected text by drawing a second bg block.
         if( this.controlInEditMode == label && this.activeControlTextBufferSelected == true )
         {
-            let h = buttonTopPadding + 8 + this.padding.y;
+            let h = buttonTopPadding + this.fontSize.y + this.padding.y;
 
             let color = this.color["TextSelected"];
 
@@ -1341,16 +1344,16 @@
 
         // Adjust extents and cursor position.
         let minWidth = 40;
-        if( minWidth < valueAsString.length*8 )
+        if( minWidth < valueAsString.length*this.fontSize.x )
         {
-            minWidth = valueAsString.length*8 + this.padding.x * 2;
+            minWidth = valueAsString.length*this.fontSize.x + this.padding.x * 2;
         }
 
         this.activeWindow.cursor.x += this.padding.x;
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
-        this.setIfBigger( this.activeWindow.maxExtents, x + minWidth, y + 8 + this.padding.y );
+        this.setIfBigger( this.activeWindow.maxExtents, x + minWidth, y + this.fontSize.y + this.padding.y );
         this.activeWindow.cursor.x = this.activeWindow.position.x;
-        this.activeWindow.cursor.y += this.padding.y + 8 + this.padding.y;
+        this.activeWindow.cursor.y += this.padding.y + this.fontSize.y + this.padding.y;
 
         // Check if the control was pressed this frame.
         if( isHovering &&
