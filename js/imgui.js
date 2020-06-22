@@ -107,6 +107,8 @@
         `;
 
         this.shader = new Shader( gl, imguiVertShaderSource, imguiFragShaderSource );
+
+        this.fontSize.setF32( 8, 8 );
         this.generateFontTexture();
     }
 
@@ -261,17 +263,16 @@
             0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 0,0,0,0,0,0,0,0, 0, 1,1,1,1,1,1,1,1,1,1,0,
         ] );
 
-        this.fontSize.setF32( 8, 8 );
+        let texture = new Texture( this.gl );
+        let textureRes = new vec2( 128, 128 );
+        texture.createFromUInt8Array( pixels, textureRes.x, textureRes.y );
 
-        this.texture = new Texture( this.gl );
-        this.firstChar = 33 - 7; // -7 for window BG block + 4 unused spots + 1 blinking cursor (31) + space (32)
-        this.numCols = 13;
-        this.numRows = 8;
-        this.stepU = (this.numCols*9/128.0) / this.numCols;
-        this.stepV = (this.numRows*9/128.0) / this.numRows;
-        this.charW = 8.0 / 9.0;
-        this.charH = 8.0 / 9.0;
-        this.texture.createFromUInt8Array( pixels, 128, 128 );
+        let firstChar = 33 - 7; // -7 for window BG block + 4 unused spots + 1 blinking cursor (31) + space (32)
+        let charSize = new vec2( 8 );
+        let gridSize = new vec2( 13, 8 );
+        let padding = 1;
+
+        this.font = new FontDef( texture, firstChar, charSize, gridSize, padding, textureRes );
     }
 
     loadState(imguiState)
@@ -661,7 +662,7 @@
         {
             let textureUnit = 0;
             gl.activeTexture( gl.TEXTURE0 + textureUnit );
-            gl.bindTexture( gl.TEXTURE_2D, this.texture.textureID );
+            gl.bindTexture( gl.TEXTURE_2D, this.font.texture.textureID );
             gl.uniform1i( u_TextureAlbedo, textureUnit );
         }
 
@@ -1053,18 +1054,18 @@
             else if( c == 969 ) c = 144; // ω
             else if( c > 150 )
                 console.log( "character not supported: " + c );
-            c -= this.firstChar;
-            let cx = Math.trunc( c % this.numCols );
-            let cy = Math.trunc( c / this.numCols );
+            c -= this.font.firstChar;
+            let cx = Math.trunc( c % this.font.gridSize.x );
+            let cy = Math.trunc( c / this.font.gridSize.x );
 
-            verts.push( x+0,y+h,   this.stepU*(cx+0),         this.stepV*(cy+this.charH),   255,255,255,255 );
-            verts.push( x+0,y+0,   this.stepU*(cx+0),         this.stepV*(cy+0),            255,255,255,255 );
-            verts.push( x+w,y+0,   this.stepU*(cx+this.charW),this.stepV*(cy+0),            255,255,255,255 );
-            verts.push( x+w,y+h,   this.stepU*(cx+this.charW),this.stepV*(cy+this.charH),   255,255,255,255 );
+            verts.push( x+0,y+h, this.font.stepU*(cx+0),               this.font.stepV*(cy+this.font.charH), 255,255,255,255 );
+            verts.push( x+0,y+0, this.font.stepU*(cx+0),               this.font.stepV*(cy+0),               255,255,255,255 );
+            verts.push( x+w,y+0, this.font.stepU*(cx+this.font.charW), this.font.stepV*(cy+0),               255,255,255,255 );
+            verts.push( x+w,y+h, this.font.stepU*(cx+this.font.charW), this.font.stepV*(cy+this.font.charH), 255,255,255,255 );
             indices.push( count*4+0,count*4+1,count*4+2, count*4+0,count*4+2,count*4+3 );
 
             x += w;
-            c += this.firstChar;
+            c += this.font.firstChar;
             if( c == 97+6 || c == 97+9 || c == 97+15 || c == 97+16 || c == 97+24 ) // g/j/p/q/y
                 y -= 2;
             count++;
@@ -1524,5 +1525,19 @@ class Rect
         }
         
         return false;
+    }
+}
+
+class FontDef
+{
+    constructor(texture, firstChar, charSize, gridSize, padding, textureRes)
+    {
+        this.texture = texture;
+        this.firstChar = firstChar;
+        this.gridSize = gridSize;
+        this.stepU = (gridSize.x*(charSize.x+padding)/textureRes.x) / gridSize.x;
+        this.stepV = (gridSize.y*(charSize.y+padding)/textureRes.y) / gridSize.y;
+        this.charW = charSize.x / (charSize.x+padding);
+        this.charH = charSize.y / (charSize.y+padding);
     }
 }
