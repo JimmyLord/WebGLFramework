@@ -114,27 +114,33 @@ class Camera
         return true;
     }
 
-    convertMouseToOrtho(canvas, x, y)
+    convertScreenToWorld(canvas, screenX, screenY)
     {
+        if( this.isOrtho == false )
+            return [0,0];
+
         let orthoScaleX = this.matProj.m[0];
         let orthoOffsetX = this.matProj.m[12];
         let orthoScaleY = this.matProj.m[5];
         let orthoOffsetY = this.matProj.m[13];
 
         // Transform from canvas coordinates to view space coordinates.
-        let orthoX = ((x / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
-        let orthoY = (((canvas.height - y) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
+        let worldX = ((screenX / canvas.width) / orthoScaleX) * 2 - ((1 + orthoOffsetX) / orthoScaleX);
+        let worldY = (((canvas.height - screenY) / canvas.height) / orthoScaleY) * 2 - ((1 + orthoOffsetY) / orthoScaleY);
 
         // Transform from view space coordinates to world space coordinates.
         // TODO: Fix for view rotation if we ever spin the camera.
-        orthoX += this.position.x;
-        orthoY += this.position.y;
+        worldX += this.position.x;
+        worldY += this.position.y;
 
-        return [orthoX, orthoY];
+        return [worldX, worldY];
     }
 
-    convertOrthoToScreen(canvas, orthoX, orthoY)
+    convertWorldToScreen(canvas, worldX, worldY)
     {
+        if( this.isOrtho == false )
+            return [0,0];
+
         let orthoScaleX = this.matProj.m[0];
         let orthoOffsetX = this.matProj.m[12];
         let orthoScaleY = this.matProj.m[5];
@@ -142,12 +148,12 @@ class Camera
 
         // Transform from world space coordinates to view space coordinates.
         // TODO: Fix for view rotation if we ever spin the camera.
-        orthoX -= this.position.x;
-        orthoY -= this.position.y;
+        worldX -= this.position.x;
+        worldY -= this.position.y;
 
         // Transform from view space coordinates to canvas coordinates.
-        let x = (orthoX + (1 + orthoOffsetX) / orthoScaleX) / 2 * orthoScaleX * canvas.width;
-        let y = ((orthoY + (1 + orthoOffsetY) / orthoScaleY) / 2 * orthoScaleY * canvas.height - canvas.height) * -1;
+        let x = (worldX + (1 + orthoOffsetX) / orthoScaleX) / 2 * orthoScaleX * canvas.width;
+        let y = ((worldY + (1 + orthoOffsetY) / orthoScaleY) / 2 * orthoScaleY * canvas.height - canvas.height) * -1;
 
         return [x, y];
     }
