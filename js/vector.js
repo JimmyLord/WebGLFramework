@@ -52,12 +52,18 @@ class vec2
         let len = this.length();
         this.x = this.x / len;
         this.y = this.y / len;
+        return this;
     }
 
     getNormalized()
     {
         let len = this.length();
         return new vec2( this.x / len, this.y / len );
+    }
+
+    dot(o)
+    {
+        return this.x*o.x + this.y*o.y;
     }
 }
 
@@ -109,5 +115,25 @@ class vec3
     {
         let d = this.minus( o );
         return d.x*d.x + d.y*d.y + d.z*d.z;
+    }
+
+    normalize()
+    {
+        let len = this.length();
+        this.x = this.x / len;
+        this.y = this.y / len;
+        this.z = this.z / len;
+        return this;
+    }
+
+    getNormalized()
+    {
+        let len = this.length();
+        return new vec3( this.x / len, this.y / len, this.z / len );
+    }
+
+    dot(o)
+    {
+        return this.x*o.x + this.y*o.y + this.z*o.z;
     }
 }

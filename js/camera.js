@@ -3,7 +3,7 @@ class Camera
     constructor(position, isOrtho, orthoWorldHeight, aspectRatio)
     {
         this.isOrtho = isOrtho;
-        this.position = position;
+        this.position = new vec3( position.x, position.y, position.z );
         this.desiredHeight = orthoWorldHeight;
         this.aspectRatio = aspectRatio;
 
