@@ -440,7 +440,7 @@
                     }
 
                     this.windowBeingMoved = this.windows[key];
-
+                    
                     // If double click on a window title, collapse or expand it.
                     let titleH = this.fontSize.y + this.padding.y*2;
                     if( this.mousePosition.y < this.windows[key].rect.y + titleH )
@@ -496,6 +496,11 @@
             this.activeControl = null;
             this.windowBeingMoved = null;
             this.windowBeingResized = null;
+        }
+
+        if( this.buttonHeld != null )
+        {
+            this.windowBeingMoved = null;
         }
 
         if( this.isHoveringControl == false && this.windowBeingMoved && this.windowBeingMoved.isMovable )
@@ -794,7 +799,7 @@
         this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
         this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
         this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
-        let pressed = this.button( name, true );
+        let pressed = this.button( name, true, true );
         this.popColorChange( 3 );
 
         this.sameLine();
@@ -858,7 +863,7 @@
         this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
         this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
         this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
-        let pressed = this.button( label );
+        let pressed = this.button( label, false, true );
         this.popColorChange( 3 );
 
         this.drawList = this.BGDrawList;
@@ -1103,7 +1108,7 @@
         this.activeWindow.cursor.x = this.activeWindow.position.x;
     }
 
-    button(label, returnTrueIfHeld)
+    button(label, returnTrueIfHeld, allowPressIfHeld)
     {
         // if( this.activeWindow.expanded == false )
         //     return;
@@ -1128,16 +1133,18 @@
         {
             if( this.activeWindow == this.windowHovered )
             {
-                if( this.mouseButtons[0] == false )
-                {
-                    isHovering = true;
-                    color = this.color["ButtonHovered"];
-                }
+                isHovering = true;
+                color = this.color["ButtonHovered"];
 
                 // Store if the button was clicked this frame.
-                if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false )
+                if( (this.mouseButtons[0] == true && this.oldMouseButtons[0] == false) ||
+                    (allowPressIfHeld && this.mouseButtons[0] == true) )
                 {
                     this.buttonHeld = label;
+                }
+
+                if( this.buttonHeld == label )
+                {
                     color = this.color["ButtonPressed"];
                 }
             }
@@ -1159,13 +1166,16 @@
             // Check if button was triggered.
             let triggered = false;
 
-            // If holding the button is considered "triggered".
-            if( returnTrueIfHeld && this.buttonHeld === label )
-                triggered = true;
+            if( isHovering )
+            {
+                // If holding the button is considered "triggered".
+                if( returnTrueIfHeld && this.buttonHeld === label )
+                    triggered = true;
 
-            // If mouse released while button is held.
-            if( this.mouseButtons[0] == false && this.oldMouseButtons[0] == true )
-                triggered = true;
+                // If mouse released while button is held.
+                if( this.mouseButtons[0] == false && this.oldMouseButtons[0] == true )
+                    triggered = true;
+            }
 
             // If mouse button is up, stop considering this button as held down.
             if( this.mouseButtons[0] == false )
