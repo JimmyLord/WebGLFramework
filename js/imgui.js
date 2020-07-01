@@ -33,6 +33,7 @@
         this.oldMouseButtons = [ false, false, false ];
         this.stateIsDirty = false;
         this.fontSize = new vec2(0);
+        this.activeMenus = [];
 
         // Colors.
         this.color = [];
@@ -440,17 +441,6 @@
                     }
 
                     this.windowBeingMoved = this.windows[key];
-                    
-                    // If double click on a window title, collapse or expand it.
-                    let titleH = this.fontSize.y + this.padding.y*2;
-                    if( this.mousePosition.y < this.windows[key].rect.y + titleH )
-                    {
-                        if( this.mouseDoubleClickedThisFrame[0] )
-                        {
-                            this.windowBeingMoved.expanded = !this.windowBeingMoved.expanded;
-                            this.windowBeingMoved = null;
-                        }
-                    }
                 }
 
                 if( this.mouseButtons[1] == true && this.oldMouseButtons[1] == false ) // Middle button clicked.
@@ -477,7 +467,7 @@
         {
             if( popupClicked == false )
             {
-                this.currentPopup = null;
+                this.closeAllMenus();
             }
         }
 
@@ -503,6 +493,21 @@
             this.windowBeingMoved = null;
         }
 
+        // Handle collapse or expand if window title double clicked.
+        if( this.isHoveringControl == false && this.windowBeingMoved != null && this.windowBeingMoved.hasTitle )
+        {
+            let titleH = this.fontSize.y + this.padding.y*2;
+            if( this.mousePosition.y < this.windowBeingMoved.rect.y + titleH )
+            {
+                if( this.mouseDoubleClickedThisFrame[0] )
+                {
+                    this.windowBeingMoved.expanded = !this.windowBeingMoved.expanded;
+                    this.windowBeingMoved = null;
+                }
+            }
+        }
+
+        // Handle dragging window around.
         if( this.isHoveringControl == false && this.windowBeingMoved && this.windowBeingMoved.isMovable )
         {
             if( this.mouseChange.x != 0 || this.mouseChange.y != 0 )
@@ -514,6 +519,7 @@
             }
         }
 
+        // Handle resizing window.
         if( this.isHoveringControl == false && this.windowBeingResized )
         {
             if( this.mouseChange.x != 0 || this.mouseChange.y != 0 )
@@ -807,9 +813,16 @@
 
         let expanded = false;
 
-        if( pressed || this.currentPopup === name )
+        if( pressed )
         {
-            this.currentPopup = name;
+            this.closeAllMenusWithParent( this.windows["__Popup__" + name] );
+        }
+
+        if( pressed || this.activeMenus[name] != undefined )
+        {
+            this.closeAllMenusWithParent( this.activeWindow );
+            this.activeMenus[name] = {};
+            this.activeMenus[name].parentWindow = this.activeWindow;
             
             // Pop up a menu window below this.
             let popupName = "__Popup__" + name;
@@ -852,6 +865,80 @@
         return expanded;
     }
 
+    submenu(name)
+    {
+        this.previousMenu = this.activeWindow;
+
+        let menuItemPositionX = this.activeWindow.cursor.x + this.activeWindow.size.x;
+        let menuItemPositionY = this.activeWindow.cursor.y;
+        
+        this.drawList = this.FGDrawList;
+
+        if( this.activeWindow.cursor.x == this.activeWindow.position.x )
+        {
+            this.activeWindow.cursor.x += this.popupPadding.x;
+        }
+        this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
+        this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
+        this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
+        let pressed = this.button( name, true, true );
+        this.popColorChange( 3 );
+
+        // Resize the BG to fit the options... will have 1 frame lag.
+        this.activeWindow.size.set( this.activeWindow.maxExtents.minus( this.activeWindow.position ) );
+        this.activeWindow.size.x += this.padding.x + this.popupPadding.x;
+        this.activeWindow.size.y += this.popupPadding.y;
+
+        let expanded = false;
+
+        if( pressed || this.activeMenus[name] != undefined )
+        {
+            this.closeAllMenusWithParent( this.activeWindow );
+            this.activeMenus[name] = {};
+            this.activeMenus[name].parentWindow = this.activeWindow;
+
+            // Pop up a menu window below this.
+            let popupName = "__Popup__" + name;
+            
+            let x = menuItemPositionX;
+            let y = menuItemPositionY;
+            
+            let size = new vec2( 0, 0 );
+            if( this.windows[popupName] )
+            {
+                size.setF32( this.windows[popupName].size.x, this.windows[popupName].size.y );
+            }
+            else
+            {
+                this.needsRefresh = true;
+            }
+            
+            this.initWindow( popupName, false, new vec2( x, y ), size, true, true, false );
+            
+            this.pushColorChange( "BG", this.color["MenuPopupBG"] );
+            if( this.window( popupName ) )
+            {
+                this.activeWindow.cursor.y += this.popupPadding.y;
+                expanded = true;
+            }
+            this.popColorChange();
+            
+            this.windows[popupName].isMovable = false;
+            this.windows[popupName].saveState = false;
+            this.forceResize( this.activeWindow );
+            
+            this.markStateDirty();
+        }
+
+        this.drawList = this.BGDrawList;
+        return expanded;
+    }
+
+    endSubmenu()
+    {
+        this.activeWindow = this.previousMenu;
+    }
+
     menuItem(label)
     {
         this.drawList = this.FGDrawList;
@@ -876,9 +963,20 @@
         return pressed;
     }
 
-    closePopup()
+    closeAllMenus()
     {
-        this.currentPopup = null;
+        this.activeMenus = [];
+    }
+
+    closeAllMenusWithParent( parentWindow )
+    {
+        for( let key in this.activeMenus )
+        {
+            if( this.activeMenus[key].parentWindow === parentWindow )
+            {
+                delete this.activeMenus[key];
+            }
+        }
     }
 
     // Return true is window is expanded.
@@ -956,7 +1054,8 @@
                     let t = 1/this.scale; // Border thickness, essentially 1 pixel regardless of UI scale.
                     this.addBoxToArray( verts, indices, x,    y, t,h, this.color["BGBorder"] ); // Border left.
                     this.addBoxToArray( verts, indices, x+w-t,y, t,h, this.color["BGBorder"] ); // Border right.
-                    //this.addBoxToArray( verts, indices, x,y,     w,t, this.color["BGBorder"] ); // Border top.
+                    if( this.activeWindow.hasTitle == false )
+                        this.addBoxToArray( verts, indices, x,y,     w,t, this.color["BGBorder"] ); // Border top.
                     this.addBoxToArray( verts, indices, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
 
                     // Define scissor rect, y is lower left.
@@ -1108,7 +1207,7 @@
         this.activeWindow.cursor.x = this.activeWindow.position.x;
     }
 
-    button(label, returnTrueIfHeld, allowPressIfHeld)
+    button(label, returnTrueIfButtonIsHeldDown, allowPressIfMouseAlreadyHeld)
     {
         // if( this.activeWindow.expanded == false )
         //     return;
@@ -1138,8 +1237,11 @@
 
                 // Store if the button was clicked this frame.
                 if( (this.mouseButtons[0] == true && this.oldMouseButtons[0] == false) ||
-                    (allowPressIfHeld && this.mouseButtons[0] == true) )
+                    (allowPressIfMouseAlreadyHeld && this.mouseButtons[0] == true) )
                 {
+                    //if( this.buttonHeld != label && this.oldMouseButtons[0] == true )
+                    //    debugger;
+
                     this.buttonHeld = label;
                 }
 
@@ -1169,7 +1271,7 @@
             if( isHovering )
             {
                 // If holding the button is considered "triggered".
-                if( returnTrueIfHeld && this.buttonHeld === label )
+                if( returnTrueIfButtonIsHeldDown && this.buttonHeld === label )
                     triggered = true;
 
                 // If mouse released while button is held.
