@@ -806,7 +806,7 @@
         this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
         this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
         this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
-        let pressed = this.button( name, true, true );
+        let pressed = this.button( name, true, true, false );
         this.popColorChange( 3 );
 
         this.sameLine();
@@ -875,20 +875,32 @@
         
         this.drawList = this.FGDrawList;
 
-        if( this.activeWindow.cursor.x == this.activeWindow.position.x )
-        {
-            this.activeWindow.cursor.x += this.popupPadding.x;
-        }
-        this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
-        this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
-        this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
-        let pressed = this.button( name, true, true );
-        this.popColorChange( 3 );
-
         // Resize the BG to fit the options... will have 1 frame lag.
         this.activeWindow.size.set( this.activeWindow.maxExtents.minus( this.activeWindow.position ) );
         this.activeWindow.size.x += this.padding.x + this.popupPadding.x;
         this.activeWindow.size.y += this.popupPadding.y;
+
+        if( this.activeWindow.cursor.x == this.activeWindow.position.x )
+        {
+            this.activeWindow.cursor.x += this.popupPadding.x;
+        }
+
+        // Generate a label showing a small arrow at the end.
+        // This will depend on the length of the longest button, based on the window size from previous frames.
+        let buttonWidth = this.activeWindow.size.x - (this.padding.x*2 + this.popupPadding.x*2);
+        let longestLabel = (buttonWidth - this.padding.x*2) / this.fontSize.x;
+        let label = name;
+        do
+            label += " ";
+        while( label.length < longestLabel - 1 )
+        label += ">";
+
+        // Show the button.
+        this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
+        this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
+        this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
+        let pressed = this.button( label, true, true, true );
+        this.popColorChange( 3 );
 
         let expanded = false;
 
@@ -952,7 +964,7 @@
         this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
         this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
         this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
-        let pressed = this.button( label, false, true );
+        let pressed = this.button( label, false, true, false );
         this.popColorChange( 3 );
 
         this.drawList = this.BGDrawList;
@@ -1101,7 +1113,7 @@
                     this.activeWindow.cursor.y = rect.y + rect.h - (this.padding.y + this.fontSize.y + this.padding.y)
                     let oldMaxX = this.activeWindow.maxExtents.x;
                     let oldMaxY = this.activeWindow.maxExtents.y;
-                    if( this.button( new String(" "), true ) )
+                    if( this.button( new String(" "), true, false, false ) )
                     {
                         this.windowBeingResized = this.activeWindow;
                         this.windowResizeOffset.setF32( rect.x + rect.w - this.mousePosition.x, rect.y + rect.h - this.mousePosition.y );
@@ -1209,7 +1221,7 @@
         this.activeWindow.cursor.x = this.activeWindow.position.x;
     }
 
-    button(label, returnTrueIfButtonIsHeldDown, allowPressIfMouseAlreadyHeld)
+    button(label, returnTrueIfButtonIsHeldDown, allowPressIfMouseAlreadyHeld, returnTrueIfButtonIsHovered)
     {
         // if( this.activeWindow.expanded == false )
         //     return;
@@ -1262,13 +1274,13 @@
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
         this.setIfBigger( this.activeWindow.maxExtents, x + w, y + this.fontSize.y + this.padding.y );
 
+        // Check if button was triggered.
+        let triggered = false;
+
         // If this button is held down.
         if( this.buttonHeld === label )
         {
             this.isHoveringControl = true;
-
-            // Check if button was triggered.
-            let triggered = false;
 
             if( isHovering )
             {
@@ -1284,14 +1296,24 @@
             // If mouse button is up, stop considering this button as held down.
             if( this.mouseButtons[0] == false )
                 this.buttonHeld = null;
+        }
 
-            if( triggered )
+        if( isHovering )
+        {
+            // If hovering over the button is considered "triggered".
+            if( returnTrueIfButtonIsHovered )
             {
-                this.windowBeingMoved = null;
-                //this.windowBeingResized = null;
-                this.needsRefresh = true;
-                return true;
+                this.isHoveringControl = true;
+                triggered = true;
             }
+        }
+
+        if( triggered )
+        {
+            this.windowBeingMoved = null;
+            //this.windowBeingResized = null;
+            this.needsRefresh = true;
+            return true;
         }
 
         return false;
