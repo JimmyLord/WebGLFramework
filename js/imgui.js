@@ -290,7 +290,7 @@
 
         for( let key in state.windows )
         {
-            this.windows[key] = new Window();
+            this.windows[key] = new ImGuiWindow();
             this.windows[key].name = key;
             let window = this.windows[key];
 
@@ -702,7 +702,7 @@
 
         if( this.windows[name] == undefined )
         {
-            this.windows[name] = new Window();
+            this.windows[name] = new ImGuiWindow();
             this.windows[name].name = name;
             this.windows[name].maxExtents.setF32( 0, 0 );
             this.windows[name].hasTitle = true;
@@ -761,7 +761,7 @@
         {
             let windowCount = Object.keys( this.windows ).length;
 
-            this.windows[name] = new Window();
+            this.windows[name] = new ImGuiWindow();
             this.windows[name].name = name;
             this.activeWindow = this.windows[name];
             
@@ -1002,7 +1002,7 @@
         {
             let windowCount = Object.keys( this.windows ).length;
 
-            this.windows[name] = new Window();
+            this.windows[name] = new ImGuiWindow();
             this.windows[name].name = name;
             this.activeWindow = this.windows[name];
             
@@ -1191,7 +1191,7 @@
         }
 
         if( rect === undefined )
-            rect = new Rect( 0, 0, 10000, 10000 );
+            rect = new ImGuiRect( 0, 0, 10000, 10000 );
 
         this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, rect ) );
 
@@ -1241,7 +1241,7 @@
         // Check if we're hovering over this button inside this window.
         let isHovering = false;
         let color = this.color["ButtonNormal"];
-        let rect = new Rect( x, y, w, h );
+        let rect = new ImGuiRect( x, y, w, h );
         if( rect.contains( this.mousePosition ) )
         {
             if( this.activeWindow == this.windowHovered )
@@ -1342,7 +1342,7 @@
 
         let isHovering = false;
         let color = this.color["ButtonNormal"];
-        let rect = new Rect( x, y, w, h );
+        let rect = new ImGuiRect( x, y, w, h );
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
             if( this.activeWindow == this.windowHovered )
@@ -1419,7 +1419,7 @@
 
         let isHovering = false;
 
-        let rect = new Rect( x, y, w, h );
+        let rect = new ImGuiRect( x, y, w, h );
 
         // Draw background and determine if mouse if hovering over it.
         {
@@ -1608,7 +1608,7 @@
     }
 }
 
-class Window
+class ImGuiWindow
 {
     constructor()
     {
@@ -1619,7 +1619,7 @@ class Window
         this.activeThisFrame = false;
         this.cursor = new vec2(0);
         this.previousLineEndPosition = new vec2(0);
-        this.rect = new Rect(0,0,0,0);
+        this.rect = new ImGuiRect(0,0,0,0);
 
         this.expanded = true;
         this.maxExtents = new vec2(0); // Stores the lower right screen x/y of the window (not just the biggest size).
@@ -1646,7 +1646,7 @@ class DrawListItem
     }
 }
 
-class Rect
+class ImGuiRect
 {
     constructor(x,y,w,h)
     {

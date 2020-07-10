@@ -1,17 +1,18 @@
 class Texture
 {
-    constructor(gl, filename, pixelsUint8Array, width, height)
+    constructor(gl)
     {
         this.gl = gl;
         this.textureID = 0;
+        this.image = null;
     }
 
     loadFromFile(filename)
     {
+        let gl = this.gl;
+
         // This is deprecated, but no clue what an alternative would be... other than flipping all UVs.
         gl.pixelStorei( gl.UNPACK_FLIP_Y_WEBGL, true );
-
-        let gl = this.gl;
 
         this.textureID = gl.createTexture();
 
@@ -29,7 +30,7 @@ class Texture
         // Start load of texture requested.
         this.image = new Image();
         this.image.src = filename;
-        this.image.addEventListener( 'load', this );
+        this.image.addEventListener( "load", this.onLoad, false );
     }
 
     createFromUInt8Array(pixels, width, height)
@@ -58,17 +59,16 @@ class Texture
         this.gl = null;
     }
 
-    handleEvent(event)
+    onLoad(event)
     {
         let gl = this.gl;
 
-        if( event.type == "load" )
-        {
-            gl.bindTexture( gl.TEXTURE_2D, this.textureID );
-            gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image );
-            
-            this.image.removeEventListener( 'load', this );
-            this.image = null;
-        }
+        gl.bindTexture( gl.TEXTURE_2D, this.textureID );
+        gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image );
+
+        // TODO: debug this, does it actually remove the event listener.
+        //debugger;
+        this.image.removeEventListener( "load", this.onLoad, false );
+        this.image = null;
     }
 }

@@ -2,30 +2,26 @@ class ResourceManager
 {
     constructor(gl)
     {
-        this.shaders = new Map;
-        this.materials = new Map;
-        this.meshes = new Map;
-        this.textures = new Map;
+        this.shaders = {};
+        this.materials = {};
+        this.meshes = {};
+        this.textures = {};
 
         this.createSomeShaders( gl );
     }
 
     free()
     {
-        this.shaders.forEach( shader => shader.free() );
-        this.shaders.clear();
+        for( let key in this.shaders ) { this.shaders[key].free(); this.shaders[key] = null; };
         this.shaders = null;
 
-        this.materials.forEach( material => material.free() );
-        this.materials.clear();
+        for( let key in this.materials ) { this.materials[key].free(); this.materials[key] = null; };
         this.materials = null;
 
-        this.meshes.forEach( mesh => mesh.free() );
-        this.meshes.clear();
+        for( let key in this.meshes ) { this.meshes[key].free(); this.meshes[key] = null; };
         this.meshes = null;
 
-        this.textures.forEach( texture => texture.free() );
-        this.textures.clear();
+        for( let key in this.textures ) { this.textures[key].free(); this.textures[key] = null; };
         this.textures = null;
     }
 

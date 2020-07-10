@@ -6,12 +6,13 @@ class Scene
         this.entities = [];
         this.lights = [];
         this.camera = null;
+        this.orthoHeight = 0;
     }
 
     init(loadDefaultResources)
     {
         // Create a default camera if one isn't made before the call to init.
-        if( this.camera == null )
+        if( this.camera === null )
         {
             this.orthoHeight = 2;
             this.camera = new Camera( new vec3(0, 0, -3), true, this.orthoHeight, this.framework.canvas.width / this.framework.canvas.height );

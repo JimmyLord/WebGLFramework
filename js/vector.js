@@ -1,9 +1,9 @@
 class vec2
 {
-    constructor(x,y)
+    constructor(x,y=x)
     {
-        if( arguments.length == 1 )        { this.x = x; this.y = x; } // xx
-        else                               { this.x = x; this.y = y; } // xy
+        this.x = x;
+        this.y = y;
     }
 
     set(o)              { this.x = o.x; this.y = o.y; }
@@ -69,11 +69,11 @@ class vec2
 
 class vec3
 {
-    constructor(x,y,z)
+    constructor(x,y=undefined,z=undefined)
     {
-        if( arguments.length == 1 )        { this.x = x; this.y = x; this.z = x; } // xxx
-        else if( arguments.length == 2 )   { this.x = x; this.y = y; this.z = 0; } // xy0
-        else                               { this.x = x; this.y = y; this.z = z; } // xyz
+        if( y == undefined )      { this.x = x; this.y = x; this.z = x; } // xxx
+        else if( z == undefined ) { this.x = x; this.y = y; this.z = 0; } // xy0
+        else                      { this.x = x; this.y = y; this.z = z; } // xyz
     }
 
     set(o)              { this.x = o.x; this.y = o.y; this.z = o.z; }
