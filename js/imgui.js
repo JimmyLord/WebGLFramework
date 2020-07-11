@@ -16,10 +16,12 @@
         this.lastTimeMouseClicked = [ 0, 0, 0 ];
         this.mouseDoubleClickedThisFrame = [ false, false, false ];
         this.mouseChange = new vec2(0);
+        this.mouseChangeUnscaled = new vec2(0);
         this.lastMousePosition = new vec2(0);
         this.unusedKeyBuffer = null;
         this.mainMenuBarHeight = 0; // How tall is the main menu bar (0 if no bar is active).
         this.activeWindow = null;
+        this.previousMenu = null;
         this.activeControl = null;
         this.buttonHeld = null;
         this.controlInEditMode = null;
@@ -32,11 +34,12 @@
         this.windowMoved = false;
         this.oldMouseButtons = [ false, false, false ];
         this.stateIsDirty = false;
+        this.font = null;
         this.fontSize = new vec2(0);
-        this.activeMenus = [];
+        this.activeMenus = {};
 
         // Colors.
-        this.color = [];
+        this.color = {};
         this.color["Title"] =           new color(   0,   0,  50, 255 );
         this.color["BG"] =              new color(   0,   0,  25, 200 );
         this.color["BGBorder"] =        new color( 100, 100, 100, 255 );
@@ -488,7 +491,7 @@
             this.windowBeingResized = null;
         }
 
-        if( this.buttonHeld != null )
+        if( this.buttonHeld !== null )
         {
             this.windowBeingMoved = null;
         }
@@ -536,27 +539,27 @@
             }
         }
 
-        if( false )
-        {
-            this.window( "TEST" );
-            this.windows["TEST"].position.x = 300;
-            this.windows["TEST"].position.y = 50;
-            this.windows["TEST"].size.x = 250;
-            this.windows["TEST"].size.y = 200;
-            this.text( "Delta: " + this.mouseChange.x + " " + this.mouseChange.y );
-            this.text( "Mouse Pos: " + this.mousePosition.x + " " + this.mousePosition.y );
-            this.text( "Buttons: " + this.mouseButtons );
-            if( this.windowHovered != null )
-            {
-                this.text( "Hovered: " + this.windowHovered.name );
-            }
-            if( this.windowBeingMoved )
-            {
-                this.text( "Rect XY: " + this.windowBeingMoved.rect.x + " " + this.windowBeingMoved.rect.y );
-                this.text( "Rect WH: " + this.windowBeingMoved.rect.w + " " + this.windowBeingMoved.rect.h );
-                this.text( "In Rect: " + this.windowBeingMoved.rect.contains( this.mousePosition ) );
-            }
-        }
+        //if( false )
+        //{
+        //    this.window( "TEST" );
+        //    this.windows["TEST"].position.x = 300;
+        //    this.windows["TEST"].position.y = 50;
+        //    this.windows["TEST"].size.x = 250;
+        //    this.windows["TEST"].size.y = 200;
+        //    this.text( "Delta: " + this.mouseChange.x + " " + this.mouseChange.y );
+        //    this.text( "Mouse Pos: " + this.mousePosition.x + " " + this.mousePosition.y );
+        //    this.text( "Buttons: " + this.mouseButtons );
+        //    if( this.windowHovered != null )
+        //    {
+        //        this.text( "Hovered: " + this.windowHovered.name );
+        //    }
+        //    if( this.windowBeingMoved )
+        //    {
+        //        this.text( "Rect XY: " + this.windowBeingMoved.rect.x + " " + this.windowBeingMoved.rect.y );
+        //        this.text( "Rect WH: " + this.windowBeingMoved.rect.w + " " + this.windowBeingMoved.rect.h );
+        //        this.text( "In Rect: " + this.windowBeingMoved.rect.contains( this.mousePosition ) );
+        //    }
+        //}
 
         // Update lastTimeMouseClicked to be able to detect double-clicks above.
         if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
@@ -663,11 +666,11 @@
         gl.useProgram( this.shader.program );
 
         // Ortho matrix with 0,0 at top-left.
-        this.matProj = new mat4();
-        this.matProj.createOrthoInfiniteZ( 0, this.canvas.width / this.scale, this.canvas.height / this.scale, 0 );
+        let matProj = new mat4();
+        matProj.createOrthoInfiniteZ( 0, this.canvas.width / this.scale, this.canvas.height / this.scale, 0 );
 
         let u_MatProj = gl.getUniformLocation( this.shader.program, "u_MatProj" );
-        gl.uniformMatrix4fv( u_MatProj, false, this.matProj.m )
+        gl.uniformMatrix4fv( u_MatProj, false, matProj.m )
 
         let u_TextureAlbedo = gl.getUniformLocation( this.shader.program, "u_TextureAlbedo" );
         if( u_TextureAlbedo != null )
@@ -739,11 +742,8 @@
         this.color[name].setFromColor( newColor );
     }
 
-    popColorChange(numPops)
+    popColorChange(numPops = 1)
     {
-        if( numPops === undefined )
-            numPops = 1;
-
         for( let i=0; i<numPops; i++ )
         {
             let entry = this.colorChangeStack.pop();
@@ -1145,7 +1145,7 @@
         verts.push( x+w,y+h,   0,0,   color.r,color.g,color.b,color.a );
     }
 
-    addStringToDrawList(str, x, y, rect)
+    addStringToDrawList(str, x, y, rect = undefined)
     {
         let gl = this.gl;
 
@@ -1167,8 +1167,7 @@
             if( c == 97+6 || c == 97+9 || c == 97+15 || c == 97+16 || c == 97+24 ) // g/j/p/q/y
                 y += 2;
             // Greek symbols.
-            if( false ) {}
-            else if( c == 916 ) c = 130; // Δ
+                 if( c == 916 ) c = 130; // Δ
             else if( c == 952 ) c = 143; // θ
             else if( c == 969 ) c = 144; // ω
             else if( c > 150 )
@@ -1221,7 +1220,7 @@
         this.activeWindow.cursor.x = this.activeWindow.position.x;
     }
 
-    button(label, returnTrueIfButtonIsHeldDown, allowPressIfMouseAlreadyHeld, returnTrueIfButtonIsHovered)
+    button(label, returnTrueIfButtonIsHeldDown = false, allowPressIfMouseAlreadyHeld = false, returnTrueIfButtonIsHovered = false)
     {
         // if( this.activeWindow.expanded == false )
         //     return;

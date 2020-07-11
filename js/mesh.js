@@ -11,6 +11,7 @@ class Mesh
 
         // Only stored if using startShape/addVertex/endShape until endShape is called.
         this.vertexAttributes = null;
+        this.vertexAttributesAsFloats = null;
     }
 
     free()
@@ -22,7 +23,7 @@ class Mesh
 
     clear()
     {
-        if( this.VBO == null )
+        if( this.VBO === null )
             return;
 
         let gl = this.gl;
@@ -34,7 +35,7 @@ class Mesh
         gl.deleteBuffer( this.VBO )
 
         // Manually resize buffer to 1 byte to reduce memory usage on shutdown.
-        if( this.IBO != null )
+        if( this.IBO !== null )
         {
             gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
             gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, 1, gl.STATIC_DRAW );

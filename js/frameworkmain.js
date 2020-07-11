@@ -7,6 +7,9 @@ class FrameworkMain
 {
     constructor()
     {
+        // Main object receiving update/draw/input calls.
+        this.runnableObject = null;
+
         // Settings.
         this.showFPSCounter = false;
         this.autoRefresh = true;
@@ -21,9 +24,10 @@ class FrameworkMain
         this.frameCountInLastSecond = 0;
         this.timeToNextFPSUpdate = 1;
         this.lastTimeRefreshCalled = 0;
+        this.lastTime = 0;
 
         // Input state.
-        this.keyStates = new Map;
+        this.keyStates = {};
         this.mousePosition = new vec2(0);
         this.mouseButtons = [ false, false, false ];
         this.simulateMouseWithFirstFinger = true;
@@ -85,7 +89,7 @@ class FrameworkMain
         this.imgui = new ImGui( this.gl, this.canvas );
         if( this.storage != null )
         {
-            this.imgui.loadState( this.storage.imguiState );
+            this.imgui.loadState( this.storage[ "imguiState" ] );
         }
 
         if( iPad )
@@ -225,6 +229,7 @@ class FrameworkMain
 
     registerDoMCallbacks()
     {
+        debugger;
         // Register window events.
         window.addEventListener( "beforeunload", (event) => this.onBeforeUnload(event), false );
         window.addEventListener( "unload",       (event) => this.onUnload(event),       false );

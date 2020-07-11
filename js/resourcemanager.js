@@ -12,16 +12,16 @@ class ResourceManager
 
     free()
     {
-        for( let key in this.shaders ) { this.shaders[key].free(); this.shaders[key] = null; };
+        for( let key in this.shaders )   { this.shaders[key].free();   delete this.shaders[key]; };
         this.shaders = null;
 
-        for( let key in this.materials ) { this.materials[key].free(); this.materials[key] = null; };
+        for( let key in this.materials ) { this.materials[key].free(); delete this.materials[key]; };
         this.materials = null;
 
-        for( let key in this.meshes ) { this.meshes[key].free(); this.meshes[key] = null; };
+        for( let key in this.meshes )    { this.meshes[key].free();    delete this.meshes[key]; };
         this.meshes = null;
 
-        for( let key in this.textures ) { this.textures[key].free(); this.textures[key] = null; };
+        for( let key in this.textures )  { this.textures[key].free();  delete this.textures[key]; };
         this.textures = null;
     }
 
