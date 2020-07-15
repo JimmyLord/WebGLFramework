@@ -229,11 +229,12 @@ class FrameworkMain
 
     registerDoMCallbacks()
     {
-        debugger;
         // Register window events.
         window.addEventListener( "beforeunload", (event) => this.onBeforeUnload(event), false );
         window.addEventListener( "unload",       (event) => this.onUnload(event),       false );
         window.addEventListener( "resize",       (event) => this.onResize(event),       false );
+        window.addEventListener( "popstate",     (event) => this.onPopState(event),     false );
+        window.addEventListener( "hashchange",   (event) => this.onHashChange(event),   false );
 
         // Register document events.
         document.addEventListener( "mouseover",    (event) => this.onMouseOver(event),    false );
@@ -274,6 +275,22 @@ class FrameworkMain
             this.canvas.height *= window.devicePixelRatio;
             this.canvas.style.width = (this.canvas.width / window.devicePixelRatio) + 'px';
             this.canvas.style.height = (this.canvas.height / window.devicePixelRatio) + 'px';
+        }
+    }
+
+    onPopState(event)
+    {
+        if( this.runnableObject.onPopState )
+        {
+            this.runnableObject.onPopState( event );
+        }
+    }
+
+    onHashChange(event)
+    {
+        if( this.runnableObject.onHashChange )
+        {
+            this.runnableObject.onHashChange( window.location.hash );
         }
     }
 
