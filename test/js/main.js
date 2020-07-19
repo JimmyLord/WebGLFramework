@@ -193,12 +193,12 @@ class MainProject
         this.framework.refresh();
     }
 
-    onKeyDown(keyCode)
+    onKeyDown(key, keyCode, modifierKeys)
     {
         this.framework.refresh();
     }
 
-    onKeyUp(keyCode)
+    onKeyUp(key, keyCode, modifierKeys)
     {
         this.framework.refresh();
     }

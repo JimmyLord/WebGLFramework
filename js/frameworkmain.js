@@ -3,6 +3,14 @@
 //    width=600
 //    height=400
 //    fullFrame="true" or 1
+
+let modifierKeyFlag =
+{
+    shift:  1,
+    ctrl:   2,
+    alt:    4,
+}
+
 class FrameworkMain
 {
     constructor()
@@ -556,9 +564,14 @@ class FrameworkMain
     {
         this.keyStates[event.key] = 1;
 
+        let modifierKeys = 0;
+        if( event.shiftKey ) modifierKeys |= modifierKeyFlag.shift;
+        if( event.ctrlKey ) modifierKeys |= modifierKeyFlag.ctrl;
+        if( event.altKey ) modifierKeys |= modifierKeyFlag.alt;
+
         if( this.runnableObject.onKeyDown )
         {
-            this.runnableObject.onKeyDown( event.key );
+            this.runnableObject.onKeyDown( event.key, event.keyCode, modifierKeys );
         }
 
         this.imgui.keyBuffer.push( event.key );
@@ -568,9 +581,14 @@ class FrameworkMain
     {
         this.keyStates[event.key] = 0;
 
+        let modifierKeys = 0;
+        if( event.shiftKey ) modifierKeys |= modifierKeyFlag.shift;
+        if( event.ctrlKey ) modifierKeys |= modifierKeyFlag.ctrl;
+        if( event.altKey ) modifierKeys |= modifierKeyFlag.alt;
+
         if( this.runnableObject.onKeyUp )
         {
-            this.runnableObject.onKeyUp( event.key );
+            this.runnableObject.onKeyUp( event.key, event.keyCode, modifierKeys );
         }
     }
 
