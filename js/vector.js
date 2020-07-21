@@ -50,14 +50,22 @@ class vec2
     normalize()
     {
         let len = this.length();
-        this.x = this.x / len;
-        this.y = this.y / len;
+
+        if( len > 0 )
+        {
+            this.x = this.x / len;
+            this.y = this.y / len;
+        }
+
         return this;
     }
 
     getNormalized()
     {
         let len = this.length();
+        if( len == 0 )
+            return new vec2( 0 );
+
         return new vec2( this.x / len, this.y / len );
     }
 
@@ -120,15 +128,22 @@ class vec3
     normalize()
     {
         let len = this.length();
-        this.x = this.x / len;
-        this.y = this.y / len;
-        this.z = this.z / len;
+        
+        if( len > 0 )
+        {
+            this.x = this.x / len;
+            this.y = this.y / len;
+            this.z = this.z / len;
+        }
         return this;
     }
 
     getNormalized()
     {
         let len = this.length();
+        if( len == 0 )
+            return new vec2( 0 );
+
         return new vec3( this.x / len, this.y / len, this.z / len );
     }
 

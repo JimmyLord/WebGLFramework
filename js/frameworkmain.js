@@ -57,7 +57,7 @@ class FrameworkMain
         let gl = this.canvas.getContext( "webgl2" );
         if( gl == 0 )
         {
-            log( "Failed to get WebGL context from canvas." );
+            console.log( "Failed to get WebGL context from canvas." );
             return;
         }
         this.gl = gl;
@@ -564,6 +564,9 @@ class FrameworkMain
     {
         this.keyStates[event.key] = 1;
 
+        if( event.repeat == true )
+            return;
+
         let modifierKeys = 0;
         if( event.shiftKey ) modifierKeys |= modifierKeyFlag.shift;
         if( event.ctrlKey ) modifierKeys |= modifierKeyFlag.ctrl;
@@ -580,6 +583,9 @@ class FrameworkMain
     onKeyUp(event)
     {
         this.keyStates[event.key] = 0;
+
+        if( event.repeat == true )
+            return;
 
         let modifierKeys = 0;
         if( event.shiftKey ) modifierKeys |= modifierKeyFlag.shift;
@@ -607,7 +613,7 @@ class FrameworkMain
             this.runnableObject.shutdown();
         }
 
-        log( "Shutdown!" );
+        console.log( "Shutdown!" );
     }
 }
 
