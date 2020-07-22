@@ -1,10 +1,3 @@
-function log(str)
-{
-    let newElem = document.createElement( 'p' ); 
-    newElem.appendChild( document.createTextNode( str ) );
-    document.body.appendChild( newElem );
-}
-
 class MainProject
 {
     constructor(framework)

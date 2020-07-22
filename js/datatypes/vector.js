@@ -142,7 +142,7 @@ class vec3
     {
         let len = this.length();
         if( len == 0 )
-            return new vec2( 0 );
+            return new vec3( 0 );
 
         return new vec3( this.x / len, this.y / len, this.z / len );
     }

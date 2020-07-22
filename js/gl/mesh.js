@@ -320,10 +320,10 @@ class Mesh
         vertexAttributesAsFloats[vertexFloatIndex + 7] = normal.z;
 
         let vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
-        vertexAttributesAsUint8s[vertexFloatIndex*sizeofVertex + 8*4 + 0] = color.r;
-        vertexAttributesAsUint8s[vertexFloatIndex*sizeofVertex + 8*4 + 1] = color.g;
-        vertexAttributesAsUint8s[vertexFloatIndex*sizeofVertex + 8*4 + 2] = color.b;
-        vertexAttributesAsUint8s[vertexFloatIndex*sizeofVertex + 8*4 + 3] = color.a;
+        vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 0] = color.r;
+        vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 1] = color.g;
+        vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 2] = color.b;
+        vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 3] = color.a;
 
         this.numVerts++;
     }
@@ -340,7 +340,7 @@ class Mesh
         this.vertexAttributesAsFloats = null;
     }
 
-    draw(camera, matWorld, material, lights)
+    draw(camera, matWorld, material, lights = null)
     {
         let gl = this.gl;
 

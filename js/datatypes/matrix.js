@@ -90,6 +90,20 @@ class mat4
         }
     }
     
+    scale(scaleVector)
+    {
+        this.m[ 0] *= scaleVector.x; this.m[ 4] *= scaleVector.x; this.m[ 8] *= scaleVector.x; this.m[12] *= scaleVector.x;
+        this.m[ 1] *= scaleVector.y; this.m[ 5] *= scaleVector.y; this.m[ 9] *= scaleVector.y; this.m[13] *= scaleVector.y;
+        this.m[ 2] *= scaleVector.z; this.m[ 6] *= scaleVector.z; this.m[10] *= scaleVector.z; this.m[14] *= scaleVector.z;
+    }
+
+    scaleF32(x, y=x, z=x)
+    {
+        this.m[ 0] *= x; this.m[ 4] *= x; this.m[ 8] *= x; this.m[12] *= x;
+        this.m[ 1] *= y; this.m[ 5] *= y; this.m[ 9] *= y; this.m[13] *= y;
+        this.m[ 2] *= z; this.m[ 6] *= z; this.m[10] *= z; this.m[14] *= z;
+    }
+
     multiply(o)
     {
         let newmat = new mat4;
@@ -146,6 +160,16 @@ class mat4
         this.m[12] = -cameraPosition.x;
         this.m[13] = -cameraPosition.y;
         this.m[14] = -cameraPosition.z;
+    }
+
+    createViewSRT(scale, rotation, translation)
+    {
+        this.setIdentity();
+        this.translate( translation.times( -1 ) );
+        this.rotate( -rotation.y, 0, 1, 0 ); // yaw
+        this.rotate( -rotation.x, 1, 0, 0 ); // pitch
+        this.rotate( -rotation.z, 0, 0, 1 ); // roll
+        this.scaleF32( 1.0/scale.x, 1.0/scale.y, 1.0/scale.z );
     }
 
     createOrthoInfiniteZ(left, right, bottom, top)
