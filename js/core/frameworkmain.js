@@ -23,10 +23,12 @@ class FrameworkMain
         this.autoRefresh = true;
         this.maxDeltaTime = 0; // Prevent deltaTime from getting bigger than this. 0 for unlimited.
         this.clearColor = new color( 0, 0, 0.4, 1 );
+        this.pauseOnFocusLoss = true;
 
         // Public members.
         this.runningTime = 0;
         this.FPS = 0;
+        this.isVisible = true;
 
         // Internal members.
         this.frameCountInLastSecond = 0;
@@ -193,6 +195,13 @@ class FrameworkMain
             this.autoRefresh = true;
         }
 
+        // Don't refresh if we're not in focus.
+        if( this.isVisible == false && this.pauseOnFocusLoss == true )
+        {
+            //console.log( "Pausing refresh" );
+            return;
+        }
+
         // Restart the update/draw cycle.
         if( this.autoRefresh )
         {
@@ -201,9 +210,9 @@ class FrameworkMain
         }
     }
 
-    refresh()
+    refresh(force = false)
     {
-        if( this.autoRefresh )
+        if( force == false && this.autoRefresh )
             return;
 
         // Only allow refresh to be called once for the current frame.
@@ -245,17 +254,19 @@ class FrameworkMain
         window.addEventListener( "hashchange",   (event) => this.onHashChange(event),   false );
 
         // Register document events.
-        document.addEventListener( "mouseover",    (event) => this.onMouseOver(event),    false );
-        document.addEventListener( "mousemove",    (event) => this.onMouseMove(event),    false );
-        document.addEventListener( "mousedown",    (event) => this.onMouseDown(event),    false );
-        document.addEventListener( "mouseup",      (event) => this.onMouseUp(event),      false );
-        document.addEventListener( "wheel",        (event) => this.onMouseWheel(event),   false );
-        document.addEventListener( "keydown",      (event) => this.onKeyDown(event),      false );
-        document.addEventListener( "keyup",        (event) => this.onKeyUp(event),        false );
-        document.addEventListener( "touchstart",   (event) => this.onTouchStart(event),   false );
-        document.addEventListener( "touchmove",    (event) => this.onTouchMove(event),    false );
-        document.addEventListener( "touchend",     (event) => this.onTouchEnd(event),     false );
-        document.addEventListener( "touchcancel",  (event) => this.onTouchCancel(event),  false );
+        document.addEventListener( "mouseover",        (event) => this.onMouseOver(event),        false );
+        document.addEventListener( "mousemove",        (event) => this.onMouseMove(event),        false );
+        document.addEventListener( "mousedown",        (event) => this.onMouseDown(event),        false );
+        document.addEventListener( "mouseup",          (event) => this.onMouseUp(event),          false );
+        document.addEventListener( "wheel",            (event) => this.onMouseWheel(event),       false );
+        document.addEventListener( "keydown",          (event) => this.onKeyDown(event),          false );
+        document.addEventListener( "keyup",            (event) => this.onKeyUp(event),            false );
+        document.addEventListener( "touchstart",       (event) => this.onTouchStart(event),       false );
+        document.addEventListener( "touchmove",        (event) => this.onTouchMove(event),        false );
+        document.addEventListener( "touchend",         (event) => this.onTouchEnd(event),         false );
+        document.addEventListener( "touchcancel",      (event) => this.onTouchCancel(event),      false );
+        document.addEventListener( "blur",             (event) => this.onBlur(event),             false );
+        document.addEventListener( "focus",            (event) => this.onFocus(event),            false );
     }
 
     onBeforeUnload(event)
@@ -467,6 +478,23 @@ class FrameworkMain
         //if( event.preventDefault ) event.preventDefault();
         //else event.returnValue = false;
         //return false;
+    }
+
+    onBlur(event)
+    {
+        //console.log( "Focus lost" );
+
+        this.isVisible = false;
+    }
+
+    onFocus(event)
+    {
+        //console.log( "Focus gained" );
+
+        this.isVisible = true;
+        
+        // Force a refresh when we gain focus.
+        this.refresh( true );
     }
 
     onMouseOver(event)
