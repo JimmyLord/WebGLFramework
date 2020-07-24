@@ -128,7 +128,7 @@ class FrameworkMain
         this.registerDoMCallbacks();
 
         // Start the update/draw cycle.
-        requestAnimationFrame( (currentTime) => this.update( currentTime ) );
+        this.refresh( true );
     }
     
     update(currentTime)
@@ -485,6 +485,12 @@ class FrameworkMain
         //console.log( "Focus lost" );
 
         this.isVisible = false;
+
+        if( this.runnableObject.onFocusChanged )
+        {
+            // Let app know focus was lost.
+            this.runnableObject.onFocusChanged( false );
+        }
     }
 
     onFocus(event)
@@ -492,6 +498,12 @@ class FrameworkMain
         //console.log( "Focus gained" );
 
         this.isVisible = true;
+
+        if( this.runnableObject.onFocusChanged )
+        {
+            // Let app know focus was gained.
+            this.runnableObject.onFocusChanged( true );
+        }
         
         // Force a refresh when we gain focus.
         this.refresh( true );

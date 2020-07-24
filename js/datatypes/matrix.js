@@ -15,6 +15,14 @@ class mat4
         this.m = null;
     }
 
+    set(o)
+    {
+        this.m[ 0] = o.m[ 0]; this.m[ 4] = o.m[ 4]; this.m[ 8] = o.m[ 8]; this.m[12] = o.m[12];
+        this.m[ 1] = o.m[ 1]; this.m[ 5] = o.m[ 5]; this.m[ 9] = o.m[ 9]; this.m[13] = o.m[13];
+        this.m[ 2] = o.m[ 2]; this.m[ 6] = o.m[ 6]; this.m[10] = o.m[10]; this.m[14] = o.m[14];
+        this.m[ 3] = o.m[ 3]; this.m[ 7] = o.m[ 7]; this.m[11] = o.m[11]; this.m[15] = o.m[15];
+    }
+
     setIdentity()
     {
         this.m[ 0] = 1; this.m[ 4] = 0; this.m[ 8] = 0; this.m[12] = 0;
@@ -84,7 +92,7 @@ class mat4
             rotMat.m[14] = 0;
             rotMat.m[15] = 1;
     
-            let temp = rotMat.multiply( this );
+            let temp = rotMat.multiplyByMatrix( this );
             this.m = temp.m;
             temp.m = null;
         }
@@ -104,7 +112,27 @@ class mat4
         this.m[ 2] *= z; this.m[ 6] *= z; this.m[10] *= z; this.m[14] *= z;
     }
 
-    multiply(o)
+    timesScalar(o)
+    {
+        this.m[ 0] *= o; this.m[ 4] *= o; this.m[ 8] *= o; this.m[12] *= o;
+        this.m[ 1] *= o; this.m[ 5] *= o; this.m[ 9] *= o; this.m[13] *= o;
+        this.m[ 2] *= o; this.m[ 6] *= o; this.m[10] *= o; this.m[14] *= o;
+        this.m[ 3] *= o; this.m[ 7] *= o; this.m[11] *= o; this.m[15] *= o;
+    }
+
+    multiplyByScalar(o)
+    {
+        let newmat = new mat4();
+
+        newmat.m[ 0] = this.m[ 0] * o; newmat.m[ 4] = this.m[ 4] * o; newmat.m[ 8] = this.m[ 8] * o; newmat.m[12] = this.m[12] * o;
+        newmat.m[ 1] = this.m[ 1] * o; newmat.m[ 5] = this.m[ 5] * o; newmat.m[ 9] = this.m[ 9] * o; newmat.m[13] = this.m[13] * o;
+        newmat.m[ 2] = this.m[ 2] * o; newmat.m[ 6] = this.m[ 6] * o; newmat.m[10] = this.m[10] * o; newmat.m[14] = this.m[14] * o;
+        newmat.m[ 3] = this.m[ 3] * o; newmat.m[ 7] = this.m[ 7] * o; newmat.m[11] = this.m[11] * o; newmat.m[15] = this.m[15] * o;
+
+        return newmat;
+    }
+
+    multiplyByMatrix(o)
     {
         let newmat = new mat4;
 
@@ -126,6 +154,14 @@ class mat4
         newmat.m[15] = this.m[ 3] * o.m[12] + this.m[ 7] * o.m[13] + this.m[11] * o.m[14] + this.m[15] * o.m[15];
 
         return newmat;
+    }
+
+    transformVec4(o)
+    {
+        return new vec4( this.m[ 0] * o.x + this.m[ 4] * o.y + this.m[ 8] * o.z + this.m[12] * o.w,
+                         this.m[ 1] * o.x + this.m[ 5] * o.y + this.m[ 9] * o.z + this.m[13] * o.w,
+                         this.m[ 2] * o.x + this.m[ 6] * o.y + this.m[10] * o.z + this.m[14] * o.w,
+                         this.m[ 3] * o.x + this.m[ 7] * o.y + this.m[11] * o.z + this.m[15] * o.w );
     }
 
     createScale(scale)
@@ -225,5 +261,63 @@ class mat4
     getAt()
     {
         return new vec3( this.m[ 8], this.m[ 9], this.m[10] );
+    }
+
+    inverse(tolerance = 0.0001)
+    {
+        // Determinants of 2x2 submatrices.
+        let S0 = this.m[ 0] * this.m[ 5] - this.m[ 1] * this.m[ 4];
+        let S1 = this.m[ 0] * this.m[ 6] - this.m[ 2] * this.m[ 4];
+        let S2 = this.m[ 0] * this.m[ 7] - this.m[ 3] * this.m[ 4];
+        let S3 = this.m[ 1] * this.m[ 6] - this.m[ 2] * this.m[ 5];
+        let S4 = this.m[ 1] * this.m[ 7] - this.m[ 3] * this.m[ 5];
+        let S5 = this.m[ 2] * this.m[ 7] - this.m[ 3] * this.m[ 6];
+
+        let C5 = this.m[10] * this.m[15] - this.m[11] * this.m[14];
+        let C4 = this.m[ 9] * this.m[15] - this.m[11] * this.m[13];
+        let C3 = this.m[ 9] * this.m[14] - this.m[10] * this.m[13];
+        let C2 = this.m[ 8] * this.m[15] - this.m[11] * this.m[12];
+        let C1 = this.m[ 8] * this.m[14] - this.m[10] * this.m[12];
+        let C0 = this.m[ 8] * this.m[13] - this.m[ 9] * this.m[12];
+
+        // If determinant equals 0, there is no inverse.
+        let det = S0 * C5 - S1 * C4 + S2 * C3 + S3 * C2 - S4 * C1 + S5 * C0;
+        if( Math.abs(det) <= tolerance )
+            return false;
+
+        // Compute adjugate matrix.
+        let am = new mat4();
+        am.m[ 0] =  this.m[ 5] * C5 - this.m[ 6] * C4 + this.m[ 7] * C3;
+        am.m[ 1] = -this.m[ 1] * C5 + this.m[ 2] * C4 - this.m[ 3] * C3;
+        am.m[ 2] =  this.m[13] * S5 - this.m[14] * S4 + this.m[15] * S3;
+        am.m[ 3] = -this.m[ 9] * S5 + this.m[10] * S4 - this.m[11] * S3;
+
+        am.m[ 4] = -this.m[ 4] * C5 + this.m[ 6] * C2 - this.m[ 7] * C1;
+        am.m[ 5] =  this.m[ 0] * C5 - this.m[ 2] * C2 + this.m[ 3] * C1;
+        am.m[ 6] = -this.m[12] * S5 + this.m[14] * S2 - this.m[15] * S1;
+        am.m[ 7] =  this.m[ 8] * S5 - this.m[10] * S2 + this.m[11] * S1;
+
+        am.m[ 8] =  this.m[ 4] * C4 - this.m[ 5] * C2 + this.m[ 7] * C0;
+        am.m[ 9] = -this.m[ 0] * C4 + this.m[ 1] * C2 - this.m[ 3] * C0;
+        am.m[10] =  this.m[12] * S4 - this.m[13] * S2 + this.m[15] * S0;
+        am.m[11] = -this.m[ 8] * S4 + this.m[ 9] * S2 - this.m[11] * S0;
+
+        am.m[12] = -this.m[ 4] * C3 + this.m[ 5] * C1 - this.m[ 6] * C0;
+        am.m[13] =  this.m[ 0] * C3 - this.m[ 1] * C1 + this.m[ 2] * C0;
+        am.m[14] = -this.m[12] * S3 + this.m[13] * S1 - this.m[14] * S0;
+        am.m[15] =  this.m[ 8] * S3 - this.m[ 9] * S1 + this.m[10] * S0;
+        am.timesScalar( 1 / det );
+
+        this.set( am );
+
+        return true;
+    }
+
+    getInverse(tolerance = 0.0001)
+    {
+        let invMat = new mat4();
+        invMat.set( this );
+        invMat.inverse( tolerance );
+        return invMat;
     }
 }

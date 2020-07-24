@@ -1,6 +1,6 @@
 class vec2
 {
-    constructor(x,y=x)
+    constructor(x=0,y=x)
     {
         this.x = x;
         this.y = y;
@@ -77,7 +77,7 @@ class vec2
 
 class vec3
 {
-    constructor(x,y=undefined,z=undefined)
+    constructor(x=0,y=undefined,z=undefined)
     {
         if( y == undefined )      { this.x = x; this.y = x; this.z = x; } // xxx
         else if( z == undefined ) { this.x = x; this.y = y; this.z = 0; } // xy0
@@ -150,5 +150,90 @@ class vec3
     dot(o)
     {
         return this.x*o.x + this.y*o.y + this.z*o.z;
+    }
+}
+
+class vec4
+{
+    constructor(x=0,y=undefined,z=undefined,w=undefined)
+    {
+        if( y == undefined )      { this.x = x; this.y = x; this.z = x; this.w = x; } // xxxx
+        else if( z == undefined ) { this.x = x; this.y = y; this.z = 0; this.w = 0; } // xy00
+        else if( w == undefined ) { this.x = x; this.y = y; this.z = z; this.w = 0; } // xyz0
+        else                      { this.x = x; this.y = y; this.z = z; this.w = w; } // xyzw
+    }
+
+    set(o)              { this.x = o.x; this.y = o.y; this.z = o.z; this.w = o.w; }
+    setF32(x, y, z)     { this.x = x; this.y = y; this.z = z; this.w = w; }
+
+    plus(o)             { return new vec4( this.x + o.x, this.y + o.y, this.z + o.z, this.w + o.w ); }
+    plusF32(o)          { return new vec4( this.x + o, this.y + o, this.z + o, this.w + o ); }
+
+    minus(o)            { return new vec4( this.x - o.x, this.y - o.y, this.z - o.z, this.w - o.w ); }
+    minusF32(o)         { return new vec4( this.x - o, this.y - o, this.z - o, this.w - o ); }
+
+    timesVec3(o)        { return new vec4( this.x * o.x, this.y * o.y, this.z * o.z, this.w * o.w ); }
+    times(o)            { return new vec4( this.x * o, this.y * o, this.z * o, this.w * o ); }
+
+    dividedByVec3(o)    { return new vec4( this.x / o.x, this.y / o.y, this.z / o.z, this.w / o.w ); }
+    dividedBy(o)        { return new vec4( this.x / o, this.y / o, this.z / o, this.w / o ); }
+
+    add(o)              { this.x += o.x; this.y += o.y; this.z += o.z; this.w += o.w; }
+    addF32(o)           { this.x += o; this.y += o; this.z += o; this.w += o; }
+
+    subtract(o)         { this.x -= o.x; this.y -= o.y; this.z -= o.z; this.w -= o.w; }
+    subtractF32(o)      { this.x -= o; this.y -= o; this.z -= o; this.w -= o; }
+
+    multiplyByVec3(o)   { this.x *= o.x; this.y *= o.y; this.z *= o.z; this.w *= o.w; }
+    multiplyBy(o)       { this.x *= o; this.y *= o; this.z *= o; this.w *= o; }
+
+    divideByVec3(o)     { this.x /= o.x; this.y /= o.y; this.z /= o.z; this.w /= o.w; }
+    divideBy(o)         { this.x /= o; this.y /= o; this.z /= o; this.w /= o; }
+
+    length()            { return Math.sqrt( this.x*this.x + this.y*this.y + this.z*this.z + this.w*this.w ); }
+
+    distanceFrom(o)
+    {
+        let d = this.minus( o );
+        return Math.sqrt( d.x*d.x + d.y*d.y + d.z*d.z + d.w*d.w );
+    }
+
+    distanceFromSquared(o)
+    {
+        let d = this.minus( o );
+        return d.x*d.x + d.y*d.y + d.z*d.z + d.w*d.w;
+    }
+
+    normalize()
+    {
+        let len = this.length();
+        
+        if( len > 0 )
+        {
+            this.x = this.x / len;
+            this.y = this.y / len;
+            this.z = this.z / len;
+            this.w = this.w / len;
+        }
+        return this;
+    }
+
+    getNormalized()
+    {
+        let len = this.length();
+        if( len == 0 )
+            return new vec4( 0 );
+
+        return new vec4( this.x / len, this.y / len, this.z / len, this.w / len );
+    }
+
+    dot(o)
+    {
+        return this.x*o.x + this.y*o.y + this.z*o.z + this.w*o.w;
+    }
+
+    xyz()
+    {
+        return new vec3( this.x, this.y, this.z );
     }
 }
