@@ -63,7 +63,7 @@ class vec2
     getNormalized()
     {
         let len = this.length();
-        if( len == 0 )
+        if( len === 0 )
             return new vec2( 0 );
 
         return new vec2( this.x / len, this.y / len );
@@ -79,8 +79,8 @@ class vec3
 {
     constructor(x=0,y=undefined,z=undefined)
     {
-        if( y == undefined )      { this.x = x; this.y = x; this.z = x; } // xxx
-        else if( z == undefined ) { this.x = x; this.y = y; this.z = 0; } // xy0
+        if( y === undefined )      { this.x = x; this.y = x; this.z = x; } // xxx
+        else if( z === undefined ) { this.x = x; this.y = y; this.z = 0; } // xy0
         else                      { this.x = x; this.y = y; this.z = z; } // xyz
     }
 
@@ -141,7 +141,7 @@ class vec3
     getNormalized()
     {
         let len = this.length();
-        if( len == 0 )
+        if( len === 0 )
             return new vec3( 0 );
 
         return new vec3( this.x / len, this.y / len, this.z / len );
@@ -157,14 +157,14 @@ class vec4
 {
     constructor(x=0,y=undefined,z=undefined,w=undefined)
     {
-        if( y == undefined )      { this.x = x; this.y = x; this.z = x; this.w = x; } // xxxx
-        else if( z == undefined ) { this.x = x; this.y = y; this.z = 0; this.w = 0; } // xy00
-        else if( w == undefined ) { this.x = x; this.y = y; this.z = z; this.w = 0; } // xyz0
-        else                      { this.x = x; this.y = y; this.z = z; this.w = w; } // xyzw
+        if( y === undefined )      { this.x = x; this.y = x; this.z = x; this.w = x; } // xxxx
+        else if( z === undefined ) { this.x = x; this.y = y; this.z = 0; this.w = 0; } // xy00
+        else if( w === undefined ) { this.x = x; this.y = y; this.z = z; this.w = 0; } // xyz0
+        else                       { this.x = x; this.y = y; this.z = z; this.w = w; } // xyzw
     }
 
     set(o)              { this.x = o.x; this.y = o.y; this.z = o.z; this.w = o.w; }
-    setF32(x, y, z)     { this.x = x; this.y = y; this.z = z; this.w = w; }
+    setF32(x, y, z, w)  { this.x = x; this.y = y; this.z = z; this.w = w; }
 
     plus(o)             { return new vec4( this.x + o.x, this.y + o.y, this.z + o.z, this.w + o.w ); }
     plusF32(o)          { return new vec4( this.x + o, this.y + o, this.z + o, this.w + o ); }
@@ -221,7 +221,7 @@ class vec4
     getNormalized()
     {
         let len = this.length();
-        if( len == 0 )
+        if( len === 0 )
             return new vec4( 0 );
 
         return new vec4( this.x / len, this.y / len, this.z / len, this.w / len );

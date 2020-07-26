@@ -3,8 +3,11 @@ class Camera
     constructor(position, isOrtho, orthoWorldHeight, aspectRatio)
     {
         this.isOrtho = isOrtho;
+
         this.position = new vec3( position.x, position.y, position.z );
-        this.rotation = new vec3( 0, 0, 0 );
+        this.rotation = new vec3( 0 );
+        this.scale = new vec3( 1 );
+
         this.desiredHeight = orthoWorldHeight;
         this.aspectRatio = aspectRatio;
 
@@ -54,7 +57,7 @@ class Camera
 
     update()
     {
-        this.matView.createViewSRT( new vec3(1), this.rotation, this.position );
+        this.matView.createViewSRT( this.scale, this.rotation, this.position );
 
         if( this.isOrtho )
         {

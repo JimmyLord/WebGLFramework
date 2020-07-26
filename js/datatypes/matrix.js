@@ -10,6 +10,14 @@ class mat4
         this.m = new Float32Array(16);
     }
 
+    // Temp vars to avoid GC.
+    // Warning: This will cause issue if operations are chained since new values will overwrite old ones.
+    static rotMat = new mat4;
+    static adjugateMatrix = new mat4;
+    static tempVec3 = new vec3;
+    static tempVec4 = new vec4;
+    static tempMat4 = new mat4;
+
     free()
     {
         this.m = null;
@@ -71,30 +79,28 @@ class mat4
             zs = z * sinAngle;
             oneMinusCos = 1 - cosAngle;
     
-            let rotMat = new mat4;
-            rotMat.m[ 0] = (oneMinusCos * xx) + cosAngle;
-            rotMat.m[ 1] = (oneMinusCos * xy) - zs;
-            rotMat.m[ 2] = (oneMinusCos * zx) + ys;
-            rotMat.m[ 3] = 0; 
+            mat4.rotMat.m[ 0] = (oneMinusCos * xx) + cosAngle;
+            mat4.rotMat.m[ 1] = (oneMinusCos * xy) - zs;
+            mat4.rotMat.m[ 2] = (oneMinusCos * zx) + ys;
+            mat4.rotMat.m[ 3] = 0; 
     
-            rotMat.m[ 4] = (oneMinusCos * xy) + zs;
-            rotMat.m[ 5] = (oneMinusCos * yy) + cosAngle;
-            rotMat.m[ 6] = (oneMinusCos * yz) - xs;
-            rotMat.m[ 7] = 0;
+            mat4.rotMat.m[ 4] = (oneMinusCos * xy) + zs;
+            mat4.rotMat.m[ 5] = (oneMinusCos * yy) + cosAngle;
+            mat4.rotMat.m[ 6] = (oneMinusCos * yz) - xs;
+            mat4.rotMat.m[ 7] = 0;
     
-            rotMat.m[ 8] = (oneMinusCos * zx) - ys;
-            rotMat.m[ 9] = (oneMinusCos * yz) + xs;
-            rotMat.m[10] = (oneMinusCos * zz) + cosAngle;
-            rotMat.m[11] = 0; 
+            mat4.rotMat.m[ 8] = (oneMinusCos * zx) - ys;
+            mat4.rotMat.m[ 9] = (oneMinusCos * yz) + xs;
+            mat4.rotMat.m[10] = (oneMinusCos * zz) + cosAngle;
+            mat4.rotMat.m[11] = 0; 
     
-            rotMat.m[12] = 0;
-            rotMat.m[13] = 0;
-            rotMat.m[14] = 0;
-            rotMat.m[15] = 1;
+            mat4.rotMat.m[12] = 0;
+            mat4.rotMat.m[13] = 0;
+            mat4.rotMat.m[14] = 0;
+            mat4.rotMat.m[15] = 1;
     
-            let temp = rotMat.multiplyByMatrix( this );
-            this.m = temp.m;
-            temp.m = null;
+            let temp = mat4.rotMat.multiplyByMatrix( this );
+            this.set( temp );
         }
     }
     
@@ -122,7 +128,7 @@ class mat4
 
     multiplyByScalar(o)
     {
-        let newmat = new mat4();
+        let newmat = mat4.tempMat4;
 
         newmat.m[ 0] = this.m[ 0] * o; newmat.m[ 4] = this.m[ 4] * o; newmat.m[ 8] = this.m[ 8] * o; newmat.m[12] = this.m[12] * o;
         newmat.m[ 1] = this.m[ 1] * o; newmat.m[ 5] = this.m[ 5] * o; newmat.m[ 9] = this.m[ 9] * o; newmat.m[13] = this.m[13] * o;
@@ -134,7 +140,7 @@ class mat4
 
     multiplyByMatrix(o)
     {
-        let newmat = new mat4;
+        let newmat = mat4.tempMat4;
 
         newmat.m[ 0] = this.m[ 0] * o.m[ 0] + this.m[ 4] * o.m[ 1] + this.m[ 8] * o.m[ 2] + this.m[12] * o.m[ 3];
         newmat.m[ 1] = this.m[ 1] * o.m[ 0] + this.m[ 5] * o.m[ 1] + this.m[ 9] * o.m[ 2] + this.m[13] * o.m[ 3];
@@ -158,10 +164,12 @@ class mat4
 
     transformVec4(o)
     {
-        return new vec4( this.m[ 0] * o.x + this.m[ 4] * o.y + this.m[ 8] * o.z + this.m[12] * o.w,
-                         this.m[ 1] * o.x + this.m[ 5] * o.y + this.m[ 9] * o.z + this.m[13] * o.w,
-                         this.m[ 2] * o.x + this.m[ 6] * o.y + this.m[10] * o.z + this.m[14] * o.w,
-                         this.m[ 3] * o.x + this.m[ 7] * o.y + this.m[11] * o.z + this.m[15] * o.w );
+        mat4.tempVec4.setF32( this.m[ 0] * o.x + this.m[ 4] * o.y + this.m[ 8] * o.z + this.m[12] * o.w,
+                              this.m[ 1] * o.x + this.m[ 5] * o.y + this.m[ 9] * o.z + this.m[13] * o.w,
+                              this.m[ 2] * o.x + this.m[ 6] * o.y + this.m[10] * o.z + this.m[14] * o.w,
+                              this.m[ 3] * o.x + this.m[ 7] * o.y + this.m[11] * o.z + this.m[15] * o.w );
+
+        return mat4.tempVec4;
     }
 
     createScale(scale)
@@ -250,17 +258,20 @@ class mat4
 
     getUp()
     {
-        return new vec3( this.m[ 4], this.m[ 5], this.m[ 6] );
+        mat4.tempVec3.setF32( this.m[ 4], this.m[ 5], this.m[ 6] );
+        return mat4.tempVec3;
     }
 
     getRight()
     {
-        return new vec3( this.m[ 0], this.m[ 1], this.m[ 2] );
+        mat4.tempVec3.setF32( this.m[ 0], this.m[ 1], this.m[ 2] );
+        return mat4.tempVec3;
     }
 
     getAt()
     {
-        return new vec3( this.m[ 8], this.m[ 9], this.m[10] );
+        mat4.tempVec3.setF32( this.m[ 8], this.m[ 9], this.m[10] );
+        return mat4.tempVec3;
     }
 
     inverse(tolerance = 0.0001)
@@ -286,7 +297,7 @@ class mat4
             return false;
 
         // Compute adjugate matrix.
-        let am = new mat4();
+        let am = mat4.adjugateMatrix;
         am.m[ 0] =  this.m[ 5] * C5 - this.m[ 6] * C4 + this.m[ 7] * C3;
         am.m[ 1] = -this.m[ 1] * C5 + this.m[ 2] * C4 - this.m[ 3] * C3;
         am.m[ 2] =  this.m[13] * S5 - this.m[14] * S4 + this.m[15] * S3;
@@ -315,7 +326,7 @@ class mat4
 
     getInverse(tolerance = 0.0001)
     {
-        let invMat = new mat4();
+        let invMat = mat4.tempMat4;
         invMat.set( this );
         invMat.inverse( tolerance );
         return invMat;

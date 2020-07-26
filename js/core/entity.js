@@ -7,6 +7,9 @@ class Entity
         this.scale = scale;
         this.mesh = mesh;
         this.material = material;
+        
+        // Temp vars to avoid GC.
+        this.matWorld = new mat4;
     }
 
     free()
@@ -18,7 +21,6 @@ class Entity
 
     draw(camera, lights)
     {
-        let matWorld = new mat4;
         matWorld.setIdentity();
         matWorld.createSRT( this.scale, this.rotation, this.position );
 

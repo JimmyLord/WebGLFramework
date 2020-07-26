@@ -353,6 +353,7 @@ class FrameworkMain
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
         {
+            // TODO: Fix for GC.
             let t = new TouchPoint( changedTouches[i].clientX, changedTouches[i].clientY, changedTouches[i].identifier, this.touches.length == 0 );
             this.touches.push( t );
         }
