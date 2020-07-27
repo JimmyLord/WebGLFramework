@@ -5,18 +5,18 @@
 // m[ 3] m[ 7] m[11] m[15]        0  0  0  1
 class mat4
 {
-    constructor()
-    {
-        this.m = new Float32Array(16);
-    }
-
     // Temp vars to avoid GC.
-    // Warning: This will cause issue if operations are chained since new values will overwrite old ones.
+    // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
     static rotMat = new mat4;
     static adjugateMatrix = new mat4;
     static tempVec3 = new vec3;
     static tempVec4 = new vec4;
     static tempMat4 = new mat4;
+
+    constructor()
+    {
+        this.m = new Float32Array(16);
+    }
 
     free()
     {
@@ -128,38 +128,38 @@ class mat4
 
     multiplyByScalar(o)
     {
-        let newmat = mat4.tempMat4;
+        let tempMat = mat4.tempMat4;
 
-        newmat.m[ 0] = this.m[ 0] * o; newmat.m[ 4] = this.m[ 4] * o; newmat.m[ 8] = this.m[ 8] * o; newmat.m[12] = this.m[12] * o;
-        newmat.m[ 1] = this.m[ 1] * o; newmat.m[ 5] = this.m[ 5] * o; newmat.m[ 9] = this.m[ 9] * o; newmat.m[13] = this.m[13] * o;
-        newmat.m[ 2] = this.m[ 2] * o; newmat.m[ 6] = this.m[ 6] * o; newmat.m[10] = this.m[10] * o; newmat.m[14] = this.m[14] * o;
-        newmat.m[ 3] = this.m[ 3] * o; newmat.m[ 7] = this.m[ 7] * o; newmat.m[11] = this.m[11] * o; newmat.m[15] = this.m[15] * o;
+        tempMat.m[ 0] = this.m[ 0] * o; tempMat.m[ 4] = this.m[ 4] * o; tempMat.m[ 8] = this.m[ 8] * o; tempMat.m[12] = this.m[12] * o;
+        tempMat.m[ 1] = this.m[ 1] * o; tempMat.m[ 5] = this.m[ 5] * o; tempMat.m[ 9] = this.m[ 9] * o; tempMat.m[13] = this.m[13] * o;
+        tempMat.m[ 2] = this.m[ 2] * o; tempMat.m[ 6] = this.m[ 6] * o; tempMat.m[10] = this.m[10] * o; tempMat.m[14] = this.m[14] * o;
+        tempMat.m[ 3] = this.m[ 3] * o; tempMat.m[ 7] = this.m[ 7] * o; tempMat.m[11] = this.m[11] * o; tempMat.m[15] = this.m[15] * o;
 
-        return newmat;
+        return tempMat;
     }
 
     multiplyByMatrix(o)
     {
-        let newmat = mat4.tempMat4;
+        let tempMat = mat4.tempMat4;
 
-        newmat.m[ 0] = this.m[ 0] * o.m[ 0] + this.m[ 4] * o.m[ 1] + this.m[ 8] * o.m[ 2] + this.m[12] * o.m[ 3];
-        newmat.m[ 1] = this.m[ 1] * o.m[ 0] + this.m[ 5] * o.m[ 1] + this.m[ 9] * o.m[ 2] + this.m[13] * o.m[ 3];
-        newmat.m[ 2] = this.m[ 2] * o.m[ 0] + this.m[ 6] * o.m[ 1] + this.m[10] * o.m[ 2] + this.m[14] * o.m[ 3];
-        newmat.m[ 3] = this.m[ 3] * o.m[ 0] + this.m[ 7] * o.m[ 1] + this.m[11] * o.m[ 2] + this.m[15] * o.m[ 3];
-        newmat.m[ 4] = this.m[ 0] * o.m[ 4] + this.m[ 4] * o.m[ 5] + this.m[ 8] * o.m[ 6] + this.m[12] * o.m[ 7];
-        newmat.m[ 5] = this.m[ 1] * o.m[ 4] + this.m[ 5] * o.m[ 5] + this.m[ 9] * o.m[ 6] + this.m[13] * o.m[ 7];
-        newmat.m[ 6] = this.m[ 2] * o.m[ 4] + this.m[ 6] * o.m[ 5] + this.m[10] * o.m[ 6] + this.m[14] * o.m[ 7];
-        newmat.m[ 7] = this.m[ 3] * o.m[ 4] + this.m[ 7] * o.m[ 5] + this.m[11] * o.m[ 6] + this.m[15] * o.m[ 7];
-        newmat.m[ 8] = this.m[ 0] * o.m[ 8] + this.m[ 4] * o.m[ 9] + this.m[ 8] * o.m[10] + this.m[12] * o.m[11];
-        newmat.m[ 9] = this.m[ 1] * o.m[ 8] + this.m[ 5] * o.m[ 9] + this.m[ 9] * o.m[10] + this.m[13] * o.m[11];
-        newmat.m[10] = this.m[ 2] * o.m[ 8] + this.m[ 6] * o.m[ 9] + this.m[10] * o.m[10] + this.m[14] * o.m[11];
-        newmat.m[11] = this.m[ 3] * o.m[ 8] + this.m[ 7] * o.m[ 9] + this.m[11] * o.m[10] + this.m[15] * o.m[11];
-        newmat.m[12] = this.m[ 0] * o.m[12] + this.m[ 4] * o.m[13] + this.m[ 8] * o.m[14] + this.m[12] * o.m[15];
-        newmat.m[13] = this.m[ 1] * o.m[12] + this.m[ 5] * o.m[13] + this.m[ 9] * o.m[14] + this.m[13] * o.m[15];
-        newmat.m[14] = this.m[ 2] * o.m[12] + this.m[ 6] * o.m[13] + this.m[10] * o.m[14] + this.m[14] * o.m[15];
-        newmat.m[15] = this.m[ 3] * o.m[12] + this.m[ 7] * o.m[13] + this.m[11] * o.m[14] + this.m[15] * o.m[15];
+        tempMat.m[ 0] = this.m[ 0] * o.m[ 0] + this.m[ 4] * o.m[ 1] + this.m[ 8] * o.m[ 2] + this.m[12] * o.m[ 3];
+        tempMat.m[ 1] = this.m[ 1] * o.m[ 0] + this.m[ 5] * o.m[ 1] + this.m[ 9] * o.m[ 2] + this.m[13] * o.m[ 3];
+        tempMat.m[ 2] = this.m[ 2] * o.m[ 0] + this.m[ 6] * o.m[ 1] + this.m[10] * o.m[ 2] + this.m[14] * o.m[ 3];
+        tempMat.m[ 3] = this.m[ 3] * o.m[ 0] + this.m[ 7] * o.m[ 1] + this.m[11] * o.m[ 2] + this.m[15] * o.m[ 3];
+        tempMat.m[ 4] = this.m[ 0] * o.m[ 4] + this.m[ 4] * o.m[ 5] + this.m[ 8] * o.m[ 6] + this.m[12] * o.m[ 7];
+        tempMat.m[ 5] = this.m[ 1] * o.m[ 4] + this.m[ 5] * o.m[ 5] + this.m[ 9] * o.m[ 6] + this.m[13] * o.m[ 7];
+        tempMat.m[ 6] = this.m[ 2] * o.m[ 4] + this.m[ 6] * o.m[ 5] + this.m[10] * o.m[ 6] + this.m[14] * o.m[ 7];
+        tempMat.m[ 7] = this.m[ 3] * o.m[ 4] + this.m[ 7] * o.m[ 5] + this.m[11] * o.m[ 6] + this.m[15] * o.m[ 7];
+        tempMat.m[ 8] = this.m[ 0] * o.m[ 8] + this.m[ 4] * o.m[ 9] + this.m[ 8] * o.m[10] + this.m[12] * o.m[11];
+        tempMat.m[ 9] = this.m[ 1] * o.m[ 8] + this.m[ 5] * o.m[ 9] + this.m[ 9] * o.m[10] + this.m[13] * o.m[11];
+        tempMat.m[10] = this.m[ 2] * o.m[ 8] + this.m[ 6] * o.m[ 9] + this.m[10] * o.m[10] + this.m[14] * o.m[11];
+        tempMat.m[11] = this.m[ 3] * o.m[ 8] + this.m[ 7] * o.m[ 9] + this.m[11] * o.m[10] + this.m[15] * o.m[11];
+        tempMat.m[12] = this.m[ 0] * o.m[12] + this.m[ 4] * o.m[13] + this.m[ 8] * o.m[14] + this.m[12] * o.m[15];
+        tempMat.m[13] = this.m[ 1] * o.m[12] + this.m[ 5] * o.m[13] + this.m[ 9] * o.m[14] + this.m[13] * o.m[15];
+        tempMat.m[14] = this.m[ 2] * o.m[12] + this.m[ 6] * o.m[13] + this.m[10] * o.m[14] + this.m[14] * o.m[15];
+        tempMat.m[15] = this.m[ 3] * o.m[12] + this.m[ 7] * o.m[13] + this.m[11] * o.m[14] + this.m[15] * o.m[15];
 
-        return newmat;
+        return tempMat;
     }
 
     transformVec4(o)

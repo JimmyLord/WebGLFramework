@@ -1,5 +1,22 @@
 class vec2
 {
+    // Temp vars to avoid GC.
+    // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
+    // Bigger warning: This is a terrible idea and will lead to very hard to debug issues.
+    //                 I'm keeping it for now since I'm trying to minimize garbage collection.
+    static tempVecs = [ new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2 ];
+    static currentTempIndex = 0;
+    static getTemp(x = 0, y = x)
+    {
+        let t = vec2.tempVecs[vec2.currentTempIndex];
+        t.x = x;
+        t.y = y;
+        vec2.currentTempIndex++;
+        if( vec2.currentTempIndex === 10 )
+            vec2.currentTempIndex = 0;
+        return t;
+    }
+
     constructor(x=0,y=x)
     {
         this.x = x;
@@ -9,17 +26,17 @@ class vec2
     set(o)              { this.x = o.x; this.y = o.y; }
     setF32(x, y)        { this.x = x; this.y = y; }
 
-    plus(o)             { return new vec2( this.x + o.x, this.y + o.y ); }
-    plusF32(o)          { return new vec2( this.x + o, this.y + o ); }
+    plus(o)             { return vec2.getTemp( this.x + o.x, this.y + o.y ); }
+    plusF32(o)          { return vec2.getTemp( this.x + o, this.y + o ); }
 
-    minus(o)            { return new vec2( this.x - o.x, this.y - o.y ); }
-    minusF32(o)         { return new vec2( this.x - o, this.y - o ); }
+    minus(o)            { return vec2.getTemp( this.x - o.x, this.y - o.y ); }
+    minusF32(o)         { return vec2.getTemp( this.x - o, this.y - o ); }
 
-    timesVec2(o)        { return new vec2( this.x * o.x, this.y * o.y ); }
-    times(o)            { return new vec2( this.x * o, this.y * o ); }
+    timesVec2(o)        { return vec2.getTemp( this.x * o.x, this.y * o.y ); }
+    times(o)            { return vec2.getTemp( this.x * o, this.y * o ); }
 
-    dividedByVec2(o)    { return new vec2( this.x / o.x, this.y / o.y ); }
-    dividedBy(o)        { return new vec2( this.x / o, this.y / o ); }
+    dividedByVec2(o)    { return vec2.getTemp( this.x / o.x, this.y / o.y ); }
+    dividedBy(o)        { return vec2.getTemp( this.x / o, this.y / o ); }
 
     add(o)              { this.x += o.x; this.y += o.y; }
     addF32(o)           { this.x += o; this.y += o; }
@@ -64,9 +81,9 @@ class vec2
     {
         let len = this.length();
         if( len === 0 )
-            return new vec2( 0 );
+            return vec2.getTemp( 0, 0 );
 
-        return new vec2( this.x / len, this.y / len );
+        return vec2.getTemp( this.x / len, this.y / len );
     }
 
     dot(o)
@@ -77,6 +94,22 @@ class vec2
 
 class vec3
 {
+    // Temp vars to avoid GC.
+    // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
+    static tempVecs = [ new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3 ];
+    static currentTempIndex = 0;
+    static getTemp(x = 0, y = x, z = x)
+    {
+        let t = vec3.tempVecs[vec3.currentTempIndex];
+        t.x = x;
+        t.y = y;
+        t.z = z;
+        vec3.currentTempIndex++;
+        if( vec3.currentTempIndex === 10 )
+            vec3.currentTempIndex = 0;
+        return t;
+    }
+
     constructor(x=0,y=undefined,z=undefined)
     {
         if( y === undefined )      { this.x = x; this.y = x; this.z = x; } // xxx
@@ -87,17 +120,17 @@ class vec3
     set(o)              { this.x = o.x; this.y = o.y; this.z = o.z; }
     setF32(x, y, z)     { this.x = x; this.y = y; this.z = z; }
 
-    plus(o)             { return new vec3( this.x + o.x, this.y + o.y, this.z + o.z ); }
-    plusF32(o)          { return new vec3( this.x + o, this.y + o, this.z + o ); }
+    plus(o)             { return vec3.getTemp( this.x + o.x, this.y + o.y, this.z + o.z ); }
+    plusF32(o)          { return vec3.getTemp( this.x + o, this.y + o, this.z + o ); }
 
-    minus(o)            { return new vec3( this.x - o.x, this.y - o.y, this.z - o.z ); }
-    minusF32(o)         { return new vec3( this.x - o, this.y - o, this.z - o ); }
+    minus(o)            { return vec3.getTemp( this.x - o.x, this.y - o.y, this.z - o.z ); }
+    minusF32(o)         { return vec3.getTemp( this.x - o, this.y - o, this.z - o ); }
 
-    timesVec3(o)        { return new vec3( this.x * o.x, this.y * o.y, this.z * o.z ); }
-    times(o)            { return new vec3( this.x * o, this.y * o, this.z * o ); }
+    timesVec3(o)        { return vec3.getTemp( this.x * o.x, this.y * o.y, this.z * o.z ); }
+    times(o)            { return vec3.getTemp( this.x * o, this.y * o, this.z * o ); }
 
-    dividedByVec3(o)    { return new vec3( this.x / o.x, this.y / o.y, this.z / o.z ); }
-    dividedBy(o)        { return new vec3( this.x / o, this.y / o, this.z / o ); }
+    dividedByVec3(o)    { return vec3.getTemp( this.x / o.x, this.y / o.y, this.z / o.z ); }
+    dividedBy(o)        { return vec3.getTemp( this.x / o, this.y / o, this.z / o ); }
 
     add(o)              { this.x += o.x; this.y += o.y; this.z += o.z; }
     addF32(o)           { this.x += o; this.y += o; this.z += o; }
@@ -142,9 +175,9 @@ class vec3
     {
         let len = this.length();
         if( len === 0 )
-            return new vec3( 0 );
+            return vec3.getTemp( 0, 0, 0 );
 
-        return new vec3( this.x / len, this.y / len, this.z / len );
+        return vec3.getTemp( this.x / len, this.y / len, this.z / len );
     }
 
     dot(o)
@@ -155,6 +188,23 @@ class vec3
 
 class vec4
 {
+    // Temp vars to avoid GC.
+    // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
+    static tempVecs = [ new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4 ];
+    static currentTempIndex = 0;
+    static getTemp(x = 0, y = x, z = x, w = x)
+    {
+        let t = vec4.tempVecs[vec4.currentTempIndex];
+        t.x = x;
+        t.y = y;
+        t.z = z;
+        t.w = w;
+        vec4.currentTempIndex++;
+        if( vec4.currentTempIndex === 10 )
+            vec4.currentTempIndex = 0;
+        return t;
+    }
+
     constructor(x=0,y=undefined,z=undefined,w=undefined)
     {
         if( y === undefined )      { this.x = x; this.y = x; this.z = x; this.w = x; } // xxxx
@@ -166,17 +216,17 @@ class vec4
     set(o)              { this.x = o.x; this.y = o.y; this.z = o.z; this.w = o.w; }
     setF32(x, y, z, w)  { this.x = x; this.y = y; this.z = z; this.w = w; }
 
-    plus(o)             { return new vec4( this.x + o.x, this.y + o.y, this.z + o.z, this.w + o.w ); }
-    plusF32(o)          { return new vec4( this.x + o, this.y + o, this.z + o, this.w + o ); }
+    plus(o)             { return vec4.getTemp( this.x + o.x, this.y + o.y, this.z + o.z, this.w + o.w ); }
+    plusF32(o)          { return vec4.getTemp( this.x + o, this.y + o, this.z + o, this.w + o ); }
 
-    minus(o)            { return new vec4( this.x - o.x, this.y - o.y, this.z - o.z, this.w - o.w ); }
-    minusF32(o)         { return new vec4( this.x - o, this.y - o, this.z - o, this.w - o ); }
+    minus(o)            { return vec4.getTemp( this.x - o.x, this.y - o.y, this.z - o.z, this.w - o.w ); }
+    minusF32(o)         { return vec4.getTemp( this.x - o, this.y - o, this.z - o, this.w - o ); }
 
-    timesVec3(o)        { return new vec4( this.x * o.x, this.y * o.y, this.z * o.z, this.w * o.w ); }
-    times(o)            { return new vec4( this.x * o, this.y * o, this.z * o, this.w * o ); }
+    timesVec3(o)        { return vec4.getTemp( this.x * o.x, this.y * o.y, this.z * o.z, this.w * o.w ); }
+    times(o)            { return vec4.getTemp( this.x * o, this.y * o, this.z * o, this.w * o ); }
 
-    dividedByVec3(o)    { return new vec4( this.x / o.x, this.y / o.y, this.z / o.z, this.w / o.w ); }
-    dividedBy(o)        { return new vec4( this.x / o, this.y / o, this.z / o, this.w / o ); }
+    dividedByVec3(o)    { return vec4.getTemp( this.x / o.x, this.y / o.y, this.z / o.z, this.w / o.w ); }
+    dividedBy(o)        { return vec4.getTemp( this.x / o, this.y / o, this.z / o, this.w / o ); }
 
     add(o)              { this.x += o.x; this.y += o.y; this.z += o.z; this.w += o.w; }
     addF32(o)           { this.x += o; this.y += o; this.z += o; this.w += o; }
@@ -222,9 +272,9 @@ class vec4
     {
         let len = this.length();
         if( len === 0 )
-            return new vec4( 0 );
+            return vec4.getTemp( 0, 0, 0, 0 );
 
-        return new vec4( this.x / len, this.y / len, this.z / len, this.w / len );
+        return vec4.getTemp( this.x / len, this.y / len, this.z / len, this.w / len );
     }
 
     dot(o)
@@ -234,6 +284,6 @@ class vec4
 
     xyz()
     {
-        return new vec3( this.x, this.y, this.z );
+        return vec3.getTemp( this.x, this.y, this.z );
     }
 }

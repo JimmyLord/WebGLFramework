@@ -1,5 +1,8 @@
 class Entity
 {
+    // Temp vars to avoid GC.
+    static matWorld = new mat4;
+
     constructor(position, rotation, scale, mesh, material)
     {
         this.position = position;
@@ -7,9 +10,6 @@ class Entity
         this.scale = scale;
         this.mesh = mesh;
         this.material = material;
-        
-        // Temp vars to avoid GC.
-        this.matWorld = new mat4;
     }
 
     free()
@@ -21,9 +21,9 @@ class Entity
 
     draw(camera, lights)
     {
-        matWorld.setIdentity();
-        matWorld.createSRT( this.scale, this.rotation, this.position );
+        Entity.matWorld.setIdentity();
+        Entity.matWorld.createSRT( this.scale, this.rotation, this.position );
 
-        this.mesh.draw( camera, matWorld, this.material, lights );
+        this.mesh.draw( camera, Entity.matWorld, this.material, lights );
     }
 }
