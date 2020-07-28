@@ -158,10 +158,10 @@ class MainProject
     {
         if( this.objectFollowsMouse )
         {
-            let [orthoX, orthoY] = this.scene.camera.convertScreenToWorld( this.framework.canvas, x, y );
+            let worldPos = this.scene.camera.convertScreenToWorld( this.framework.canvas, x, y );
 
-            this.scene.entities[0].position.x = orthoX;
-            this.scene.entities[0].position.y = orthoY;
+            this.scene.entities[0].position.x = worldPos.x;
+            this.scene.entities[0].position.y = worldPos.y;
         }
 
         this.stateIsDirty = this.scene.camera.onMouseMove( x, y );

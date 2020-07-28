@@ -96,7 +96,10 @@ class vec3
 {
     // Temp vars to avoid GC.
     // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
-    static tempVecs = [ new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3 ];
+    static tempVecs = [
+        new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
+        new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3
+    ];
     static currentTempIndex = 0;
     static getTemp(x = 0, y = x, z = x)
     {
@@ -105,7 +108,7 @@ class vec3
         t.y = y;
         t.z = z;
         vec3.currentTempIndex++;
-        if( vec3.currentTempIndex === 10 )
+        if( vec3.currentTempIndex === 20 )
             vec3.currentTempIndex = 0;
         return t;
     }

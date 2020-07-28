@@ -117,6 +117,9 @@ class FrameworkMain
         gl.enable( gl.CULL_FACE );
         gl.cullFace( gl.BACK );
         gl.frontFace( gl.CW );
+
+        // Bound functions for callbacks.
+        this.updateThis = this.update.bind( this );
     }
 
     run(runnableObject)
@@ -206,7 +209,7 @@ class FrameworkMain
         if( this.autoRefresh )
         {
             this.lastTimeRefreshCalled = this.lastTime;
-            requestAnimationFrame( (currentTime) => this.update( currentTime ) );
+            requestAnimationFrame( this.updateThis );
         }
     }
 
@@ -219,7 +222,7 @@ class FrameworkMain
         if( this.lastTimeRefreshCalled != this.lastTime )
         {
             this.lastTimeRefreshCalled = this.lastTime;
-            requestAnimationFrame( (currentTime) => this.update( currentTime ) );
+            requestAnimationFrame( this.updateThis );
         }
     }
 
@@ -365,6 +368,7 @@ class FrameworkMain
 
             if( firstTouch !== null )
             {
+                // TODO: Fix for GC.
                 let fakeMouseEvent = {
                     which: 1,
                     layerX: firstTouch.x,
@@ -404,6 +408,7 @@ class FrameworkMain
 
             if( firstTouch !== null )
             {
+                // TODO: Fix for GC.
                 let fakeMouseEvent = {
                     which: 1,
                     layerX: firstTouch.x,
@@ -441,6 +446,7 @@ class FrameworkMain
 
             if( firstTouch !== null )
             {
+                // TODO: Fix for GC.
                 let fakeMouseEvent = {
                     which: 1,
                     layerX: firstTouch.x,

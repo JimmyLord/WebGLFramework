@@ -121,7 +121,7 @@ class Camera
     convertScreenToWorld(canvas, screenX, screenY)
     {
         if( this.isOrtho == false )
-            return [0,0];
+            return vec2.getTemp( 0, 0 );
 
         let orthoScaleX = this.matProj.m[0];
         let orthoOffsetX = this.matProj.m[12];
@@ -137,13 +137,13 @@ class Camera
         worldX += this.position.x;
         worldY += this.position.y;
 
-        return [worldX, worldY];
+        return vec2.getTemp( worldX, worldY );
     }
 
     convertWorldToScreen(canvas, worldX, worldY)
     {
         if( this.isOrtho == false )
-            return [0,0];
+            return vec2.getTemp( 0, 0 );
 
         let orthoScaleX = this.matProj.m[0];
         let orthoOffsetX = this.matProj.m[12];
@@ -159,6 +159,6 @@ class Camera
         let x = (worldX + (1 + orthoOffsetX) / orthoScaleX) / 2 * orthoScaleX * canvas.width;
         let y = ((worldY + (1 + orthoOffsetY) / orthoScaleY) / 2 * orthoScaleY * canvas.height - canvas.height) * -1;
 
-        return [x, y];
+        return vec2.getTemp( worldX, worldY );
     }
 }

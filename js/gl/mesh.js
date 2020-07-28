@@ -342,6 +342,8 @@ class Mesh
 
     draw(camera, matWorld, material, lights = null)
     {
+        let shader = material.shader;
+
         let gl = this.gl;
 
         if( this.VBO == null )
@@ -356,53 +358,41 @@ class Mesh
 
         let vertexSize = (3+2+3)*4 + 4*1; // (Pos, UV, Normal) + Color
 
-        let a_Position = gl.getAttribLocation( material.shader.program, "a_Position" );
-        gl.enableVertexAttribArray( a_Position );
-        gl.vertexAttribPointer( a_Position, 3, gl.FLOAT, false, vertexSize, 0 )
+        gl.enableVertexAttribArray( shader.a_Position );
+        gl.vertexAttribPointer( shader.a_Position, 3, gl.FLOAT, false, vertexSize, 0 )
 
-        let a_UV = gl.getAttribLocation( material.shader.program, "a_UV" );
-        if( a_UV != -1 )
+        if( shader.a_UV != -1 )
         {
-            gl.enableVertexAttribArray( a_UV );
-            gl.vertexAttribPointer( a_UV, 2, gl.FLOAT, false, vertexSize, 12 )
+            gl.enableVertexAttribArray( shader.a_UV );
+            gl.vertexAttribPointer( shader.a_UV, 2, gl.FLOAT, false, vertexSize, 12 )
         }
 
-        let a_Normal = gl.getAttribLocation( material.shader.program, "a_Normal" );
-        if( a_Normal != -1 )
+        if( shader.a_Normal != -1 )
         {
-            gl.enableVertexAttribArray( a_Normal );
-            gl.vertexAttribPointer( a_Normal, 3, gl.FLOAT, false, vertexSize, 20 )
+            gl.enableVertexAttribArray( shader.a_Normal );
+            gl.vertexAttribPointer( shader.a_Normal, 3, gl.FLOAT, false, vertexSize, 20 )
         }
 
-        let a_Color = gl.getAttribLocation( material.shader.program, "a_Color" );
-        if( a_Color != -1 )
+        if( shader.a_Color != -1 )
         {
-            gl.enableVertexAttribArray( a_Color );
-            gl.vertexAttribPointer( a_Color, 4, gl.UNSIGNED_BYTE, true, vertexSize, 32 )
+            gl.enableVertexAttribArray( shader.a_Color );
+            gl.vertexAttribPointer( shader.a_Color, 4, gl.UNSIGNED_BYTE, true, vertexSize, 32 )
         }
 
         // Set up shader and uniforms.
-        gl.useProgram( material.shader.program );
+        gl.useProgram( shader.program );
 
-        let u_MatWorld = gl.getUniformLocation( material.shader.program, "u_MatWorld" );
-        gl.uniformMatrix4fv( u_MatWorld, false, matWorld.m )
+        gl.uniformMatrix4fv( shader.u_MatWorld, false, matWorld.m )
+        gl.uniformMatrix4fv( shader.u_MatView, false, camera.matView.m )
+        gl.uniformMatrix4fv( shader.u_MatProj, false, camera.matProj.m )
+        gl.uniform4f( shader.u_Color, material.color.r, material.color.g, material.color.b, material.color.a );
 
-        let u_MatView = gl.getUniformLocation( material.shader.program, "u_MatView" );
-        gl.uniformMatrix4fv( u_MatView, false, camera.matView.m )
-
-        let u_MatProj = gl.getUniformLocation( material.shader.program, "u_MatProj" );
-        gl.uniformMatrix4fv( u_MatProj, false, camera.matProj.m )
-
-        let u_Color = gl.getUniformLocation( material.shader.program, "u_Color" );
-        gl.uniform4f( u_Color, material.color.r, material.color.g, material.color.b, material.color.a );
-
-        let u_TextureAlbedo = gl.getUniformLocation( material.shader.program, "u_TextureAlbedo" );
-        if( u_TextureAlbedo != null )
+        if( shader.u_TextureAlbedo != null )
         {
             let textureUnit = 0;
             gl.activeTexture( gl.TEXTURE0 + textureUnit );
             gl.bindTexture( gl.TEXTURE_2D, material.texture.textureID );
-            gl.uniform1i( u_TextureAlbedo, textureUnit );
+            gl.uniform1i( shader.u_TextureAlbedo, textureUnit );
         }
 
         // Lights.
@@ -411,31 +401,20 @@ class Mesh
             let i=0;
             for( ; i<lights.length; i++ )
             {
-                let u_LightPos = gl.getUniformLocation( material.shader.program, "u_LightPosition[" + i + "]" );
-                gl.uniform3f( u_LightPos, lights[i].position.x, lights[i].position.y, lights[i].position.z );
-
-                let u_LightColor = gl.getUniformLocation( material.shader.program, "u_LightColor[" + i + "]" );
-                gl.uniform3f( u_LightColor, lights[i].color.r, lights[i].color.g, lights[i].color.b );
-
-                let u_LightRadius = gl.getUniformLocation( material.shader.program, "u_LightRadius[" + i + "]" );
-                gl.uniform1f( u_LightRadius, lights[i].radius );
+                gl.uniform3f( shader.u_LightPos[i], lights[i].position.x, lights[i].position.y, lights[i].position.z );
+                gl.uniform3f( shader.u_LightColor[i], lights[i].color.r, lights[i].color.g, lights[i].color.b );
+                gl.uniform1f( shader.u_LightRadius[i], lights[i].radius );
             }
             
             for( ; i<4; i++ )
             {
-                let u_LightPos = gl.getUniformLocation( material.shader.program, "u_LightPosition[" + i + "]" );
-                gl.uniform3f( u_LightPos, 0, 0, 0 );
-
-                let u_LightColor = gl.getUniformLocation( material.shader.program, "u_LightColor[" + i + "]" );
-                gl.uniform3f( u_LightColor, 0, 0, 0 );
-
-                let u_LightRadius = gl.getUniformLocation( material.shader.program, "u_LightRadius[" + i + "]" );
-                gl.uniform1f( u_LightRadius, 1 );
+                gl.uniform3f( shader.u_LightPos[i], 0, 0, 0 );
+                gl.uniform3f( shader.u_LightColor[i], 0, 0, 0 );
+                gl.uniform1f( shader.u_LightRadius[i], 1 );
             }
         }
 
-        let u_CameraPosition = gl.getUniformLocation( material.shader.program, "u_CameraPosition" );
-        gl.uniform3f( u_CameraPosition, camera.position.x, camera.position.y, camera.position.z );
+        gl.uniform3f( shader.u_CameraPosition, camera.position.x, camera.position.y, camera.position.z );
 
         // Draw.
         if( this.numIndices == 0 )
@@ -443,11 +422,11 @@ class Mesh
         else
             gl.drawElements( this.primitiveType, this.numIndices, gl.UNSIGNED_SHORT, 0 );
 
-        if( a_UV != -1 )
-            gl.disableVertexAttribArray( a_UV );
-        if( a_Normal != -1 )
-            gl.disableVertexAttribArray( a_Normal );
-        if( a_Color != -1 )
-            gl.disableVertexAttribArray( a_Color );
+        if( shader.a_UV != -1 )
+            gl.disableVertexAttribArray( shader.a_UV );
+        if( shader.a_Normal != -1 )
+            gl.disableVertexAttribArray( shader.a_Normal );
+        if( shader.a_Color != -1 )
+            gl.disableVertexAttribArray( shader.a_Color );
     }
 }

@@ -9,8 +9,6 @@ class mat4
     // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
     static rotMat = new mat4;
     static adjugateMatrix = new mat4;
-    static tempVec3 = new vec3;
-    static tempVec4 = new vec4;
     static tempMat4 = new mat4;
 
     constructor()
@@ -164,12 +162,10 @@ class mat4
 
     transformVec4(o)
     {
-        mat4.tempVec4.setF32( this.m[ 0] * o.x + this.m[ 4] * o.y + this.m[ 8] * o.z + this.m[12] * o.w,
-                              this.m[ 1] * o.x + this.m[ 5] * o.y + this.m[ 9] * o.z + this.m[13] * o.w,
-                              this.m[ 2] * o.x + this.m[ 6] * o.y + this.m[10] * o.z + this.m[14] * o.w,
-                              this.m[ 3] * o.x + this.m[ 7] * o.y + this.m[11] * o.z + this.m[15] * o.w );
-
-        return mat4.tempVec4;
+        return vec4.getTemp( this.m[ 0] * o.x + this.m[ 4] * o.y + this.m[ 8] * o.z + this.m[12] * o.w,
+                             this.m[ 1] * o.x + this.m[ 5] * o.y + this.m[ 9] * o.z + this.m[13] * o.w,
+                             this.m[ 2] * o.x + this.m[ 6] * o.y + this.m[10] * o.z + this.m[14] * o.w,
+                             this.m[ 3] * o.x + this.m[ 7] * o.y + this.m[11] * o.z + this.m[15] * o.w );
     }
 
     createScale(scale)
@@ -258,20 +254,17 @@ class mat4
 
     getUp()
     {
-        mat4.tempVec3.setF32( this.m[ 4], this.m[ 5], this.m[ 6] );
-        return mat4.tempVec3;
+        return vec3.getTemp( this.m[ 4], this.m[ 5], this.m[ 6] );
     }
 
     getRight()
     {
-        mat4.tempVec3.setF32( this.m[ 0], this.m[ 1], this.m[ 2] );
-        return mat4.tempVec3;
+        return vec3.getTemp( this.m[ 0], this.m[ 1], this.m[ 2] );
     }
 
     getAt()
     {
-        mat4.tempVec3.setF32( this.m[ 8], this.m[ 9], this.m[10] );
-        return mat4.tempVec3;
+        return vec3.getTemp( this.m[ 8], this.m[ 9], this.m[10] );
     }
 
     inverse(tolerance = 0.0001)
