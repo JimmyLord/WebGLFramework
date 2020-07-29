@@ -1,9 +1,58 @@
-﻿class ImGui
+﻿class Pool
+{
+    constructor(type, numberToAllocate = 1, allowGrowth)
+    {
+        this.type = type;
+        this.numAllocated = numberToAllocate;
+        this.allowGrowth = allowGrowth;
+        this.numInPool = numberToAllocate;
+        this.objects = new Array( numberToAllocate );
+
+        for( let i=0; i<numberToAllocate; i++ )
+        {
+            this.objects[i] = new type;
+        }
+    }
+
+    getFromPool()
+    {
+        if( this.numInPool == 0 )
+        {
+            console.log( "Pool empty!" );
+            if( this.allowGrowth )
+            {
+                console.log( "Allocating more!" );
+                let obj = new this.type();
+                return obj;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        this.numInPool--;
+        return this.objects[this.numInPool];
+    }
+
+    returnToPool(obj)
+    {
+        this.objects[this.numInPool] = obj;
+        this.numInPool++;
+    }
+}
+
+class ImGui
 {
     constructor(gl, canvas)
     {
         this.gl = gl;
         this.canvas = canvas;
+
+        // Temp vars to avoid GC.
+        this.matProj = new mat4();
+        this.buttonString = new String(" ");
+        this.largeRect = new ImGuiRect( 0, 0, 10000, 10000 );
 
         // Persistent values.
         this.BGDrawList = [];
@@ -576,16 +625,26 @@
         gl.enable( gl.BLEND );
         gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
         gl.enable( gl.SCISSOR_TEST );
-        for( let i=0; i<this.BGDrawList.length; i++ )
+
+        // Draw all items in draw list.
         {
-            let item = this.BGDrawList[i];            
-            this.drawItem( item );
+            for( let i=0; i<this.BGDrawList.length; i++ )
+            {
+                let item = this.BGDrawList[i];            
+                this.drawItem( item );
+                DrawListItem.returnToPool( item );
+            }
+            this.BGDrawList.length = 0;
+
+            for( let i=0; i<this.FGDrawList.length; i++ )
+            {
+                let item = this.FGDrawList[i];            
+                this.drawItem( item );
+                DrawListItem.returnToPool( item );
+            }
+            this.FGDrawList.length = 0;
         }
-        for( let i=0; i<this.FGDrawList.length; i++ )
-        {
-            let item = this.FGDrawList[i];            
-            this.drawItem( item );
-        }
+
         gl.disable( gl.SCISSOR_TEST );
         gl.enable( gl.DEPTH_TEST );
 
@@ -644,41 +703,37 @@
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
         gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
 
-        let a_Position = gl.getAttribLocation( this.shader.program, "a_Position" );
-        gl.enableVertexAttribArray( a_Position );
-        gl.vertexAttribPointer( a_Position, 2, gl.FLOAT, false, sizeofVertex, 0 )
+        let shader = this.shader;
 
-        let a_UV = gl.getAttribLocation( this.shader.program, "a_UV" );
-        if( a_UV != -1 )
+        gl.enableVertexAttribArray( shader.a_Position );
+        gl.vertexAttribPointer( shader.a_Position, 2, gl.FLOAT, false, sizeofVertex, 0 )
+
+        if( shader.a_UV != -1 )
         {
-            gl.enableVertexAttribArray( a_UV );
-            gl.vertexAttribPointer( a_UV, 2, gl.FLOAT, false, sizeofVertex, 8 )
+            gl.enableVertexAttribArray( shader.a_UV );
+            gl.vertexAttribPointer( shader.a_UV, 2, gl.FLOAT, false, sizeofVertex, 8 )
         }
 
-        let a_Color = gl.getAttribLocation( this.shader.program, "a_Color" );
-        if( a_Color != -1 )
+        if( shader.a_Color != -1 )
         {
-            gl.enableVertexAttribArray( a_Color );
-            gl.vertexAttribPointer( a_Color, 4, gl.UNSIGNED_BYTE, true, sizeofVertex, 16 )
+            gl.enableVertexAttribArray( shader.a_Color );
+            gl.vertexAttribPointer( shader.a_Color, 4, gl.UNSIGNED_BYTE, true, sizeofVertex, 16 )
         }
 
         // Set up shader and uniforms.
-        gl.useProgram( this.shader.program );
+        gl.useProgram( shader.program );
 
         // Ortho matrix with 0,0 at top-left.
-        let matProj = new mat4();
-        matProj.createOrthoInfiniteZ( 0, this.canvas.width / this.scale, this.canvas.height / this.scale, 0 );
+        this.matProj.createOrthoInfiniteZ( 0, this.canvas.width / this.scale, this.canvas.height / this.scale, 0 );
 
-        let u_MatProj = gl.getUniformLocation( this.shader.program, "u_MatProj" );
-        gl.uniformMatrix4fv( u_MatProj, false, matProj.m )
+        gl.uniformMatrix4fv( shader.u_MatProj, false, this.matProj.m )
 
-        let u_TextureAlbedo = gl.getUniformLocation( this.shader.program, "u_TextureAlbedo" );
-        if( u_TextureAlbedo != null )
+        if( shader.u_TextureAlbedo != null )
         {
             let textureUnit = 0;
             gl.activeTexture( gl.TEXTURE0 + textureUnit );
             gl.bindTexture( gl.TEXTURE_2D, this.font.texture.textureID );
-            gl.uniform1i( u_TextureAlbedo, textureUnit );
+            gl.uniform1i( shader.u_TextureAlbedo, textureUnit );
         }
 
         // Scissor.
@@ -688,10 +743,10 @@
         // Draw.        
         gl.drawElements( item.primitiveType, item.indexCount, gl.UNSIGNED_SHORT, 0 );
         
-        if( a_UV != -1 )
-            gl.disableVertexAttribArray( a_UV );
-        if( a_Color != -1 )
-            gl.disableVertexAttribArray( a_Color );
+        if( shader.a_UV != -1 )
+            gl.disableVertexAttribArray( shader.a_UV );
+        if( shader.a_Color != -1 )
+            gl.disableVertexAttribArray( shader.a_Color );
     }
 
     sameLine()
@@ -793,7 +848,7 @@
 
             this.addBoxToArray( verts, indices, 0,0,w,h, this.color["MenuBar"] );
 
-            this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+            this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
         }
     }
 
@@ -835,7 +890,7 @@
             let x = menuItemPosition;
             let y = this.activeWindow.position.y + this.activeWindow.size.y;
 
-            let size = new vec2( 0, 0 );
+            let size = vec2.getTemp( 0, 0 );
             if( this.windows[popupName] )
             {
                 size.setF32( this.windows[popupName].size.x, this.windows[popupName].size.y );
@@ -845,7 +900,7 @@
                 this.needsRefresh = true;
             }
 
-            this.initWindow( popupName, false, new vec2( x, y ), size, true, true, false );
+            this.initWindow( popupName, false, vec2.getTemp( x, y ), size, true, true, false );
 
             this.pushColorChange( "BG", this.color["MenuPopupBG"] );
             if( this.window( popupName ) )
@@ -916,7 +971,7 @@
             let x = menuItemPositionX;
             let y = menuItemPositionY;
             
-            let size = new vec2( 0, 0 );
+            let size = vec2.getTemp( 0, 0 );
             if( this.windows[popupName] )
             {
                 size.setF32( this.windows[popupName].size.x, this.windows[popupName].size.y );
@@ -926,7 +981,7 @@
                 this.needsRefresh = true;
             }
             
-            this.initWindow( popupName, false, new vec2( x, y ), size, true, true, false );
+            this.initWindow( popupName, false, vec2.getTemp( x, y ), size, true, true, false );
             
             this.pushColorChange( "BG", this.color["MenuPopupBG"] );
             if( this.window( popupName ) )
@@ -1087,7 +1142,7 @@
                     this.activeWindow.rect.y = this.mainMenuBarHeight;
                 }
 
-                this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+                this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
                 if( this.activeWindow.hasTitle )
                 {
@@ -1113,7 +1168,7 @@
                     this.activeWindow.cursor.y = rect.y + rect.h - (this.padding.y + this.fontSize.y + this.padding.y)
                     let oldMaxX = this.activeWindow.maxExtents.x;
                     let oldMaxY = this.activeWindow.maxExtents.y;
-                    if( this.button( new String(" "), true, false, false ) )
+                    if( this.button( this.buttonString, true, false, false ) )
                     {
                         this.windowBeingResized = this.activeWindow;
                         this.windowResizeOffset.setF32( rect.x + rect.w - this.mousePosition.x, rect.y + rect.h - this.mousePosition.y );
@@ -1190,11 +1245,11 @@
         }
 
         if( rect === undefined )
-            rect = new ImGuiRect( 0, 0, 10000, 10000 );
+            rect = this.largeRect;
 
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, rect ) );
+        this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, rect ) );
 
-        return [x,y];
+        return vec2.getTemp( x, y );
     }
 
     text(str)
@@ -1209,12 +1264,12 @@
 
         let h = this.fontSize.y;
 
-        [x, y] = this.addStringToDrawList( str, x, y, this.activeWindow.rect );
+        let pos = this.addStringToDrawList( str, x, y, this.activeWindow.rect );
 
-        this.activeWindow.previousLineEndPosition.setF32( x-this.padding.x, y-this.padding.y );
-        this.setIfBigger( this.activeWindow.maxExtents, x, y + this.fontSize.y + this.padding.y );
+        this.activeWindow.previousLineEndPosition.setF32( pos.x-this.padding.x, pos.y-this.padding.y );
+        this.setIfBigger( this.activeWindow.maxExtents, pos.x, pos.y + this.fontSize.y + this.padding.y );
 
-        this.activeWindow.cursor.setF32( x, y+h );
+        this.activeWindow.cursor.setF32( pos.x, pos.y+h );
         this.activeWindow.cursor.y += this.padding.y;
 
         this.activeWindow.cursor.x = this.activeWindow.position.x;
@@ -1240,7 +1295,7 @@
         // Check if we're hovering over this button inside this window.
         let isHovering = false;
         let color = this.color["ButtonNormal"];
-        let rect = new ImGuiRect( x, y, w, h );
+        let rect = ImGuiRect.getFromPool( x, y, w, h );
         if( rect.contains( this.mousePosition ) )
         {
             if( this.activeWindow == this.windowHovered )
@@ -1264,9 +1319,10 @@
                 }
             }
         }
+        ImGuiRect.returnToPool( rect );
 
         this.addBoxToArray( verts, indices, x,y,w,h, color );
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+        this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
         this.activeWindow.cursor.x += this.padding.x;
         this.text( label );
@@ -1341,7 +1397,7 @@
 
         let isHovering = false;
         let color = this.color["ButtonNormal"];
-        let rect = new ImGuiRect( x, y, w, h );
+        let rect = ImGuiRect.getFromPool( x, y, w, h );
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
             if( this.activeWindow == this.windowHovered )
@@ -1355,6 +1411,7 @@
                 }
             }
         }
+        ImGuiRect.returnToPool( rect );
 
         this.addBoxToArray( verts, indices, x,y,w-1,h-1, color );
 
@@ -1364,7 +1421,7 @@
             this.addBoxToArray( verts, indices, x+2,y+2,w-5,h-5, color );
         }
 
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+        this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
         this.activeWindow.cursor.x += this.padding.x;
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
@@ -1418,11 +1475,10 @@
 
         let isHovering = false;
 
-        let rect = new ImGuiRect( x, y, w, h );
-
         // Draw background and determine if mouse if hovering over it.
         {
             let color = this.color["ButtonNormal"];
+            let rect = ImGuiRect.getFromPool( x, y, w, h );
             if( rect.contains( this.mousePosition ) ) // is hovering.
             {
                 if( this.activeWindow == this.windowHovered )
@@ -1430,6 +1486,7 @@
                     isHovering = true;
                 }
             }
+            ImGuiRect.returnToPool( rect );
 
             if( this.controlInEditMode == label )
             {
@@ -1467,7 +1524,7 @@
         }
 
         // Add BG verts to draw list.
-        this.drawList.push( new DrawListItem( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+        this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
 
         // Draw value as text.
         {
@@ -1634,7 +1691,22 @@ class ImGuiWindow
 
 class DrawListItem
 {
+    static pool = new Pool( DrawListItem, 100, true );
+    static getFromPool(primitiveType, verts, indices, rect)
+    {
+        let obj = DrawListItem.pool.getFromPool();
+        obj.set( primitiveType, verts, indices, rect ); 
+        return obj;
+    }
+    static returnToPool(obj) { return DrawListItem.pool.returnToPool( obj ); }
+
     constructor(primitiveType, verts, indices, rect)
+    {
+        if( primitiveType !== undefined )
+            this.set( primitiveType, verts, indices, rect );
+    }
+
+    set(primitiveType, verts, indices, rect)
     {
         this.primitiveType = primitiveType;
         this.vertexCount = verts.length / 8;
@@ -1647,6 +1719,15 @@ class DrawListItem
 
 class ImGuiRect
 {
+    static pool = new Pool( ImGuiRect, 1000, true );
+    static getFromPool(x,y,w,h)
+    {
+        let obj = ImGuiRect.pool.getFromPool();
+        obj.set(x,y,w,h); 
+        return obj;
+    }
+    static returnToPool(obj) { return ImGuiRect.pool.returnToPool( obj ); }
+
     constructor(x,y,w,h)
     {
         this.x = x;
