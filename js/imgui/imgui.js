@@ -54,6 +54,14 @@ class ImGui
         this.buttonString = new String(" ");
         this.largeRect = new ImGuiRect( 0, 0, 10000, 10000 );
 
+        this.vertexAttributesBufferSize = 0;
+        this.vertexAttributes = null;
+        this.vertexAttributesAsFloats = null;
+        this.vertexAttributesAsUint8s = null;
+        this.indicesBufferSize = 0;
+        this.indices16 = null;
+        this.indicesAsUint16s = null;
+
         // Persistent values.
         this.BGDrawList = [];
         this.FGDrawList = [];
@@ -627,6 +635,7 @@ class ImGui
         gl.enable( gl.SCISSOR_TEST );
 
         // Draw all items in draw list.
+            //debugger;
         {
             for( let i=0; i<this.BGDrawList.length; i++ )
             {
@@ -666,38 +675,84 @@ class ImGui
         
         // VertexFormat: XY UV RGBA. (4 floats + 4 uint8s or 5 floats or 20 bytes)
         let sizeofVertex = (4*sizeofFloat32 + 4*sizeofUint8);
-        let vertexAttributes = new ArrayBuffer( item.vertexCount * sizeofVertex );
-        let vertexAttributesAsFloats = new Float32Array( vertexAttributes );
-        for( let i=0; i<item.vertexCount; i++ )
+        if( item.vertexCount === 0 && 
+            ( item.numVertComponents === 0 || item.numVertComponents === undefined ) )
         {
-            vertexAttributesAsFloats[i*5 + 0] = item.verts[i*8 + 0];
-            vertexAttributesAsFloats[i*5 + 1] = item.verts[i*8 + 1];
-            vertexAttributesAsFloats[i*5 + 2] = item.verts[i*8 + 2];
-            vertexAttributesAsFloats[i*5 + 3] = item.verts[i*8 + 3];
+            //debugger;
+            return; 
         }
 
-        let vertexAttributesAsUint8s = new Uint8Array( vertexAttributes );
-        for( let i=0; i<item.vertexCount; i++ )
         {
-            vertexAttributesAsUint8s[i*sizeofVertex + 4*sizeofFloat32 + 0] = item.verts[i*8 + 4];
-            vertexAttributesAsUint8s[i*sizeofVertex + 4*sizeofFloat32 + 1] = item.verts[i*8 + 5];
-            vertexAttributesAsUint8s[i*sizeofVertex + 4*sizeofFloat32 + 2] = item.verts[i*8 + 6];
-            vertexAttributesAsUint8s[i*sizeofVertex + 4*sizeofFloat32 + 3] = item.verts[i*8 + 7];
+            //debugger;
+            let spaceNeeded = item.vertexCount * sizeofVertex;
+            let verts = item.verts;
+            let vertCount = item.vertexCount;
+            if( spaceNeeded === 0 )
+            {
+                vertCount = item.numVertComponents / 8;
+                spaceNeeded = vertCount * sizeofVertex;
+                verts = item.vertsArray;
+            }
+
+            if( spaceNeeded > this.vertexAttributesBufferSize )
+            {
+                console.log( "Increasing vertex ArrayBuffer size from " + this.vertexAttributesBufferSize + " to " + spaceNeeded );
+                this.vertexAttributesBufferSize = spaceNeeded;
+                this.vertexAttributes = new ArrayBuffer( spaceNeeded );
+                this.vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
+                this.vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
+            }
+
+            for( let i=0; i<vertCount; i++ )
+            {
+                this.vertexAttributesAsFloats[i*5 + 0] = verts[i*8 + 0];
+                this.vertexAttributesAsFloats[i*5 + 1] = verts[i*8 + 1];
+                this.vertexAttributesAsFloats[i*5 + 2] = verts[i*8 + 2];
+                this.vertexAttributesAsFloats[i*5 + 3] = verts[i*8 + 3];
+            }
+
+            for( let i=0; i<vertCount; i++ )
+            {
+                this.vertexAttributesAsUint8s[i*sizeofVertex + 4*sizeofFloat32 + 0] = verts[i*8 + 4];
+                this.vertexAttributesAsUint8s[i*sizeofVertex + 4*sizeofFloat32 + 1] = verts[i*8 + 5];
+                this.vertexAttributesAsUint8s[i*sizeofVertex + 4*sizeofFloat32 + 2] = verts[i*8 + 6];
+                this.vertexAttributesAsUint8s[i*sizeofVertex + 4*sizeofFloat32 + 3] = verts[i*8 + 7];
+            }
         }
+
+        let indexCount = 0;
 
         // Indices: Uint16.
-        let indices16 = new ArrayBuffer( item.indexCount * sizeofUint16 );
-        let indicesAsUint16s = new Uint16Array( indices16 );
-        for( let i=0; i<item.indexCount; i++ )
         {
-            indicesAsUint16s[i] = item.indices[i];
+            let spaceNeeded = item.indexCount * sizeofUint16;
+            let indices = item.indices;
+            indexCount = item.indexCount;
+            if( spaceNeeded === 0 )
+            {
+                indexCount = item.numIndicesInArray;
+                spaceNeeded = indexCount * sizeofUint16;
+                indices = item.indicesArray;
+            }
+
+            if( spaceNeeded > this.indicesBufferSize )
+            {
+                console.log( "Increasing index ArrayBuffer size from " + this.indicesBufferSize + " to " + spaceNeeded );
+                this.indicesBufferSize = spaceNeeded;
+                this.indices16 = new ArrayBuffer( spaceNeeded );
+                this.indicesAsUint16s = new Uint16Array( this.indices16 );
+            }
+
+            for( let i=0; i<indexCount; i++ )
+            {
+                this.indicesAsUint16s[i] = indices[i];
+            }
         }
 
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
-        gl.bufferData( gl.ARRAY_BUFFER, vertexAttributes, gl.STREAM_DRAW );
+        gl.bufferData( gl.ARRAY_BUFFER, this.vertexAttributes, gl.STREAM_DRAW );
 
         gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
-        gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices16, gl.STREAM_DRAW );
+        gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, this.indices16, gl.STREAM_DRAW );
 
         // Set up VBO and attributes.
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
@@ -741,7 +796,7 @@ class ImGui
         gl.scissor( item.rect.x * this.scale, lowerLeftY, item.rect.w * this.scale, item.rect.h * this.scale );
         
         // Draw.        
-        gl.drawElements( item.primitiveType, item.indexCount, gl.UNSIGNED_SHORT, 0 );
+        gl.drawElements( item.primitiveType, indexCount, gl.UNSIGNED_SHORT, 0 );
         
         if( shader.a_UV != -1 )
             gl.disableVertexAttribArray( shader.a_UV );
@@ -1090,8 +1145,8 @@ class ImGui
         {
             if( this.activeWindow.cursor.y == this.activeWindow.position.y )
             {
-                let verts = [];
-                let indices = [];
+                let drawListItem = DrawListItem.getFromPool();
+                drawListItem.clear();
             
                 let x = this.activeWindow.position.x;
                 let y = this.activeWindow.position.y;
@@ -1105,12 +1160,12 @@ class ImGui
                 {
                     titleH = this.fontSize.y + this.padding.y*2;
                     let h = titleH;
-                    this.addBoxToArray( verts, indices, x,y,w,h, this.color["Title"] );
+                    this.addBoxToDrawListItem( drawListItem, x,y,w,h, this.color["Title"] );
                     let t = 1/this.scale; // Border thickness, essentially 1 pixel regardless of UI scale.
-                    this.addBoxToArray( verts, indices, x,    y, t,h, this.color["BGBorder"] ); // Border left.
-                    this.addBoxToArray( verts, indices, x+w-t,y, t,h, this.color["BGBorder"] ); // Border right.
-                    this.addBoxToArray( verts, indices, x,y,     w,t, this.color["BGBorder"] ); // Border top.
-                    //this.addBoxToArray( verts, indices, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
+                    this.addBoxToDrawListItem( drawListItem, x,    y, t,h, this.color["BGBorder"] ); // Border left.
+                    this.addBoxToDrawListItem( drawListItem, x+w-t,y, t,h, this.color["BGBorder"] ); // Border right.
+                    this.addBoxToDrawListItem( drawListItem, x,y,     w,t, this.color["BGBorder"] ); // Border top.
+                    //this.addBoxToDrawListItem( drawListItem, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
                 }
                 this.activeWindow.rect.set( x, y, w, titleH );
 
@@ -1119,13 +1174,13 @@ class ImGui
                     // Draw the BG box.
                     y += titleH;
                     let h = this.activeWindow.size.y - titleH;
-                    this.addBoxToArray( verts, indices, x,y,w,h, this.color["BG"] ); // BG filled.
+                    this.addBoxToDrawListItem( drawListItem, x,y,w,h, this.color["BG"] ); // BG filled.
                     let t = 1/this.scale; // Border thickness, essentially 1 pixel regardless of UI scale.
-                    this.addBoxToArray( verts, indices, x,    y, t,h, this.color["BGBorder"] ); // Border left.
-                    this.addBoxToArray( verts, indices, x+w-t,y, t,h, this.color["BGBorder"] ); // Border right.
+                    this.addBoxToDrawListItem( drawListItem, x,    y, t,h, this.color["BGBorder"] ); // Border left.
+                    this.addBoxToDrawListItem( drawListItem, x+w-t,y, t,h, this.color["BGBorder"] ); // Border right.
                     if( this.activeWindow.hasTitle == false )
-                        this.addBoxToArray( verts, indices, x,y,     w,t, this.color["BGBorder"] ); // Border top.
-                    this.addBoxToArray( verts, indices, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
+                        this.addBoxToDrawListItem( drawListItem, x,y,     w,t, this.color["BGBorder"] ); // Border top.
+                    this.addBoxToDrawListItem( drawListItem, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
 
                     // Define scissor rect, y is lower left.
                     let rx = this.activeWindow.position.x;
@@ -1142,7 +1197,9 @@ class ImGui
                     this.activeWindow.rect.y = this.mainMenuBarHeight;
                 }
 
-                this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+                //this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+                drawListItem.setBasic( gl.TRIANGLES, this.activeWindow.rect );
+                this.drawList.push( drawListItem );
 
                 if( this.activeWindow.hasTitle )
                 {
@@ -1198,6 +1255,21 @@ class ImGui
         verts.push( x+0,y+0,   0,0,   color.r,color.g,color.b,color.a );
         verts.push( x+w,y+0,   0,0,   color.r,color.g,color.b,color.a );
         verts.push( x+w,y+h,   0,0,   color.r,color.g,color.b,color.a );
+    }
+
+    addBoxToDrawListItem(drawListItem, x, y, w, h, color)
+    {
+        let numVerts = drawListItem.numVertComponents/8;
+        drawListItem.pushIndex( numVerts+0 );
+        drawListItem.pushIndex( numVerts+1 );
+        drawListItem.pushIndex( numVerts+2 );
+        drawListItem.pushIndex( numVerts+0 );
+        drawListItem.pushIndex( numVerts+2 );
+        drawListItem.pushIndex( numVerts+3 );
+        drawListItem.pushVert( x+0,y+h,   0,0,   color.r,color.g,color.b,color.a );
+        drawListItem.pushVert( x+0,y+0,   0,0,   color.r,color.g,color.b,color.a );
+        drawListItem.pushVert( x+w,y+0,   0,0,   color.r,color.g,color.b,color.a );
+        drawListItem.pushVert( x+w,y+h,   0,0,   color.r,color.g,color.b,color.a );
     }
 
     addStringToDrawList(str, x, y, rect = undefined)
@@ -1695,7 +1767,8 @@ class DrawListItem
     static getFromPool(primitiveType, verts, indices, rect)
     {
         let obj = DrawListItem.pool.getFromPool();
-        obj.set( primitiveType, verts, indices, rect ); 
+        if( primitiveType !== undefined )
+            obj.set( primitiveType, verts, indices, rect ); 
         return obj;
     }
     static returnToPool(obj) { return DrawListItem.pool.returnToPool( obj ); }
@@ -1704,6 +1777,13 @@ class DrawListItem
     {
         if( primitiveType !== undefined )
             this.set( primitiveType, verts, indices, rect );
+
+        this.vertsArray = new Array(100);
+        this.indicesArray = new Array(100);
+        this.numVerts = 0;
+        this.numIndices = 0;
+        this.numVertComponents = 0;
+        this.numIndicesInArray = 0;
     }
 
     set(primitiveType, verts, indices, rect)
@@ -1714,6 +1794,58 @@ class DrawListItem
         this.verts = verts;
         this.indices = indices;
         this.rect = rect;
+        this.numVertComponents = 0;
+        this.numIndicesInArray = 0;
+    }
+
+    setBasic(primitiveType, rect)
+    {
+        this.primitiveType = primitiveType;
+        this.vertexCount = 0;
+        this.indexCount = 0;
+        this.verts = null;
+        this.indices = null;
+        this.rect = rect;
+    }
+
+    clear()
+    {
+        this.numVertComponents = 0;
+        this.numIndicesInArray = 0;
+    }
+
+    pushVert(x,y,u,v,r,g,b,a)
+    {
+        let spaceNeeded = (this.numVertComponents + 8) - this.vertsArray.length;
+        while( spaceNeeded > 0 )
+        {
+            this.vertsArray.push(0);
+            spaceNeeded--;
+        }
+
+        this.vertsArray[this.numVertComponents+0] = x;
+        this.vertsArray[this.numVertComponents+1] = y;
+        this.vertsArray[this.numVertComponents+2] = u;
+        this.vertsArray[this.numVertComponents+3] = v;
+        this.vertsArray[this.numVertComponents+4] = r;
+        this.vertsArray[this.numVertComponents+5] = g;
+        this.vertsArray[this.numVertComponents+6] = b;
+        this.vertsArray[this.numVertComponents+7] = a;
+
+        this.numVertComponents += 8;
+    }
+
+    pushIndex(index)
+    {
+        if( this.numIndices == this.indicesArray.length )
+        {
+            this.indicesArray.push( index );
+        }
+        else
+        {
+            this.indicesArray[this.numIndicesInArray] = index;
+        }
+        this.numIndicesInArray++;
     }
 }
 
