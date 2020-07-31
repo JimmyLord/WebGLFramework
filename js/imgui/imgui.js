@@ -452,7 +452,7 @@ class ImGui
 
         // Backup our keyBuffer for use this frame and clear the array.
         this.unusedKeyBuffer = this.keyBuffer;
-        this.keyBuffer = [];
+        this.keyBuffer.length = 0;
 
         this.windowHovered = null;
         this.isHoveringWindow = false;
@@ -675,28 +675,20 @@ class ImGui
         
         // VertexFormat: XY UV RGBA. (4 floats + 4 uint8s or 5 floats or 20 bytes)
         let sizeofVertex = (4*sizeofFloat32 + 4*sizeofUint8);
-        if( item.vertexCount === 0 && 
-            ( item.numVertComponents === 0 || item.numVertComponents === undefined ) )
+        if( item.numVertComponents === 0 )
         {
             //debugger;
             return; 
         }
 
         {
-            //debugger;
-            let spaceNeeded = item.vertexCount * sizeofVertex;
-            let verts = item.verts;
-            let vertCount = item.vertexCount;
-            if( spaceNeeded === 0 )
-            {
-                vertCount = item.numVertComponents / 8;
-                spaceNeeded = vertCount * sizeofVertex;
-                verts = item.vertsArray;
-            }
+            let vertCount = item.numVertComponents / 8;
+            let spaceNeeded = vertCount * sizeofVertex;
+            let verts = item.vertComponents;
 
             if( spaceNeeded > this.vertexAttributesBufferSize )
             {
-                console.log( "Increasing vertex ArrayBuffer size from " + this.vertexAttributesBufferSize + " to " + spaceNeeded );
+                //console.log( "Increasing vertex ArrayBuffer size from " + this.vertexAttributesBufferSize + " to " + spaceNeeded );
                 this.vertexAttributesBufferSize = spaceNeeded;
                 this.vertexAttributes = new ArrayBuffer( spaceNeeded );
                 this.vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
@@ -724,19 +716,13 @@ class ImGui
 
         // Indices: Uint16.
         {
-            let spaceNeeded = item.indexCount * sizeofUint16;
+            indexCount = item.numIndices;
+            let spaceNeeded = indexCount * sizeofUint16;
             let indices = item.indices;
-            indexCount = item.indexCount;
-            if( spaceNeeded === 0 )
-            {
-                indexCount = item.numIndicesInArray;
-                spaceNeeded = indexCount * sizeofUint16;
-                indices = item.indicesArray;
-            }
 
             if( spaceNeeded > this.indicesBufferSize )
             {
-                console.log( "Increasing index ArrayBuffer size from " + this.indicesBufferSize + " to " + spaceNeeded );
+                //console.log( "Increasing index ArrayBuffer size from " + this.indicesBufferSize + " to " + spaceNeeded );
                 this.indicesBufferSize = spaceNeeded;
                 this.indices16 = new ArrayBuffer( spaceNeeded );
                 this.indicesAsUint16s = new Uint16Array( this.indices16 );
@@ -892,8 +878,7 @@ class ImGui
 
         // Draw the main menu bg.
         {
-            let verts = [];
-            let indices = [];
+            let drawListItem = DrawListItem.getFromPool();
             
             let w = this.activeWindow.size.x;
             let h = this.activeWindow.size.y;
@@ -901,9 +886,10 @@ class ImGui
             
             this.activeWindow.rect.set( 0, 0, w, h );
 
-            this.addBoxToArray( verts, indices, 0,0,w,h, this.color["MenuBar"] );
+            this.addBoxToDrawListItem( drawListItem, 0,0,w,h, this.color["MenuBar"] );
 
-            this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+            drawListItem.set( gl.TRIANGLES, this.activeWindow.rect );
+            this.drawList.push( drawListItem );
         }
     }
 
@@ -1146,15 +1132,14 @@ class ImGui
             if( this.activeWindow.cursor.y == this.activeWindow.position.y )
             {
                 let drawListItem = DrawListItem.getFromPool();
-                drawListItem.clear();
-            
+
                 let x = this.activeWindow.position.x;
                 let y = this.activeWindow.position.y;
-            
+
                 let w = this.activeWindow.size.x;
-            
+
                 let titleH = 0;
-            
+
                 // Draw the title box.
                 if( this.activeWindow.hasTitle )
                 {
@@ -1197,8 +1182,7 @@ class ImGui
                     this.activeWindow.rect.y = this.mainMenuBarHeight;
                 }
 
-                //this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
-                drawListItem.setBasic( gl.TRIANGLES, this.activeWindow.rect );
+                drawListItem.set( gl.TRIANGLES, this.activeWindow.rect );
                 this.drawList.push( drawListItem );
 
                 if( this.activeWindow.hasTitle )
@@ -1247,29 +1231,19 @@ class ImGui
         window.size.y += this.padding.y + this.fontSize.y + this.padding.y;
     }
 
-    addBoxToArray(verts, indices, x, y, w, h, color)
-    {
-        let numVerts = verts.length/8;
-        indices.push( numVerts+0,numVerts+1,numVerts+2, numVerts+0,numVerts+2,numVerts+3 );
-        verts.push( x+0,y+h,   0,0,   color.r,color.g,color.b,color.a );
-        verts.push( x+0,y+0,   0,0,   color.r,color.g,color.b,color.a );
-        verts.push( x+w,y+0,   0,0,   color.r,color.g,color.b,color.a );
-        verts.push( x+w,y+h,   0,0,   color.r,color.g,color.b,color.a );
-    }
-
     addBoxToDrawListItem(drawListItem, x, y, w, h, color)
     {
         let numVerts = drawListItem.numVertComponents/8;
+        drawListItem.pushVert( x+0,y+h,   0,0,   color.r,color.g,color.b,color.a );
+        drawListItem.pushVert( x+0,y+0,   0,0,   color.r,color.g,color.b,color.a );
+        drawListItem.pushVert( x+w,y+0,   0,0,   color.r,color.g,color.b,color.a );
+        drawListItem.pushVert( x+w,y+h,   0,0,   color.r,color.g,color.b,color.a );
         drawListItem.pushIndex( numVerts+0 );
         drawListItem.pushIndex( numVerts+1 );
         drawListItem.pushIndex( numVerts+2 );
         drawListItem.pushIndex( numVerts+0 );
         drawListItem.pushIndex( numVerts+2 );
         drawListItem.pushIndex( numVerts+3 );
-        drawListItem.pushVert( x+0,y+h,   0,0,   color.r,color.g,color.b,color.a );
-        drawListItem.pushVert( x+0,y+0,   0,0,   color.r,color.g,color.b,color.a );
-        drawListItem.pushVert( x+w,y+0,   0,0,   color.r,color.g,color.b,color.a );
-        drawListItem.pushVert( x+w,y+h,   0,0,   color.r,color.g,color.b,color.a );
     }
 
     addStringToDrawList(str, x, y, rect = undefined)
@@ -1279,8 +1253,7 @@ class ImGui
         let w = this.fontSize.x;
         let h = this.fontSize.y;
 
-        let verts = [];
-        let indices = [];
+        let drawListItem = DrawListItem.getFromPool();
 
         let count = 0;
         for( let i=0; i<str.length; i++ )
@@ -1303,11 +1276,17 @@ class ImGui
             let cx = Math.trunc( c % this.font.gridSize.x );
             let cy = Math.trunc( c / this.font.gridSize.x );
 
-            verts.push( x+0,y+h, this.font.stepU*(cx+0),               this.font.stepV*(cy+this.font.charH), 255,255,255,255 );
-            verts.push( x+0,y+0, this.font.stepU*(cx+0),               this.font.stepV*(cy+0),               255,255,255,255 );
-            verts.push( x+w,y+0, this.font.stepU*(cx+this.font.charW), this.font.stepV*(cy+0),               255,255,255,255 );
-            verts.push( x+w,y+h, this.font.stepU*(cx+this.font.charW), this.font.stepV*(cy+this.font.charH), 255,255,255,255 );
-            indices.push( count*4+0,count*4+1,count*4+2, count*4+0,count*4+2,count*4+3 );
+            let numVerts = drawListItem.numVertComponents/8;
+            drawListItem.pushVert( x+0,y+h, this.font.stepU*(cx+0),               this.font.stepV*(cy+this.font.charH), 255,255,255,255 );
+            drawListItem.pushVert( x+0,y+0, this.font.stepU*(cx+0),               this.font.stepV*(cy+0),               255,255,255,255 );
+            drawListItem.pushVert( x+w,y+0, this.font.stepU*(cx+this.font.charW), this.font.stepV*(cy+0),               255,255,255,255 );
+            drawListItem.pushVert( x+w,y+h, this.font.stepU*(cx+this.font.charW), this.font.stepV*(cy+this.font.charH), 255,255,255,255 );
+            drawListItem.pushIndex( numVerts+0 );
+            drawListItem.pushIndex( numVerts+1 );
+            drawListItem.pushIndex( numVerts+2 );
+            drawListItem.pushIndex( numVerts+0 );
+            drawListItem.pushIndex( numVerts+2 );
+            drawListItem.pushIndex( numVerts+3 );
 
             x += w;
             c += this.font.firstChar;
@@ -1319,7 +1298,8 @@ class ImGui
         if( rect === undefined )
             rect = this.largeRect;
 
-        this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, rect ) );
+        drawListItem.set( gl.TRIANGLES, rect );
+        this.drawList.push( drawListItem );
 
         return vec2.getTemp( x, y );
     }
@@ -1358,8 +1338,7 @@ class ImGui
         let buttonTopPadding = 1;
         let h = buttonTopPadding + this.fontSize.y + this.padding.y;
 
-        let verts = [];
-        let indices = [];
+        let drawListItem = DrawListItem.getFromPool();
 
         let x = this.activeWindow.cursor.x + this.padding.x;
         let y = this.activeWindow.cursor.y + buttonTopPadding;
@@ -1393,8 +1372,10 @@ class ImGui
         }
         ImGuiRect.returnToPool( rect );
 
-        this.addBoxToArray( verts, indices, x,y,w,h, color );
-        this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+        this.addBoxToDrawListItem( drawListItem, x,y,w,h, color );
+
+        drawListItem.set( gl.TRIANGLES, this.activeWindow.rect );
+        this.drawList.push( drawListItem );
 
         this.activeWindow.cursor.x += this.padding.x;
         this.text( label );
@@ -1461,8 +1442,7 @@ class ImGui
         let buttonTopPadding = 1;
         let h = buttonTopPadding + this.fontSize.y + this.padding.y;
 
-        let verts = [];
-        let indices = [];
+        let drawListItem = DrawListItem.getFromPool();
 
         let x = this.activeWindow.cursor.x + this.padding.x;
         let y = this.activeWindow.cursor.y + buttonTopPadding;
@@ -1485,15 +1465,16 @@ class ImGui
         }
         ImGuiRect.returnToPool( rect );
 
-        this.addBoxToArray( verts, indices, x,y,w-1,h-1, color );
+        this.addBoxToDrawListItem( drawListItem, x,y,w-1,h-1, color );
 
         if( isChecked )
         {
             color = this.color["Checkbox"];
-            this.addBoxToArray( verts, indices, x+2,y+2,w-5,h-5, color );
+            this.addBoxToDrawListItem( drawListItem, x+2,y+2,w-5,h-5, color );
         }
 
-        this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+        drawListItem.set( gl.TRIANGLES, this.activeWindow.rect );
+        this.drawList.push( drawListItem );
 
         this.activeWindow.cursor.x += this.padding.x;
         this.activeWindow.previousLineEndPosition.setF32( x + w, y - buttonTopPadding );
@@ -1531,8 +1512,7 @@ class ImGui
         let valueAsString = value.toFixed( decimalPlaces );
 
         // Vars.
-        let verts = [];
-        let indices = [];
+        let drawListItem = DrawListItem.getFromPool();
 
         let buttonTopPadding = 1;
         let offsetx = this.activeWindow.cursor.x - this.activeWindow.position.x;
@@ -1574,7 +1554,7 @@ class ImGui
                 }
             }
 
-            this.addBoxToArray( verts, indices, x,y,w,h, color );
+            this.addBoxToDrawListItem( drawListItem, x,y,w,h, color );
         }
 
         // Calculate some values for the text string.
@@ -1592,11 +1572,12 @@ class ImGui
 
             let color = this.color["TextSelected"];
 
-            this.addBoxToArray( verts, indices, x + textStartPoint,y,textWidth,h, color );
+            this.addBoxToDrawListItem( drawListItem, x + textStartPoint,y,textWidth,h, color );
         }
 
         // Add BG verts to draw list.
-        this.drawList.push( DrawListItem.getFromPool( gl.TRIANGLES, verts, indices, this.activeWindow.rect ) );
+        drawListItem.set( gl.TRIANGLES, this.activeWindow.rect );
+        this.drawList.push( drawListItem );
 
         // Draw value as text.
         {
@@ -1764,88 +1745,77 @@ class ImGuiWindow
 class DrawListItem
 {
     static pool = new Pool( DrawListItem, 100, true );
-    static getFromPool(primitiveType, verts, indices, rect)
+    static getFromPool(primitiveType, rect)
     {
         let obj = DrawListItem.pool.getFromPool();
+        obj.clear();
         if( primitiveType !== undefined )
-            obj.set( primitiveType, verts, indices, rect ); 
+            obj.set( primitiveType, rect ); 
         return obj;
     }
     static returnToPool(obj) { return DrawListItem.pool.returnToPool( obj ); }
 
-    constructor(primitiveType, verts, indices, rect)
+    constructor(primitiveType, rect)
     {
         if( primitiveType !== undefined )
-            this.set( primitiveType, verts, indices, rect );
+            this.set( primitiveType, rect );
 
-        this.vertsArray = new Array(100);
-        this.indicesArray = new Array(100);
-        this.numVerts = 0;
+        // Set verts and indices sizes to the worst case imgui currently needs.
+        this.vertComponents = new Array( 32 * 8 );
+        this.indices = new Array( 48 );
+        this.numVertComponents = 0;
         this.numIndices = 0;
-        this.numVertComponents = 0;
-        this.numIndicesInArray = 0;
     }
 
-    set(primitiveType, verts, indices, rect)
+    set(primitiveType, rect)
     {
         this.primitiveType = primitiveType;
-        this.vertexCount = verts.length / 8;
-        this.indexCount = indices.length;
-        this.verts = verts;
-        this.indices = indices;
-        this.rect = rect;
-        this.numVertComponents = 0;
-        this.numIndicesInArray = 0;
-    }
-
-    setBasic(primitiveType, rect)
-    {
-        this.primitiveType = primitiveType;
-        this.vertexCount = 0;
-        this.indexCount = 0;
-        this.verts = null;
-        this.indices = null;
         this.rect = rect;
     }
 
     clear()
     {
         this.numVertComponents = 0;
-        this.numIndicesInArray = 0;
+        this.numIndices = 0;
     }
 
     pushVert(x,y,u,v,r,g,b,a)
     {
-        let spaceNeeded = (this.numVertComponents + 8) - this.vertsArray.length;
+        let spaceNeeded = (this.numVertComponents + 8) - this.vertComponents.length;
+        if( spaceNeeded > 0 )
+        {
+            console.log( "Increasing drawListItem's verts by " + spaceNeeded );
+        }
         while( spaceNeeded > 0 )
         {
-            this.vertsArray.push(0);
+            this.vertComponents.push(0);
             spaceNeeded--;
         }
 
-        this.vertsArray[this.numVertComponents+0] = x;
-        this.vertsArray[this.numVertComponents+1] = y;
-        this.vertsArray[this.numVertComponents+2] = u;
-        this.vertsArray[this.numVertComponents+3] = v;
-        this.vertsArray[this.numVertComponents+4] = r;
-        this.vertsArray[this.numVertComponents+5] = g;
-        this.vertsArray[this.numVertComponents+6] = b;
-        this.vertsArray[this.numVertComponents+7] = a;
+        this.vertComponents[this.numVertComponents+0] = x;
+        this.vertComponents[this.numVertComponents+1] = y;
+        this.vertComponents[this.numVertComponents+2] = u;
+        this.vertComponents[this.numVertComponents+3] = v;
+        this.vertComponents[this.numVertComponents+4] = r;
+        this.vertComponents[this.numVertComponents+5] = g;
+        this.vertComponents[this.numVertComponents+6] = b;
+        this.vertComponents[this.numVertComponents+7] = a;
 
         this.numVertComponents += 8;
     }
 
     pushIndex(index)
     {
-        if( this.numIndices == this.indicesArray.length )
+        if( this.numIndices == this.indices.length )
         {
-            this.indicesArray.push( index );
+            console.log( "Increasing drawListItem's indices by " + 1 );
+            this.indices.push( index );
         }
         else
         {
-            this.indicesArray[this.numIndicesInArray] = index;
+            this.indices[this.numIndices] = index;
         }
-        this.numIndicesInArray++;
+        this.numIndices++;
     }
 }
 
