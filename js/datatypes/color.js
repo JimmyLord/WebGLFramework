@@ -2,7 +2,7 @@ class color
 {
     constructor(r,g=undefined,b=undefined,a=undefined)
     {
-        if( g == undefined ) // r is a color class.
+        if( g === undefined ) // r is a color class.
         {
             this.r = r.r; this.g = r.g; this.b = r.b; this.a = r.a;
         }

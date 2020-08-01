@@ -346,10 +346,10 @@ class Mesh
 
         let gl = this.gl;
 
-        if( this.VBO == null )
+        if( this.VBO === null )
             return;
 
-        if( material == null )
+        if( material === null )
             return;
 
         // Set up VBO and attributes.
@@ -361,19 +361,19 @@ class Mesh
         gl.enableVertexAttribArray( shader.a_Position );
         gl.vertexAttribPointer( shader.a_Position, 3, gl.FLOAT, false, vertexSize, 0 )
 
-        if( shader.a_UV != -1 )
+        if( shader.a_UV !== -1 )
         {
             gl.enableVertexAttribArray( shader.a_UV );
             gl.vertexAttribPointer( shader.a_UV, 2, gl.FLOAT, false, vertexSize, 12 )
         }
 
-        if( shader.a_Normal != -1 )
+        if( shader.a_Normal !== -1 )
         {
             gl.enableVertexAttribArray( shader.a_Normal );
             gl.vertexAttribPointer( shader.a_Normal, 3, gl.FLOAT, false, vertexSize, 20 )
         }
 
-        if( shader.a_Color != -1 )
+        if( shader.a_Color !== -1 )
         {
             gl.enableVertexAttribArray( shader.a_Color );
             gl.vertexAttribPointer( shader.a_Color, 4, gl.UNSIGNED_BYTE, true, vertexSize, 32 )
@@ -387,7 +387,7 @@ class Mesh
         gl.uniformMatrix4fv( shader.u_MatProj, false, camera.matProj.m )
         gl.uniform4f( shader.u_Color, material.color.r, material.color.g, material.color.b, material.color.a );
 
-        if( shader.u_TextureAlbedo != null )
+        if( shader.u_TextureAlbedo !== null )
         {
             let textureUnit = 0;
             gl.activeTexture( gl.TEXTURE0 + textureUnit );
@@ -396,7 +396,7 @@ class Mesh
         }
 
         // Lights.
-        if( lights != null && lights.length > 0 )
+        if( lights !== null && lights.length > 0 )
         {
             let i=0;
             for( ; i<lights.length; i++ )
@@ -417,16 +417,16 @@ class Mesh
         gl.uniform3f( shader.u_CameraPosition, camera.position.x, camera.position.y, camera.position.z );
 
         // Draw.
-        if( this.numIndices == 0 )
+        if( this.numIndices === 0 )
             gl.drawArrays( this.primitiveType, 0, this.numVerts );
         else
             gl.drawElements( this.primitiveType, this.numIndices, gl.UNSIGNED_SHORT, 0 );
 
-        if( shader.a_UV != -1 )
+        if( shader.a_UV !== -1 )
             gl.disableVertexAttribArray( shader.a_UV );
-        if( shader.a_Normal != -1 )
+        if( shader.a_Normal !== -1 )
             gl.disableVertexAttribArray( shader.a_Normal );
-        if( shader.a_Color != -1 )
+        if( shader.a_Color !== -1 )
             gl.disableVertexAttribArray( shader.a_Color );
     }
 }

@@ -46,9 +46,9 @@ class FrameworkMain
         // Temp hacks for iPad.
         let iPad = false;
         let userAgent = navigator.userAgent.toLowerCase(); 
-        if( userAgent.indexOf('safari') != -1 )
+        if( userAgent.indexOf('safari') !== -1 )
         { 
-            if( userAgent.indexOf('chrome') == -1 )
+            if( userAgent.indexOf('chrome') === -1 )
             {
                 iPad = true;
             }
@@ -57,7 +57,7 @@ class FrameworkMain
         // Get the canvas and the OpenGL context.
         this.canvas = document.getElementById( document.currentScript.getAttribute( "canvasName" ) );
         let gl = this.canvas.getContext( "webgl2" );
-        if( gl == 0 )
+        if( gl === 0 )
         {
             console.log( "Failed to get WebGL context from canvas." );
             return;
@@ -76,8 +76,8 @@ class FrameworkMain
 
         // Set the size of the canvas.
         this.fullFrame = false;
-        if( document.currentScript.getAttribute( "fullFrame" ) == "true" ||
-            document.currentScript.getAttribute( "fullFrame" ) == 1 )
+        if( document.currentScript.getAttribute( "fullFrame" ) === "true" ||
+            document.currentScript.getAttribute( "fullFrame" ) === 1 )
         {
             this.fullFrame = true;
             this.canvas.width = window.innerWidth;
@@ -97,7 +97,7 @@ class FrameworkMain
         
         // Create an imgui instance.
         this.imgui = new ImGui( this.gl, this.canvas );
-        if( this.storage != null )
+        if( this.storage !== null )
         {
             this.imgui.loadState( this.storage[ "imguiState" ] );
         }
@@ -140,7 +140,7 @@ class FrameworkMain
         this.lastTime = currentTime;
 
         // Limit deltaTime, so no bit time steps will happen if framerate drops too low.
-        if( this.maxDeltaTime != 0 && deltaTime > this.maxDeltaTime )
+        if( this.maxDeltaTime !== 0 && deltaTime > this.maxDeltaTime )
             deltaTime = this.maxDeltaTime;
 
         this.runningTime += deltaTime;
@@ -188,7 +188,7 @@ class FrameworkMain
         }
 
         this.imgui.draw();
-        if( this.storage != null )
+        if( this.storage !== null )
         {
             this.imgui.saveState( this.storage, "imguiState" );
         }
@@ -199,7 +199,7 @@ class FrameworkMain
         }
 
         // Don't refresh if we're not in focus.
-        if( this.isVisible == false && this.pauseOnFocusLoss == true )
+        if( this.isVisible === false && this.pauseOnFocusLoss === true )
         {
             //console.log( "Pausing refresh" );
             return;
@@ -215,11 +215,11 @@ class FrameworkMain
 
     refresh(force = false)
     {
-        if( force == false && this.autoRefresh )
+        if( force === false && this.autoRefresh )
             return;
 
         // Only allow refresh to be called once for the current frame.
-        if( this.lastTimeRefreshCalled != this.lastTime )
+        if( this.lastTimeRefreshCalled !== this.lastTime )
         {
             this.lastTimeRefreshCalled = this.lastTime;
             requestAnimationFrame( this.updateThis );
@@ -332,7 +332,7 @@ class FrameworkMain
     {
         for( let i=0; i<this.touches.length; i++ )
         {
-            if( this.touches[i].id == id )
+            if( this.touches[i].id === id )
                 return this.touches[i];
         }
 
@@ -343,7 +343,7 @@ class FrameworkMain
     {
         for( let i=0; i<this.touches.length; i++ )
         {
-            if( this.touches[i].id == id )
+            if( this.touches[i].id === id )
             {
                 this.touches.splice( i, 1 );
                 i--;
@@ -357,7 +357,7 @@ class FrameworkMain
         for( let i=0; i<changedTouches.length; i++ )
         {
             // TODO: Fix for GC.
-            let t = new TouchPoint( changedTouches[i].clientX, changedTouches[i].clientY, changedTouches[i].identifier, this.touches.length == 0 );
+            let t = new TouchPoint( changedTouches[i].clientX, changedTouches[i].clientY, changedTouches[i].identifier, this.touches.length === 0 );
             this.touches.push( t );
         }
 
@@ -611,7 +611,7 @@ class FrameworkMain
     {
         this.keyStates[event.key] = 1;
 
-        if( event.repeat == true )
+        if( event.repeat === true )
             return;
 
         let modifierKeys = 0;
@@ -631,7 +631,7 @@ class FrameworkMain
     {
         this.keyStates[event.key] = 0;
 
-        if( event.repeat == true )
+        if( event.repeat === true )
             return;
 
         let modifierKeys = 0;

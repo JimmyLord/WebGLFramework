@@ -1,6 +1,6 @@
 ﻿class Pool
 {
-    constructor(type, numberToAllocate = 1, allowGrowth)
+    constructor(type, numberToAllocate = 1, allowGrowth = true)
     {
         this.type = type;
         this.numAllocated = numberToAllocate;
@@ -16,7 +16,7 @@
 
     getFromPool()
     {
-        if( this.numInPool == 0 )
+        if( this.numInPool === 0 )
         {
             console.log( "Pool empty!" );
             if( this.allowGrowth )
@@ -399,7 +399,7 @@ class ImGui
         
         for( let key in this.windows )
         {
-            if( this.windows[key].saveState == true )
+            if( this.windows[key].saveState === true )
             {
                 state.windows[key] = {};
                 state.windows[key].position = this.windows[key].position;
@@ -433,7 +433,7 @@ class ImGui
             if( this.windows[key].activeThisFrame && this.windows[key].takesInput &&
                 this.windows[key].rect.contains( this.mousePosition ) )
             {
-                if( this.mouseButtons[0] == false || this.ownsMouse == true )
+                if( this.mouseButtons[0] === false || this.ownsMouse === true )
                 {
                     this.isHoveringWindow = true;
                 }
@@ -468,7 +468,7 @@ class ImGui
         this.lastMousePosition.setF32( this.mousePosition.x, this.mousePosition.y );
 
         this.mouseDoubleClickedThisFrame[0] = false;
-        if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
+        if( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
         {
             if( this.currentTime - this.lastTimeMouseClicked[0] < this.doubleClickTime )
             {
@@ -487,13 +487,13 @@ class ImGui
             {
                 this.windowHovered = this.windows[key];
 
-                if( this.mouseButtons[0] == false || this.ownsMouse == true )
+                if( this.mouseButtons[0] === false || this.ownsMouse === true )
                 {
                     this.isHoveringWindow = true;
                     this.ownsMouse = true;
                 }
 
-                if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
+                if( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
                 {
                     if( key.startsWith( "__Popup__" ) )
                     {
@@ -503,7 +503,7 @@ class ImGui
                     this.windowBeingMoved = this.windows[key];
                 }
 
-                if( this.mouseButtons[1] == true && this.oldMouseButtons[1] == false ) // Middle button clicked.
+                if( this.mouseButtons[1] === true && this.oldMouseButtons[1] === false ) // Middle button clicked.
                 {
                     this.forceResize( this.windows[key] );
                     this.markStateDirty();
@@ -512,7 +512,7 @@ class ImGui
 
             // If this window didn't have a size, resize it to the biggest size it's been.
             this.activeWindow = this.windows[key];
-            if( this.activeWindow.size.x == 0 )
+            if( this.activeWindow.size.x === 0 )
             {
                 this.forceResize( this.activeWindow );
             }
@@ -523,20 +523,20 @@ class ImGui
             this.windows[key].previousLineEndPosition.setF32( 0, 0 );
         }
 
-        if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
+        if( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
         {
-            if( popupClicked == false )
+            if( popupClicked === false )
             {
                 this.closeAllMenus();
             }
         }
 
-        if( this.mouseButtons[0] == true && this.isHoveringWindow == false )
+        if( this.mouseButtons[0] === true && this.isHoveringWindow === false )
         {
             this.ownsMouse = false;
         }
 
-        if( this.mouseButtons[0] == false ) // Not held.
+        if( this.mouseButtons[0] === false ) // Not held.
         {
             if( this.windowMoved )
             {
@@ -554,7 +554,7 @@ class ImGui
         }
 
         // Handle collapse or expand if window title double clicked.
-        if( this.isHoveringControl == false && this.windowBeingMoved != null && this.windowBeingMoved.hasTitle )
+        if( this.isHoveringControl === false && this.windowBeingMoved !== null && this.windowBeingMoved.hasTitle )
         {
             let titleH = this.fontSize.y + this.padding.y*2;
             if( this.mousePosition.y < this.windowBeingMoved.rect.y + titleH )
@@ -568,9 +568,9 @@ class ImGui
         }
 
         // Handle dragging window around.
-        if( this.isHoveringControl == false && this.windowBeingMoved && this.windowBeingMoved.isMovable )
+        if( this.isHoveringControl === false && this.windowBeingMoved && this.windowBeingMoved.isMovable )
         {
-            if( this.mouseChange.x != 0 || this.mouseChange.y != 0 )
+            if( this.mouseChange.x !== 0 || this.mouseChange.y !== 0 )
             {
                 this.windowBeingMoved.position.add( this.mouseChange );
                 this.windowBeingMoved.maxExtents.add( this.mouseChange );
@@ -580,9 +580,9 @@ class ImGui
         }
 
         // Handle resizing window.
-        if( this.isHoveringControl == false && this.windowBeingResized )
+        if( this.isHoveringControl === false && this.windowBeingResized )
         {
-            if( this.mouseChange.x != 0 || this.mouseChange.y != 0 )
+            if( this.mouseChange.x !== 0 || this.mouseChange.y !== 0 )
             {
                 let newSize = this.mousePosition.minus( this.windowBeingResized.position ).plus( this.windowResizeOffset );
                 this.windowBeingResized.size.set( newSize );
@@ -619,7 +619,7 @@ class ImGui
         //}
 
         // Update lastTimeMouseClicked to be able to detect double-clicks above.
-        if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
+        if( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
         {
             this.lastTimeMouseClicked[0] = this.currentTime;
         }
@@ -749,13 +749,13 @@ class ImGui
         gl.enableVertexAttribArray( shader.a_Position );
         gl.vertexAttribPointer( shader.a_Position, 2, gl.FLOAT, false, sizeofVertex, 0 )
 
-        if( shader.a_UV != -1 )
+        if( shader.a_UV !== -1 )
         {
             gl.enableVertexAttribArray( shader.a_UV );
             gl.vertexAttribPointer( shader.a_UV, 2, gl.FLOAT, false, sizeofVertex, 8 )
         }
 
-        if( shader.a_Color != -1 )
+        if( shader.a_Color !== -1 )
         {
             gl.enableVertexAttribArray( shader.a_Color );
             gl.vertexAttribPointer( shader.a_Color, 4, gl.UNSIGNED_BYTE, true, sizeofVertex, 16 )
@@ -769,7 +769,7 @@ class ImGui
 
         gl.uniformMatrix4fv( shader.u_MatProj, false, this.matProj.m )
 
-        if( shader.u_TextureAlbedo != null )
+        if( shader.u_TextureAlbedo !== null )
         {
             let textureUnit = 0;
             gl.activeTexture( gl.TEXTURE0 + textureUnit );
@@ -784,9 +784,9 @@ class ImGui
         // Draw.        
         gl.drawElements( item.primitiveType, indexCount, gl.UNSIGNED_SHORT, 0 );
         
-        if( shader.a_UV != -1 )
+        if( shader.a_UV !== -1 )
             gl.disableVertexAttribArray( shader.a_UV );
-        if( shader.a_Color != -1 )
+        if( shader.a_Color !== -1 )
             gl.disableVertexAttribArray( shader.a_Color );
     }
 
@@ -799,7 +799,7 @@ class ImGui
     {
         let existed = true;
 
-        if( this.windows[name] == undefined )
+        if( this.windows[name] === undefined )
         {
             this.windows[name] = new ImGuiWindow();
             this.windows[name].name = name;
@@ -810,24 +810,24 @@ class ImGui
             existed = false;
         }
 
-        if( onlySetIfNew == false || existed == false )
+        if( onlySetIfNew === false || existed === false )
         {
-            if( position != undefined )
+            if( position !== undefined )
             {
                 this.windows[name].position.set( position );
                 this.windows[name].cursor.set( position );
             }
 
-            if( size != undefined )
+            if( size !== undefined )
                 this.windows[name].size.set( size );
 
-            if( hasTitle != undefined )
+            if( hasTitle !== undefined )
                 this.windows[name].hasTitle = hasTitle;
 
-            if( hasFrame != undefined )
+            if( hasFrame !== undefined )
                 this.windows[name].hasFrame = hasFrame;
 
-            if( takesInput != undefined )
+            if( takesInput !== undefined )
                 this.windows[name].takesInput = takesInput;
         }
     }
@@ -853,7 +853,7 @@ class ImGui
 
         let name = "__mainMenuBar__";
 
-        if( this.windows[name] == undefined )
+        if( this.windows[name] === undefined )
         {
             let windowCount = Object.keys( this.windows ).length;
 
@@ -915,7 +915,7 @@ class ImGui
             this.closeAllMenusWithParent( this.windows["__Popup__" + name] );
         }
 
-        if( pressed || this.activeMenus[name] != undefined )
+        if( pressed || this.activeMenus[name] !== undefined )
         {
             this.closeAllMenusWithParent( this.activeWindow );
             this.activeMenus[name] = {};
@@ -976,7 +976,7 @@ class ImGui
         this.activeWindow.size.x += this.padding.x + this.popupPadding.x;
         this.activeWindow.size.y += this.popupPadding.y;
 
-        if( this.activeWindow.cursor.x == this.activeWindow.position.x )
+        if( this.activeWindow.cursor.x === this.activeWindow.position.x )
         {
             this.activeWindow.cursor.x += this.popupPadding.x;
         }
@@ -1000,7 +1000,7 @@ class ImGui
 
         let expanded = false;
 
-        if( pressed || this.activeMenus[name] != undefined )
+        if( pressed || this.activeMenus[name] !== undefined )
         {
             this.closeAllMenusWithParent( this.activeWindow );
             this.activeMenus[name] = {};
@@ -1053,7 +1053,7 @@ class ImGui
     {
         this.drawList = this.FGDrawList;
 
-        if( this.activeWindow.cursor.x == this.activeWindow.position.x )
+        if( this.activeWindow.cursor.x === this.activeWindow.position.x )
         {
             this.activeWindow.cursor.x += this.popupPadding.x;
         }
@@ -1094,7 +1094,7 @@ class ImGui
     {
         let gl = this.gl;
 
-        if( this.windows[name] == undefined )
+        if( this.windows[name] === undefined )
         {
             let windowCount = Object.keys( this.windows ).length;
 
@@ -1117,7 +1117,7 @@ class ImGui
         }
 
         // If we're adding the window for the first time, add a title and BG.
-        if( this.activeWindow.hasFrame == false )
+        if( this.activeWindow.hasFrame === false )
         {
             let x = this.activeWindow.position.x;
             let y = this.activeWindow.position.y;
@@ -1129,7 +1129,7 @@ class ImGui
         }
         else
         {
-            if( this.activeWindow.cursor.y == this.activeWindow.position.y )
+            if( this.activeWindow.cursor.y === this.activeWindow.position.y )
             {
                 let drawListItem = DrawListItem.getFromPool();
 
@@ -1163,7 +1163,7 @@ class ImGui
                     let t = 1/this.scale; // Border thickness, essentially 1 pixel regardless of UI scale.
                     this.addBoxToDrawListItem( drawListItem, x,    y, t,h, this.color["BGBorder"] ); // Border left.
                     this.addBoxToDrawListItem( drawListItem, x+w-t,y, t,h, this.color["BGBorder"] ); // Border right.
-                    if( this.activeWindow.hasTitle == false )
+                    if( this.activeWindow.hasTitle === false )
                         this.addBoxToDrawListItem( drawListItem, x,y,     w,t, this.color["BGBorder"] ); // Border top.
                     this.addBoxToDrawListItem( drawListItem, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
 
@@ -1259,17 +1259,17 @@ class ImGui
         for( let i=0; i<str.length; i++ )
         {
             let c = str.charCodeAt(i);
-            if( c == 32 ) // Handle spaces.
+            if( c === 32 ) // Handle spaces.
             {
                 x += w;
                 continue;
             }
-            if( c == 97+6 || c == 97+9 || c == 97+15 || c == 97+16 || c == 97+24 ) // g/j/p/q/y
+            if( c === 97+6 || c === 97+9 || c === 97+15 || c === 97+16 || c === 97+24 ) // g/j/p/q/y
                 y += 2;
             // Greek symbols.
-                 if( c == 916 ) c = 130; // Δ
-            else if( c == 952 ) c = 143; // θ
-            else if( c == 969 ) c = 144; // ω
+                 if( c === 916 ) c = 130; // Δ
+            else if( c === 952 ) c = 143; // θ
+            else if( c === 969 ) c = 144; // ω
             else if( c > 150 )
                 console.log( "character not supported: " + c );
             c -= this.font.firstChar;
@@ -1290,7 +1290,7 @@ class ImGui
 
             x += w;
             c += this.font.firstChar;
-            if( c == 97+6 || c == 97+9 || c == 97+15 || c == 97+16 || c == 97+24 ) // g/j/p/q/y
+            if( c === 97+6 || c === 97+9 || c === 97+15 || c === 97+16 || c === 97+24 ) // g/j/p/q/y
                 y -= 2;
             count++;
         }
@@ -1349,14 +1349,14 @@ class ImGui
         let rect = ImGuiRect.getFromPool( x, y, w, h );
         if( rect.contains( this.mousePosition ) )
         {
-            if( this.activeWindow == this.windowHovered )
+            if( this.activeWindow === this.windowHovered )
             {
                 isHovering = true;
                 color = this.color["ButtonHovered"];
 
                 // Store if the button was clicked this frame.
-                if( (this.mouseButtons[0] == true && this.oldMouseButtons[0] == false) ||
-                    (allowPressIfMouseAlreadyHeld && this.mouseButtons[0] == true) )
+                if( (this.mouseButtons[0] === true && this.oldMouseButtons[0] === false) ||
+                    (allowPressIfMouseAlreadyHeld && this.mouseButtons[0] === true) )
                 {
                     //if( this.buttonHeld != label && this.oldMouseButtons[0] == true )
                     //    debugger;
@@ -1364,7 +1364,7 @@ class ImGui
                     this.buttonHeld = label;
                 }
 
-                if( this.buttonHeld == label )
+                if( this.buttonHeld === label )
                 {
                     color = this.color["ButtonPressed"];
                 }
@@ -1397,12 +1397,12 @@ class ImGui
                     triggered = true;
 
                 // If mouse released while button is held.
-                if( this.mouseButtons[0] == false && this.oldMouseButtons[0] == true )
+                if( this.mouseButtons[0] === false && this.oldMouseButtons[0] === true )
                     triggered = true;
             }
 
             // If mouse button is up, stop considering this button as held down.
-            if( this.mouseButtons[0] == false )
+            if( this.mouseButtons[0] === false )
                 this.buttonHeld = null;
         }
 
@@ -1452,12 +1452,12 @@ class ImGui
         let rect = ImGuiRect.getFromPool( x, y, w, h );
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
-            if( this.activeWindow == this.windowHovered )
+            if( this.activeWindow === this.windowHovered )
             {
                 isHovering = true;
                 color = this.color["ButtonHovered"];
 
-                if( this.mouseButtons[0] == true ) // is pressing.
+                if( this.mouseButtons[0] === true ) // is pressing.
                 {
                     color = this.color["ButtonPressed"];
                 }
@@ -1484,7 +1484,7 @@ class ImGui
         
         // Check if was pressed this frame.
         if( isHovering &&
-            ( ( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) ) )
+            ( ( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) ) )
         {
             this.isHoveringControl = true;
             this.windowBeingMoved = null;
@@ -1533,14 +1533,14 @@ class ImGui
             let rect = ImGuiRect.getFromPool( x, y, w, h );
             if( rect.contains( this.mousePosition ) ) // is hovering.
             {
-                if( this.activeWindow == this.windowHovered )
+                if( this.activeWindow === this.windowHovered )
                 {
                     isHovering = true;
                 }
             }
             ImGuiRect.returnToPool( rect );
 
-            if( this.controlInEditMode == label )
+            if( this.controlInEditMode === label )
             {
                 color = this.color["TextBoxSelected"];
             }
@@ -1548,7 +1548,7 @@ class ImGui
             {
                 color = this.color["ButtonHovered"];
 
-                if( this.mouseButtons[0] == true ) // is pressing.
+                if( this.mouseButtons[0] === true ) // is pressing.
                 {
                     color = this.color["ButtonPressed"];
                 }
@@ -1558,7 +1558,7 @@ class ImGui
         }
 
         // Calculate some values for the text string.
-        if( this.controlInEditMode == label )
+        if( this.controlInEditMode === label )
         {
             valueAsString = this.activeControlTextBuffer.join( "" );
         }
@@ -1566,7 +1566,7 @@ class ImGui
         let textStartPoint = boxWidth/2 - textWidth/2;
 
         // Draw a highlight around the selected text by drawing a second bg block.
-        if( this.controlInEditMode == label && this.activeControlTextBufferSelected == true )
+        if( this.controlInEditMode === label && this.activeControlTextBufferSelected === true )
         {
             let h = buttonTopPadding + this.fontSize.y + this.padding.y;
 
@@ -1584,7 +1584,7 @@ class ImGui
             this.activeWindow.cursor.x += textStartPoint;
 
             // Add a blinking cursor if we're editing this piece of text.
-            if( this.controlInEditMode == label )
+            if( this.controlInEditMode === label )
             {
                 if( this.currentTime % 1.0 < 0.5 )
                     valueAsString += String.fromCharCode( 31 );
@@ -1615,7 +1615,7 @@ class ImGui
 
         // Check if the control was pressed this frame.
         if( isHovering &&
-            ( ( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) ) )
+            ( ( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) ) )
         {
             this.activeControl = label;
             this.isHoveringControl = true;
@@ -1626,16 +1626,16 @@ class ImGui
         let doneWithEditMode = false;
 
         // If we're not hovering the control and mouse is clicked, exit edit mode.
-        if( isHovering == false )
+        if( isHovering === false )
         {
-            if( this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
+            if( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
                 doneWithEditMode = true;
         }
 
         // If hovering and double-clicked, switch to edit mode.
-        if( isHovering && this.mouseButtons[0] == true && this.oldMouseButtons[0] == false ) // Left button clicked.
+        if( isHovering && this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
         {
-            if( this.controlInEditMode != label && this.mouseDoubleClickedThisFrame[0] )
+            if( this.controlInEditMode !== label && this.mouseDoubleClickedThisFrame[0] )
             {
                 this.controlInEditMode = label;
                 this.activeControlTextBuffer = valueAsString.split( "" );
@@ -1644,11 +1644,11 @@ class ImGui
         }
 
         // If this control is in edit mode, empty the unusedKeyBuffer into it.
-        if( this.controlInEditMode == label )
+        if( this.controlInEditMode === label )
         {
             for( let i=0; i<this.unusedKeyBuffer.length; i++ )
             {
-                if( this.unusedKeyBuffer[i] == "Backspace" )
+                if( this.unusedKeyBuffer[i] === "Backspace" )
                 {
                     if( this.activeControlTextBufferSelected )
                     {
@@ -1661,11 +1661,11 @@ class ImGui
                         this.activeControlTextBuffer.length = this.activeControlTextBuffer.length-1;
                     }
                 }
-                else if( this.unusedKeyBuffer[i] == "Enter" )
+                else if( this.unusedKeyBuffer[i] === "Enter" )
                 {
                     doneWithEditMode = true;
                 }
-                else if( this.unusedKeyBuffer[i].length == 1 )
+                else if( this.unusedKeyBuffer[i].length === 1 )
                 {
                     if( this.activeControlTextBufferSelected )
                     {
@@ -1685,7 +1685,7 @@ class ImGui
             {
                 let string = this.activeControlTextBuffer.join( "" );
                 let newValue = Number( string );
-                if( isNaN( newValue ) == false )
+                if( isNaN( newValue ) === false )
                     value = newValue;
             }
 
@@ -1697,17 +1697,17 @@ class ImGui
         }
 
         // If mouse held.
-        if( this.activeControl == label &&
-            this.mouseButtons[0] == true && this.oldMouseButtons[0] == true )
+        if( this.activeControl === label &&
+            this.mouseButtons[0] === true && this.oldMouseButtons[0] === true )
         {
             value += this.mouseChangeUnscaled.x * increment;
         }
 
-        if( minLimit != undefined ) { if( value < minLimit ) value = minLimit; }
-        if( maxLimit != undefined ) { if( value > maxLimit ) value = maxLimit; }
+        if( minLimit !== undefined ) { if( value < minLimit ) value = minLimit; }
+        if( maxLimit !== undefined ) { if( value > maxLimit ) value = maxLimit; }
 
         let changed = false;
-        if( value != startValue )
+        if( value !== startValue )
         {
             changed = true;
             this.needsRefresh = true;
@@ -1761,8 +1761,8 @@ class DrawListItem
             this.set( primitiveType, rect );
 
         // Set verts and indices sizes to the worst case imgui currently needs.
-        this.vertComponents = new Array( 32 * 8 );
-        this.indices = new Array( 48 );
+        this.vertComponents = new Array( 56 * 8 );
+        this.indices = new Array( 80 );
         this.numVertComponents = 0;
         this.numIndices = 0;
     }
@@ -1782,10 +1782,10 @@ class DrawListItem
     pushVert(x,y,u,v,r,g,b,a)
     {
         let spaceNeeded = (this.numVertComponents + 8) - this.vertComponents.length;
-        if( spaceNeeded > 0 )
-        {
-            console.log( "Increasing drawListItem's verts by " + spaceNeeded );
-        }
+        //if( spaceNeeded > 0 )
+        //{
+        //    console.log( "Increasing drawListItem's verts by " + spaceNeeded );
+        //}
         while( spaceNeeded > 0 )
         {
             this.vertComponents.push(0);
@@ -1806,9 +1806,9 @@ class DrawListItem
 
     pushIndex(index)
     {
-        if( this.numIndices == this.indices.length )
+        if( this.numIndices === this.indices.length )
         {
-            console.log( "Increasing drawListItem's indices by " + 1 );
+            //console.log( "Increasing drawListItem's indices by " + 1 );
             this.indices.push( index );
         }
         else

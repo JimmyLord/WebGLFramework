@@ -34,7 +34,7 @@ class Camera
         try { state = JSON.parse( jsonString ); }
         catch( e ) { return; }
 
-        if( state == null )
+        if( state === null )
             return;
 
         this.isOrtho = state.isOrtho;
@@ -77,7 +77,7 @@ class Camera
     {
         let changed = false;
 
-        if( this.oldMousePos.x != -1 && this.panning )
+        if( this.oldMousePos.x !== -1 && this.panning )
         {
             this.position.x += (this.oldMousePos.x - x) * 0.01 * (this.zoom * this.desiredHeight / 10.0);
             this.position.y += (this.oldMousePos.y - y)*-1 * 0.01 * (this.zoom * this.desiredHeight / 10.0);
@@ -90,13 +90,13 @@ class Camera
 
     onMouseDown(buttonID, x, y)
     {
-        if( buttonID == 1 )
+        if( buttonID === 1 )
             this.panning = true;
     }
 
     onMouseUp(buttonID, x, y)
     {
-        if( buttonID == 1 )
+        if( buttonID === 1 )
             this.panning = false;
     }
 
@@ -120,7 +120,7 @@ class Camera
 
     convertScreenToWorld(canvas, screenX, screenY)
     {
-        if( this.isOrtho == false )
+        if( this.isOrtho === false )
             return vec2.getTemp( 0, 0 );
 
         let orthoScaleX = this.matProj.m[0];
@@ -142,7 +142,7 @@ class Camera
 
     convertWorldToScreen(canvas, worldX, worldY)
     {
-        if( this.isOrtho == false )
+        if( this.isOrtho === false )
             return vec2.getTemp( 0, 0 );
 
         let orthoScaleX = this.matProj.m[0];

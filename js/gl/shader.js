@@ -58,7 +58,7 @@ class Shader
         gl.shaderSource( shader, source );
         gl.compileShader( shader );
         let success = gl.getShaderParameter( shader, gl.COMPILE_STATUS );
-        if( success == false )
+        if( success === false )
         {
             console.log( gl.getShaderInfoLog( shader ) );
             gl.deleteShader( shader );
@@ -76,7 +76,7 @@ class Shader
         gl.linkProgram( program );
         
         let success = gl.getProgramParameter( program, gl.LINK_STATUS );
-        if( success == false )
+        if( success === false )
         {
             console.log( gl.getProgramInfoLog( program ) );
             gl.deleteProgram( program );
@@ -88,7 +88,7 @@ class Shader
 
     cacheAttributeAndUniformLocations(program)
     {
-        if( program == null )
+        if( program === null )
             return;
 
         let gl = this.gl;
