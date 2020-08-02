@@ -1,7 +1,8 @@
 class Entity
 {
     // Temp vars to avoid GC.
-    static matWorld = new mat4;
+    // Temp moved to bottom of file as globals until closure compiler supports static properties.
+    //static matWorld = new mat4();
 
     constructor(position, rotation, scale, mesh, material)
     {
@@ -21,9 +22,11 @@ class Entity
 
     draw(camera, lights)
     {
-        Entity.matWorld.setIdentity();
-        Entity.matWorld.createSRT( this.scale, this.rotation, this.position );
+        Entity_matWorld.setIdentity();
+        Entity_matWorld.createSRT( this.scale, this.rotation, this.position );
 
-        this.mesh.draw( camera, Entity.matWorld, this.material, lights );
+        this.mesh.draw( camera, Entity_matWorld, this.material, lights );
     }
 }
+
+let Entity_matWorld = new mat4();

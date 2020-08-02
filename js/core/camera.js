@@ -11,8 +11,8 @@ class Camera
         this.desiredHeight = orthoWorldHeight;
         this.aspectRatio = aspectRatio;
 
-        this.matView = new mat4;
-        this.matProj = new mat4;
+        this.matView = new mat4();
+        this.matProj = new mat4();
 
         // Ortho 2D camera settings.
         this.zoom = 1;

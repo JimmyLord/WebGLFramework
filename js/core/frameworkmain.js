@@ -77,7 +77,7 @@ class FrameworkMain
         // Set the size of the canvas.
         this.fullFrame = false;
         if( document.currentScript.getAttribute( "fullFrame" ) === "true" ||
-            document.currentScript.getAttribute( "fullFrame" ) === 1 )
+            document.currentScript.getAttribute( "fullFrame" ) === "1" )
         {
             this.fullFrame = true;
             this.canvas.width = window.innerWidth;

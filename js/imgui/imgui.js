@@ -1744,21 +1744,24 @@ class ImGuiWindow
 
 class DrawListItem
 {
-    static pool = new Pool( DrawListItem, 100, true );
-    static getFromPool(primitiveType, rect)
+    //static pool = new Pool( DrawListItem, 100, true );
+    static getFromPool(primitiveType = null, rect = null)
     {
-        let obj = DrawListItem.pool.getFromPool();
+        let obj = DrawListItem_pool.getFromPool();
         obj.clear();
-        if( primitiveType !== undefined )
+        if( primitiveType !== null )
             obj.set( primitiveType, rect ); 
         return obj;
     }
-    static returnToPool(obj) { return DrawListItem.pool.returnToPool( obj ); }
+    static returnToPool(obj) { return DrawListItem_pool.returnToPool( obj ); }
 
     constructor(primitiveType, rect)
     {
         if( primitiveType !== undefined )
             this.set( primitiveType, rect );
+
+        this.primitiveType = 0;
+        this.rect = null;
 
         // Set verts and indices sizes to the worst case imgui currently needs.
         this.vertComponents = new Array( 56 * 8 );
@@ -1821,14 +1824,14 @@ class DrawListItem
 
 class ImGuiRect
 {
-    static pool = new Pool( ImGuiRect, 1000, true );
+    //static pool = new Pool( ImGuiRect, 1000, true );
     static getFromPool(x,y,w,h)
     {
-        let obj = ImGuiRect.pool.getFromPool();
+        let obj = ImGuiRect_pool.getFromPool();
         obj.set(x,y,w,h); 
         return obj;
     }
-    static returnToPool(obj) { return ImGuiRect.pool.returnToPool( obj ); }
+    static returnToPool(obj) { return ImGuiRect_pool.returnToPool( obj ); }
 
     constructor(x,y,w,h)
     {
@@ -1871,3 +1874,6 @@ class FontDef
         this.charH = charSize.y / (charSize.y+padding.y);
     }
 }
+
+let DrawListItem_pool = new Pool( DrawListItem, 100, true );
+let ImGuiRect_pool = new Pool( ImGuiRect, 1000, true );

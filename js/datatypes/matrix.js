@@ -3,13 +3,15 @@
 // m[ 1] m[ 5] m[ 9] m[13]  --\   0 Sy  0 Ty
 // m[ 2] m[ 6] m[10] m[14]  --/   0  0 Sz Tz
 // m[ 3] m[ 7] m[11] m[15]        0  0  0  1
+
 class mat4
 {
     // Temp vars to avoid GC.
     // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
-    static rotMat = new mat4;
-    static adjugateMatrix = new mat4;
-    static tempMat4 = new mat4;
+    // Temp moved to bottom of file as globals until closure compiler supports static properties.
+    //static rotMat = new mat4();
+    //static adjugateMatrix = new mat4();
+    //static tempMat4 = new mat4();
 
     constructor()
     {
@@ -77,27 +79,27 @@ class mat4
             zs = z * sinAngle;
             oneMinusCos = 1 - cosAngle;
     
-            mat4.rotMat.m[ 0] = (oneMinusCos * xx) + cosAngle;
-            mat4.rotMat.m[ 1] = (oneMinusCos * xy) - zs;
-            mat4.rotMat.m[ 2] = (oneMinusCos * zx) + ys;
-            mat4.rotMat.m[ 3] = 0; 
+            mat4_rotMat.m[ 0] = (oneMinusCos * xx) + cosAngle;
+            mat4_rotMat.m[ 1] = (oneMinusCos * xy) - zs;
+            mat4_rotMat.m[ 2] = (oneMinusCos * zx) + ys;
+            mat4_rotMat.m[ 3] = 0; 
     
-            mat4.rotMat.m[ 4] = (oneMinusCos * xy) + zs;
-            mat4.rotMat.m[ 5] = (oneMinusCos * yy) + cosAngle;
-            mat4.rotMat.m[ 6] = (oneMinusCos * yz) - xs;
-            mat4.rotMat.m[ 7] = 0;
+            mat4_rotMat.m[ 4] = (oneMinusCos * xy) + zs;
+            mat4_rotMat.m[ 5] = (oneMinusCos * yy) + cosAngle;
+            mat4_rotMat.m[ 6] = (oneMinusCos * yz) - xs;
+            mat4_rotMat.m[ 7] = 0;
     
-            mat4.rotMat.m[ 8] = (oneMinusCos * zx) - ys;
-            mat4.rotMat.m[ 9] = (oneMinusCos * yz) + xs;
-            mat4.rotMat.m[10] = (oneMinusCos * zz) + cosAngle;
-            mat4.rotMat.m[11] = 0; 
+            mat4_rotMat.m[ 8] = (oneMinusCos * zx) - ys;
+            mat4_rotMat.m[ 9] = (oneMinusCos * yz) + xs;
+            mat4_rotMat.m[10] = (oneMinusCos * zz) + cosAngle;
+            mat4_rotMat.m[11] = 0; 
     
-            mat4.rotMat.m[12] = 0;
-            mat4.rotMat.m[13] = 0;
-            mat4.rotMat.m[14] = 0;
-            mat4.rotMat.m[15] = 1;
+            mat4_rotMat.m[12] = 0;
+            mat4_rotMat.m[13] = 0;
+            mat4_rotMat.m[14] = 0;
+            mat4_rotMat.m[15] = 1;
     
-            let temp = mat4.rotMat.multiplyByMatrix( this );
+            let temp = mat4_rotMat.multiplyByMatrix( this );
             this.set( temp );
         }
     }
@@ -126,7 +128,7 @@ class mat4
 
     multiplyByScalar(o)
     {
-        let tempMat = mat4.tempMat4;
+        let tempMat = mat4_tempMat4;
 
         tempMat.m[ 0] = this.m[ 0] * o; tempMat.m[ 4] = this.m[ 4] * o; tempMat.m[ 8] = this.m[ 8] * o; tempMat.m[12] = this.m[12] * o;
         tempMat.m[ 1] = this.m[ 1] * o; tempMat.m[ 5] = this.m[ 5] * o; tempMat.m[ 9] = this.m[ 9] * o; tempMat.m[13] = this.m[13] * o;
@@ -138,7 +140,7 @@ class mat4
 
     multiplyByMatrix(o)
     {
-        let tempMat = mat4.tempMat4;
+        let tempMat = mat4_tempMat4;
 
         tempMat.m[ 0] = this.m[ 0] * o.m[ 0] + this.m[ 4] * o.m[ 1] + this.m[ 8] * o.m[ 2] + this.m[12] * o.m[ 3];
         tempMat.m[ 1] = this.m[ 1] * o.m[ 0] + this.m[ 5] * o.m[ 1] + this.m[ 9] * o.m[ 2] + this.m[13] * o.m[ 3];
@@ -290,7 +292,7 @@ class mat4
             return false;
 
         // Compute adjugate matrix.
-        let am = mat4.adjugateMatrix;
+        let am = mat4_adjugateMatrix;
         am.m[ 0] =  this.m[ 5] * C5 - this.m[ 6] * C4 + this.m[ 7] * C3;
         am.m[ 1] = -this.m[ 1] * C5 + this.m[ 2] * C4 - this.m[ 3] * C3;
         am.m[ 2] =  this.m[13] * S5 - this.m[14] * S4 + this.m[15] * S3;
@@ -319,9 +321,13 @@ class mat4
 
     getInverse(tolerance = 0.0001)
     {
-        let invMat = mat4.tempMat4;
+        let invMat = mat4_tempMat4;
         invMat.set( this );
         invMat.inverse( tolerance );
         return invMat;
     }
 }
+
+let mat4_rotMat = new mat4();
+let mat4_adjugateMatrix = new mat4();
+let mat4_tempMat4 = new mat4();

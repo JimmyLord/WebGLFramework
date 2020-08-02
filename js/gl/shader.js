@@ -20,7 +20,7 @@ class Shader
         this.u_LightPos = new Array( this.maxLights );
         this.u_LightColor = new Array( this.maxLights );
         this.u_LightRadius = new Array( this.maxLights );
-        for( let i; i<this.maxLights; i++ )
+        for( let i=0; i<this.maxLights; i++ )
         {
             this.u_LightPos[i] = null;
             this.u_LightColor[i] = null;
@@ -106,7 +106,7 @@ class Shader
         this.u_TextureAlbedo = gl.getUniformLocation( program, "u_TextureAlbedo" );
 
         // Lights.
-        for( let i; i<this.maxLights; i++ )
+        for( let i=0; i<this.maxLights; i++ )
         {
             this.u_LightPos[i] = gl.getUniformLocation( program, "u_LightPosition[" + i + "]" );
             this.u_LightColor[i] = gl.getUniformLocation( program, "u_LightColor[" + i + "]" );

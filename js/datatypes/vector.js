@@ -4,16 +4,16 @@ class vec2
     // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
     // Bigger warning: This is a terrible idea and will lead to very hard to debug issues.
     //                 I'm keeping it for now since I'm trying to minimize garbage collection.
-    static tempVecs = [ new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2 ];
-    static currentTempIndex = 0;
+    //static tempVecs = [ new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2 ];
+    //static currentTempIndex = 0;
     static getTemp(x = 0, y = x)
     {
-        let t = vec2.tempVecs[vec2.currentTempIndex];
+        let t = vec2_tempVecs[vec2_currentTempIndex];
         t.x = x;
         t.y = y;
-        vec2.currentTempIndex++;
-        if( vec2.currentTempIndex === 10 )
-            vec2.currentTempIndex = 0;
+        vec2_currentTempIndex++;
+        if( vec2_currentTempIndex === 10 )
+            vec2_currentTempIndex = 0;
         return t;
     }
 
@@ -96,20 +96,20 @@ class vec3
 {
     // Temp vars to avoid GC.
     // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
-    static tempVecs = [
-        new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
-        new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3
-    ];
-    static currentTempIndex = 0;
+    //static tempVecs = [
+    //    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
+    //    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3
+    //];
+    //static currentTempIndex = 0;
     static getTemp(x = 0, y = x, z = x)
     {
-        let t = vec3.tempVecs[vec3.currentTempIndex];
+        let t = vec3_tempVecs[vec3_currentTempIndex];
         t.x = x;
         t.y = y;
         t.z = z;
-        vec3.currentTempIndex++;
-        if( vec3.currentTempIndex === 20 )
-            vec3.currentTempIndex = 0;
+        vec3_currentTempIndex++;
+        if( vec3_currentTempIndex === 20 )
+            vec3_currentTempIndex = 0;
         return t;
     }
 
@@ -193,18 +193,18 @@ class vec4
 {
     // Temp vars to avoid GC.
     // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
-    static tempVecs = [ new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4 ];
-    static currentTempIndex = 0;
+    //static tempVecs = [ new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4 ];
+    //static currentTempIndex = 0;
     static getTemp(x = 0, y = x, z = x, w = x)
     {
-        let t = vec4.tempVecs[vec4.currentTempIndex];
+        let t = vec4_tempVecs[vec4_currentTempIndex];
         t.x = x;
         t.y = y;
         t.z = z;
         t.w = w;
-        vec4.currentTempIndex++;
-        if( vec4.currentTempIndex === 10 )
-            vec4.currentTempIndex = 0;
+        vec4_currentTempIndex++;
+        if( vec4_currentTempIndex === 10 )
+            vec4_currentTempIndex = 0;
         return t;
     }
 
@@ -290,3 +290,13 @@ class vec4
         return vec3.getTemp( this.x, this.y, this.z );
     }
 }
+
+let vec2_tempVecs = [ new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2 ];
+let vec2_currentTempIndex = 0;
+let vec3_tempVecs = [
+    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
+    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3
+];
+let vec3_currentTempIndex = 0;
+let vec4_tempVecs = [ new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4 ];
+let vec4_currentTempIndex = 0;
