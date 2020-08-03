@@ -463,8 +463,8 @@ class ImGui
 
         this.mousePosition.divideBy( this.scale );
 
-        this.mouseChange = this.mousePosition.minus( this.lastMousePosition );
-        this.mouseChangeUnscaled = this.mouseChange.times( this.scale );
+        this.mouseChange.set( this.mousePosition.minus( this.lastMousePosition ) );
+        this.mouseChangeUnscaled.set( this.mouseChange.times( this.scale ) );
         this.lastMousePosition.setF32( this.mousePosition.x, this.mousePosition.y );
 
         this.mouseDoubleClickedThisFrame[0] = false;
@@ -1628,12 +1628,12 @@ class ImGui
         // If we're not hovering the control and mouse is clicked, exit edit mode.
         if( isHovering === false )
         {
-            if( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
+            if( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false )
                 doneWithEditMode = true;
         }
 
         // If hovering and double-clicked, switch to edit mode.
-        if( isHovering && this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
+        if( isHovering && this.mouseButtons[0] === true && this.oldMouseButtons[0] === false )
         {
             if( this.controlInEditMode !== label && this.mouseDoubleClickedThisFrame[0] )
             {
