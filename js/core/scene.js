@@ -15,7 +15,7 @@ class Scene
         if( this.camera === null )
         {
             this.orthoHeight = 2;
-            this.camera = new Camera( new vec3(0, 0, -3), true, this.orthoHeight, this.framework.canvas.width / this.framework.canvas.height );
+            this.camera = new Camera( new vec3(0, 0, -3), true, this.orthoHeight, this.framework );
         }
 
         if( loadDefaultResources )
@@ -75,5 +75,10 @@ class Scene
     add(entity)
     {
         this.entities.push( entity );
+    }
+
+    onResize()
+    {
+        this.camera.onResize();
     }
 }

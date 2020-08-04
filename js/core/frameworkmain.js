@@ -298,6 +298,12 @@ class FrameworkMain
             this.canvas.style.width = (this.canvas.width / window.devicePixelRatio) + 'px';
             this.canvas.style.height = (this.canvas.height / window.devicePixelRatio) + 'px';
         }
+
+        // Let app know the canvas was resized.
+        if( this.runnableObject.onResize )
+        {
+            this.runnableObject.onResize();
+        }
     }
 
     onPopState(event)

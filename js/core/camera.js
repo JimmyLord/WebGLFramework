@@ -1,7 +1,9 @@
 class Camera
 {
-    constructor(position, isOrtho, orthoWorldHeight, aspectRatio)
+    constructor(position, isOrtho, orthoWorldHeight, framework)
     {
+        this.framework = framework;
+
         this.isOrtho = isOrtho;
 
         this.position = new vec3( position.x, position.y, position.z );
@@ -9,7 +11,7 @@ class Camera
         this.scale = new vec3( 1 );
 
         this.desiredHeight = orthoWorldHeight;
-        this.aspectRatio = aspectRatio;
+        this.aspectRatio = this.framework.canvas.width / this.framework.canvas.height;
 
         this.matView = new mat4();
         this.matProj = new mat4();
@@ -20,6 +22,8 @@ class Camera
         // Temp values for mouse/keyboard interaction.
         this.panning = false;
         this.oldMousePos = new vec2( -1, -1 );
+
+        this.recalculateProjection();
     }
 
     free()
@@ -58,7 +62,10 @@ class Camera
     update()
     {
         this.matView.createViewSRT( this.scale, this.rotation, this.position );
+    }
 
+    recalculateProjection()
+    {
         if( this.isOrtho )
         {
             // If orthographic.
@@ -71,6 +78,13 @@ class Camera
             // If perspective.
             this.matProj.createPerspectiveVFoV( 45.0, this.aspectRatio, 0.01, 100.0 );
         }
+    }
+
+    onResize()
+    {
+        this.aspectRatio = this.framework.canvas.width / this.framework.canvas.height;
+
+        this.recalculateProjection();
     }
 
     onMouseMove(x, y)

@@ -39,6 +39,7 @@ class MainProject
         this.scene.lights.push( new Light( new vec3(-4,0, 9), new color(0,0,1,1), 6 ) );
 
         this.scene.camera.isOrtho = false;
+        this.scene.camera.recalculateProjection();
 
         this.loadState();
     }
@@ -136,6 +137,7 @@ class MainProject
         if( imgui.checkbox( "isOrtho", this.scene.camera.isOrtho ) )
         {
             this.scene.camera.isOrtho = !this.scene.camera.isOrtho;
+            this.scene.camera.recalculateProjection();
             this.stateIsDirty = true;
         }
         [this.scene.orthoHeight] = imgui.dragNumber( "OrthoHeight:", this.scene.orthoHeight, 0.01, 2 );
@@ -147,6 +149,11 @@ class MainProject
     draw()
     {
         this.scene.draw( this.scene.camera );
+    }
+
+    onResize()
+    {
+        this.scene.onResize();
     }
 
     onBeforeUnload()
