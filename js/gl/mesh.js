@@ -50,14 +50,14 @@ class Mesh
         this.primitiveType = gl.POINTS;
     }
 
-    createTriangle(size)
+    createTriangle(width, height)
     {
         let gl = this.gl;
 
         let numVerts = 3;
         let sizeofFloat32 = 4;
         let sizeofUint8 = 1;
-        let vertexPositions = [ -size.x/2,-size.y/2,0,   0,size.y/2,0,   size.x/2,-size.y/2,0, ];
+        let vertexPositions = [ -width/2,-height/2,0,   0,height/2,0,   width/2,-height/2,0, ];
         let vertexUVs = [ 0,0,   0.5,1,   1,0, ];
 
         // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
@@ -84,7 +84,7 @@ class Mesh
         this.primitiveType = gl.TRIANGLES;
     }
 
-    createBox(size)
+    createBox(width, height)
     {
         let gl = this.gl;
 
@@ -94,10 +94,10 @@ class Mesh
         let sizeofUint8 = 1;
         let sizeofUnsignedShort = 2;
         let vertexPosUVColor = [
-                -size.x/2, -size.y/2, 0,    0, 0,   0, 0, 128, 255,
-                -size.x/2,  size.y/2, 0,    0, 1,   0, 0, 128, 255,
-                 size.x/2,  size.y/2, 0,    1, 1,   0, 0, 128, 255,
-                 size.x/2, -size.y/2, 0,    1, 0,   0, 0, 128, 255,
+                -width/2, -height/2, 0,    0, 0,   0, 0, 128, 255,
+                -width/2,  height/2, 0,    0, 1,   0, 0, 128, 255,
+                 width/2,  height/2, 0,    1, 1,   0, 0, 128, 255,
+                 width/2, -height/2, 0,    1, 0,   0, 0, 128, 255,
             ];
 
         let indices = [
@@ -150,7 +150,7 @@ class Mesh
         this.primitiveType = gl.TRIANGLES;
     }
 
-    createCube(size)
+    createCube(width, height, depth)
     {
         let gl = this.gl;
 
@@ -161,35 +161,35 @@ class Mesh
         let sizeofUnsignedShort = 2;
         let vertexPosUVNormalColor = [
                 // Front
-                -size.x/2, -size.y/2, -size.z/2,   0,0,   0,0,-1,   0,0,128,255,
-                -size.x/2,  size.y/2, -size.z/2,   0,1,   0,0,-1,   0,0,128,255,
-                 size.x/2,  size.y/2, -size.z/2,   1,1,   0,0,-1,   0,0,128,255,
-                 size.x/2, -size.y/2, -size.z/2,   1,0,   0,0,-1,   0,0,128,255,
+                -width/2, -height/2, -depth/2,   0,0,   0,0,-1,   0,0,128,255,
+                -width/2,  height/2, -depth/2,   0,1,   0,0,-1,   0,0,128,255,
+                 width/2,  height/2, -depth/2,   1,1,   0,0,-1,   0,0,128,255,
+                 width/2, -height/2, -depth/2,   1,0,   0,0,-1,   0,0,128,255,
                 // Back
-                -size.x/2, -size.y/2,  size.z/2,   0,0,   0,0,1,    0,0,255,255,
-                -size.x/2,  size.y/2,  size.z/2,   0,1,   0,0,1,    0,0,255,255,
-                 size.x/2,  size.y/2,  size.z/2,   1,1,   0,0,1,    0,0,255,255,
-                 size.x/2, -size.y/2,  size.z/2,   1,0,   0,0,1,    0,0,255,255,
+                -width/2, -height/2,  depth/2,   0,0,   0,0,1,    0,0,255,255,
+                -width/2,  height/2,  depth/2,   0,1,   0,0,1,    0,0,255,255,
+                 width/2,  height/2,  depth/2,   1,1,   0,0,1,    0,0,255,255,
+                 width/2, -height/2,  depth/2,   1,0,   0,0,1,    0,0,255,255,
                 // Left
-                -size.x/2, -size.y/2, -size.z/2,   0,0,   -1,0,0,   128,0,0,255,
-                -size.x/2,  size.y/2, -size.z/2,   0,1,   -1,0,0,   128,0,0,255,
-                -size.x/2,  size.y/2,  size.z/2,   1,1,   -1,0,0,   128,0,0,255,
-                -size.x/2, -size.y/2,  size.z/2,   1,0,   -1,0,0,   128,0,0,255,
+                -width/2, -height/2, -depth/2,   0,0,   -1,0,0,   128,0,0,255,
+                -width/2,  height/2, -depth/2,   0,1,   -1,0,0,   128,0,0,255,
+                -width/2,  height/2,  depth/2,   1,1,   -1,0,0,   128,0,0,255,
+                -width/2, -height/2,  depth/2,   1,0,   -1,0,0,   128,0,0,255,
                 // Right
-                 size.x/2, -size.y/2, -size.z/2,   0,0,   1,0,0,    255,0,0,255,
-                 size.x/2,  size.y/2, -size.z/2,   0,1,   1,0,0,    255,0,0,255,
-                 size.x/2,  size.y/2,  size.z/2,   1,1,   1,0,0,    255,0,0,255,
-                 size.x/2, -size.y/2,  size.z/2,   1,0,   1,0,0,    255,0,0,255,
+                 width/2, -height/2, -depth/2,   0,0,   1,0,0,    255,0,0,255,
+                 width/2,  height/2, -depth/2,   0,1,   1,0,0,    255,0,0,255,
+                 width/2,  height/2,  depth/2,   1,1,   1,0,0,    255,0,0,255,
+                 width/2, -height/2,  depth/2,   1,0,   1,0,0,    255,0,0,255,
                 // Top
-                -size.x/2,  size.y/2, -size.z/2,   0,0,   0,1,0,    0,255,0,255,
-                -size.x/2,  size.y/2,  size.z/2,   0,1,   0,1,0,    0,255,0,255,
-                 size.x/2,  size.y/2,  size.z/2,   1,1,   0,1,0,    0,255,0,255,
-                 size.x/2,  size.y/2, -size.z/2,   1,0,   0,1,0,    0,255,0,255,
+                -width/2,  height/2, -depth/2,   0,0,   0,1,0,    0,255,0,255,
+                -width/2,  height/2,  depth/2,   0,1,   0,1,0,    0,255,0,255,
+                 width/2,  height/2,  depth/2,   1,1,   0,1,0,    0,255,0,255,
+                 width/2,  height/2, -depth/2,   1,0,   0,1,0,    0,255,0,255,
                 // Bottom
-                -size.x/2, -size.y/2, -size.z/2,   0,0,   0,-1,0,   0,128,0,255,
-                -size.x/2, -size.y/2,  size.z/2,   0,1,   0,-1,0,   0,128,0,255,
-                 size.x/2, -size.y/2,  size.z/2,   1,1,   0,-1,0,   0,128,0,255,
-                 size.x/2, -size.y/2, -size.z/2,   1,0,   0,-1,0,   0,128,0,255,
+                -width/2, -height/2, -depth/2,   0,0,   0,-1,0,   0,128,0,255,
+                -width/2, -height/2,  depth/2,   0,1,   0,-1,0,   0,128,0,255,
+                 width/2, -height/2,  depth/2,   1,1,   0,-1,0,   0,128,0,255,
+                 width/2, -height/2, -depth/2,   1,0,   0,-1,0,   0,128,0,255,
             ];
 
         let indices = [
