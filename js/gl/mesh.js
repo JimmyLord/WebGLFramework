@@ -12,6 +12,7 @@ class Mesh
         // Only stored if using startShape/addVertex/endShape until endShape is called.
         this.vertexAttributes = null;
         this.vertexAttributesAsFloats = null;
+        this.vertexAttributesAsUInt8s = null;
     }
 
     free()
@@ -288,44 +289,80 @@ class Mesh
         this.clear();
 
         this.primitiveType = primitiveType;
+        this.numVerts = 0;
 
         let sizeofFloat32 = 4;
         let sizeofUint8 = 1;
-
-        this.numVerts = 0;
 
         // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
         let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
         this.vertexAttributes = new ArrayBuffer( numVerts * sizeofVertex );
         this.vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
+        this.vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
+    }
+
+    removeAllVerts()
+    {
+        this.numVerts = 0;
     }
 
     addVertex(pos, uv, normal, color)
     {
-        let sizeofFloat32 = 4;
-        let sizeofUint8 = 1;
-
-        let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
-
         let vertexFloatIndex = this.numVerts*9;
 
-        let vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
-        vertexAttributesAsFloats[vertexFloatIndex + 0] = pos.x;
-        vertexAttributesAsFloats[vertexFloatIndex + 1] = pos.y;
-        vertexAttributesAsFloats[vertexFloatIndex + 2] = pos.z;
-        vertexAttributesAsFloats[vertexFloatIndex + 3] = uv.x;
-        vertexAttributesAsFloats[vertexFloatIndex + 4] = uv.y;
-        vertexAttributesAsFloats[vertexFloatIndex + 5] = normal.x;
-        vertexAttributesAsFloats[vertexFloatIndex + 6] = normal.y;
-        vertexAttributesAsFloats[vertexFloatIndex + 7] = normal.z;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 0] = pos.x;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 1] = pos.y;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 2] = pos.z;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 3] = uv.x;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 4] = uv.y;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 5] = normal.x;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 6] = normal.y;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 7] = normal.z;
 
-        let vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
-        vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 0] = color.r;
-        vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 1] = color.g;
-        vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 2] = color.b;
-        vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 3] = color.a;
+        this.vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 0] = color.r;
+        this.vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 1] = color.g;
+        this.vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 2] = color.b;
+        this.vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 3] = color.a;
 
         this.numVerts++;
+    }
+
+    addVertexF(x,y,z, u,v, nx,ny,nz, r,g,b,a)
+    {
+        let vertexFloatIndex = this.numVerts*9;
+
+        this.vertexAttributesAsFloats[vertexFloatIndex + 0] = x;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 1] = y;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 2] = z;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 3] = u;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 4] = v;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 5] = nx;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 6] = ny;
+        this.vertexAttributesAsFloats[vertexFloatIndex + 7] = nz;
+
+        this.vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 0] = r;
+        this.vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 1] = g;
+        this.vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 2] = b;
+        this.vertexAttributesAsUint8s[vertexFloatIndex*4 + 8*4 + 3] = a;
+
+        this.numVerts++;
+    }
+
+    addSprite(bottomLeftPos, size, bottomLeftUV, uvSize)
+    {
+        this.addVertexF( bottomLeftPos.x,         bottomLeftPos.y,        0,
+                         bottomLeftUV.x,          bottomLeftUV.y, 0,0,0, 255,255,255,255 );
+        this.addVertexF( bottomLeftPos.x,         bottomLeftPos.y+size.y, 0,
+                         bottomLeftUV.x,          bottomLeftUV.y+uvSize.y, 0,0,0, 255,255,255,255 );
+        this.addVertexF( bottomLeftPos.x+size.x,  bottomLeftPos.y+size.y, 0,
+                         bottomLeftUV.x+uvSize.x, bottomLeftUV.y+uvSize.y, 0,0,0, 255,255,255,255 );
+        
+        this.addVertexF( bottomLeftPos.x,         bottomLeftPos.y,        0,
+                         bottomLeftUV.x,          bottomLeftUV.y, 0,0,0, 255,255,255,255 );
+        this.addVertexF( bottomLeftPos.x+size.x,  bottomLeftPos.y+size.y, 0,
+                         bottomLeftUV.x+uvSize.x, bottomLeftUV.y+uvSize.y, 0,0,0, 255,255,255,255 );
+        this.addVertexF( bottomLeftPos.x+size.x,  bottomLeftPos.y,         0,
+                         bottomLeftUV.x+uvSize.x, bottomLeftUV.y, 0,0,0, 255,255,255,255 );
     }
 
     endShape()
@@ -336,8 +373,8 @@ class Mesh
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
         gl.bufferData( gl.ARRAY_BUFFER, this.vertexAttributes, gl.STATIC_DRAW );
 
-        this.vertexAttributes = null;
-        this.vertexAttributesAsFloats = null;
+        //this.vertexAttributes = null;
+        //this.vertexAttributesAsFloats = null;
     }
 
     draw(camera, matWorld, material, lights = null)

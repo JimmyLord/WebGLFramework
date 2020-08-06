@@ -108,7 +108,7 @@ class vec3
         t.y = y;
         t.z = z;
         vec3_currentTempIndex++;
-        if( vec3_currentTempIndex === 20 )
+        if( vec3_currentTempIndex === 40 )
             vec3_currentTempIndex = 0;
         return t;
     }
@@ -295,7 +295,9 @@ let vec2_tempVecs = [ new vec2, new vec2, new vec2, new vec2, new vec2, new vec2
 let vec2_currentTempIndex = 0;
 let vec3_tempVecs = [
     new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
-    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3
+    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
+    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
+    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
 ];
 let vec3_currentTempIndex = 0;
 let vec4_tempVecs = [ new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4 ];
