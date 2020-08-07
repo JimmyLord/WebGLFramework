@@ -10,6 +10,7 @@ class Mesh
         this.primitiveType = gl.POINTS;
 
         // Only stored if using startShape/addVertex/endShape until endShape is called.
+        this.sizeAllocated = 0;
         this.vertexAttributes = null;
         this.vertexAttributesAsFloats = null;
         this.vertexAttributesAsUInt8s = null;
@@ -286,6 +287,8 @@ class Mesh
 
     startShape(primitiveType, numVerts)
     {
+        let gl = this.gl;
+
         this.clear();
 
         this.primitiveType = primitiveType;
@@ -296,9 +299,17 @@ class Mesh
 
         // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
         let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
-        this.vertexAttributes = new ArrayBuffer( numVerts * sizeofVertex );
-        this.vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
-        this.vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
+        let spaceNeeded = numVerts * sizeofVertex;
+        if( this.sizeAllocated < spaceNeeded )
+        {
+            this.sizeAllocated = spaceNeeded;
+            this.vertexAttributes = new ArrayBuffer( spaceNeeded );
+            this.vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
+            this.vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
+            this.VBO = gl.createBuffer();
+            gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
+            gl.bufferData( gl.ARRAY_BUFFER, this.vertexAttributes, gl.STATIC_DRAW );
+        }
     }
 
     removeAllVerts()
@@ -350,28 +361,26 @@ class Mesh
 
     addSprite(bottomLeftPos, size, bottomLeftUV, uvSize)
     {
-        this.addVertexF( bottomLeftPos.x,         bottomLeftPos.y,        0,
-                         bottomLeftUV.x,          bottomLeftUV.y, 0,0,0, 255,255,255,255 );
-        this.addVertexF( bottomLeftPos.x,         bottomLeftPos.y+size.y, 0,
-                         bottomLeftUV.x,          bottomLeftUV.y+uvSize.y, 0,0,0, 255,255,255,255 );
-        this.addVertexF( bottomLeftPos.x+size.x,  bottomLeftPos.y+size.y, 0,
-                         bottomLeftUV.x+uvSize.x, bottomLeftUV.y+uvSize.y, 0,0,0, 255,255,255,255 );
-        
-        this.addVertexF( bottomLeftPos.x,         bottomLeftPos.y,        0,
-                         bottomLeftUV.x,          bottomLeftUV.y, 0,0,0, 255,255,255,255 );
-        this.addVertexF( bottomLeftPos.x+size.x,  bottomLeftPos.y+size.y, 0,
-                         bottomLeftUV.x+uvSize.x, bottomLeftUV.y+uvSize.y, 0,0,0, 255,255,255,255 );
-        this.addVertexF( bottomLeftPos.x+size.x,  bottomLeftPos.y,         0,
-                         bottomLeftUV.x+uvSize.x, bottomLeftUV.y, 0,0,0, 255,255,255,255 );
+        this.addSpriteF( bottomLeftPos.x, bottomLeftPos.y, size.x, size.y, bottomLeftUV.x, bottomLeftUV.y, uvSize.x, uvSize.y );
+    }
+
+    addSpriteF(blX, blY, sizeX, sizeY, blUVx, blUVy, uvSizeX, uvSizeY)
+    {
+        this.addVertexF( blX,       blY,       0, blUVx,         blUVy,          0,0,0,  255,255,255,255 );
+        this.addVertexF( blX,       blY+sizeY, 0, blUVx,         blUVy+uvSizeY,  0,0,0,  255,255,255,255 );
+        this.addVertexF( blX+sizeX, blY+sizeY, 0, blUVx+uvSizeX, blUVy+uvSizeY,  0,0,0,  255,255,255,255 );
+
+        this.addVertexF( blX,       blY,       0, blUVx,         blUVy,          0,0,0,  255,255,255,255 );
+        this.addVertexF( blX+sizeX, blY+sizeY, 0, blUVx+uvSizeX, blUVy+uvSizeY,  0,0,0,  255,255,255,255 );
+        this.addVertexF( blX+sizeX, blY,       0, blUVx+uvSizeX, blUVy,          0,0,0,  255,255,255,255 );
     }
 
     endShape()
     {
         let gl = this.gl;
 
-        this.VBO = gl.createBuffer();
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
-        gl.bufferData( gl.ARRAY_BUFFER, this.vertexAttributes, gl.STATIC_DRAW );
+        gl.bufferSubData( gl.ARRAY_BUFFER, 0, this.vertexAttributes );
 
         //this.vertexAttributes = null;
         //this.vertexAttributesAsFloats = null;
