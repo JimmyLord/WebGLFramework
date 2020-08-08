@@ -287,8 +287,6 @@ class Mesh
 
     startShape(primitiveType, numVerts)
     {
-        let gl = this.gl;
-
         this.clear();
 
         this.primitiveType = primitiveType;
@@ -299,22 +297,9 @@ class Mesh
 
         // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
         let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
-        let spaceNeeded = numVerts * sizeofVertex;
-        if( this.sizeAllocated < spaceNeeded )
-        {
-            this.sizeAllocated = spaceNeeded;
-            this.vertexAttributes = new ArrayBuffer( spaceNeeded );
-            this.vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
-            this.vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
-            this.VBO = gl.createBuffer();
-            gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
-            gl.bufferData( gl.ARRAY_BUFFER, this.vertexAttributes, gl.STATIC_DRAW );
-        }
-    }
-
-    removeAllVerts()
-    {
-        this.numVerts = 0;
+        this.vertexAttributes = new ArrayBuffer( numVerts * sizeofVertex );
+        this.vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
+        this.vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
     }
 
     addVertex(pos, uv, normal, color)
@@ -379,11 +364,13 @@ class Mesh
     {
         let gl = this.gl;
 
+        this.VBO = gl.createBuffer();
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
-        gl.bufferSubData( gl.ARRAY_BUFFER, 0, this.vertexAttributes );
+        gl.bufferData( gl.ARRAY_BUFFER, this.vertexAttributes, gl.STATIC_DRAW );
 
-        //this.vertexAttributes = null;
-        //this.vertexAttributesAsFloats = null;
+        // Free our copy of the vertices.
+        this.vertexAttributes = null;
+        this.vertexAttributesAsFloats = null;
     }
 
     draw(camera, matWorld, material, lights = null)

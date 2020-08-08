@@ -11,6 +11,7 @@ java -jar closure.jar ^
 --js ..\js\gl\texture.js ^
 --js ..\js\datatypes\material.js ^
 --js ..\js\gl\mesh.js ^
+--js ..\js\gl\meshdynamic.js ^
 --js ..\js\core\resourcemanager.js ^
 --js ..\js\core\camera.js ^
 --js ..\js\datatypes\light.js ^
