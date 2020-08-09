@@ -38,6 +38,19 @@ class MainProject
         this.scene.lights.push( new Light( new vec3( 4,0, 9), new color(0,1,0,1), 2 ) );
         this.scene.lights.push( new Light( new vec3(-4,0, 9), new color(0,0,1,1), 6 ) );
 
+        // Testing particle rendering.
+        this.maxParticles = 10000;
+        this.particles = [];
+        resources.meshes["particles"] = new MeshDynamic( this.framework.gl );
+        resources.meshes["particles"].startShape( this.framework.gl.TRIANGLES, this.maxParticles*6 ); // Max 1000 sprites
+        this.particleObject = new Entity( new vec3(0), new vec3(0), new vec3(1), resources.meshes["particles"], resources.materials["red"] );
+        for( let i=0; i<this.maxParticles; i++ )
+        {
+            this.particles.push( {} );
+            this.particles[i].pos = new vec3( 0, 0, 0 );
+            this.particles[i].vel = new vec3( Math.random() * 2 - 1, Math.random() * 2 - 1, 0 );
+        }
+
         this.scene.camera.isOrtho = false;
         this.scene.camera.recalculateProjection();
 
@@ -144,11 +157,25 @@ class MainProject
         [this.scene.camera.position.z] = imgui.dragNumber( "Z:", this.scene.camera.position.z, 0.01, 2 );
         this.stateIsDirty = true;
         //imgui.endWindow( true );
+
+        // Testing particle rendering.
+        this.framework.resources.meshes["particles"].removeAllVerts();
+        for( let i=0; i<this.maxParticles; i++ )
+        {
+            this.particles[i].pos.x += this.particles[i].vel.x * deltaTime;
+            this.particles[i].pos.y += this.particles[i].vel.y * deltaTime;
+            this.framework.resources.meshes["particles"].addSpriteF( this.particles[i].pos.x, this.particles[i].pos.y,
+                                                                     0.01, 0.01, 0, 0, 1, 1 );
+        }
+        this.framework.resources.meshes["particles"].endShape();
     }
 
     draw()
     {
         this.scene.draw( this.scene.camera );
+
+        // Draw the particles.
+        this.particleObject.draw( this.scene.camera, null );
     }
 
     onResize()
