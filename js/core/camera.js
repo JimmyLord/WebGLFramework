@@ -173,6 +173,6 @@ class Camera
         let x = (worldX + (1 + orthoOffsetX) / orthoScaleX) / 2 * orthoScaleX * canvas.width;
         let y = ((worldY + (1 + orthoOffsetY) / orthoScaleY) / 2 * orthoScaleY * canvas.height - canvas.height) * -1;
 
-        return vec2.getTemp( worldX, worldY );
+        return vec2.getTemp( x, y );
     }
 }
