@@ -1,19 +1,25 @@
 class vec2
 {
-    // Temp vars to avoid GC.
-    // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
-    // Bigger warning: This is a terrible idea and will lead to very hard to debug issues.
-    //                 I'm keeping it for now since I'm trying to minimize garbage collection.
-    //static tempVecs = [ new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2 ];
-    //static currentTempIndex = 0;
+    // Temp pool, will reset at the start of every frame.
+    // Will grow if more are needed during a single frame.
+    static resetTemps()
+    {
+        for( let i=0; i<vec2_currentTempIndex; i++ )
+        {
+            vec2_tempPool.returnToPool( vec2_tempsOutsideOfPool[i] );
+        }
+        vec2_currentTempIndex = 0;
+    }
     static getTemp(x = 0, y = x)
     {
-        let t = vec2_tempVecs[vec2_currentTempIndex];
+        let t = vec2_tempPool.getFromPool();
+        if( vec2_currentTempIndex < vec2_tempsOutsideOfPool.length )
+            vec2_tempsOutsideOfPool[vec2_currentTempIndex] = t;
+        else
+            vec2_tempsOutsideOfPool.push( t );
+        vec2_currentTempIndex++;
         t.x = x;
         t.y = y;
-        vec2_currentTempIndex++;
-        if( vec2_currentTempIndex === 10 )
-            vec2_currentTempIndex = 0;
         return t;
     }
 
@@ -94,22 +100,25 @@ class vec2
 
 class vec3
 {
-    // Temp vars to avoid GC.
-    // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
-    //static tempVecs = [
-    //    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
-    //    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3
-    //];
-    //static currentTempIndex = 0;
+    static resetTemps()
+    {
+        for( let i=0; i<vec3_currentTempIndex; i++ )
+        {
+            vec3_tempPool.returnToPool( vec3_tempsOutsideOfPool[i] );
+        }
+        vec3_currentTempIndex = 0;
+    }
     static getTemp(x = 0, y = x, z = x)
     {
-        let t = vec3_tempVecs[vec3_currentTempIndex];
+        let t = vec3_tempPool.getFromPool();
+        if( vec3_currentTempIndex < vec3_tempsOutsideOfPool.length )
+            vec3_tempsOutsideOfPool[vec3_currentTempIndex] = t;
+        else
+            vec3_tempsOutsideOfPool.push( t );
+        vec3_currentTempIndex++;
         t.x = x;
         t.y = y;
         t.z = z;
-        vec3_currentTempIndex++;
-        if( vec3_currentTempIndex === 40 )
-            vec3_currentTempIndex = 0;
         return t;
     }
 
@@ -191,20 +200,26 @@ class vec3
 
 class vec4
 {
-    // Temp vars to avoid GC.
-    // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
-    //static tempVecs = [ new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4 ];
-    //static currentTempIndex = 0;
+    static resetTemps()
+    {
+        for( let i=0; i<vec4_currentTempIndex; i++ )
+        {
+            vec4_tempPool.returnToPool( vec4_tempsOutsideOfPool[i] );
+        }
+        vec4_currentTempIndex = 0;
+    }
     static getTemp(x = 0, y = x, z = x, w = x)
     {
-        let t = vec4_tempVecs[vec4_currentTempIndex];
+        let t = vec4_tempPool.getFromPool();
+        if( vec4_currentTempIndex < vec4_tempsOutsideOfPool.length )
+            vec4_tempsOutsideOfPool[vec4_currentTempIndex] = t;
+        else
+            vec4_tempsOutsideOfPool.push( t );
+        vec4_currentTempIndex++;
         t.x = x;
         t.y = y;
         t.z = z;
         t.w = w;
-        vec4_currentTempIndex++;
-        if( vec4_currentTempIndex === 10 )
-            vec4_currentTempIndex = 0;
         return t;
     }
 
@@ -291,14 +306,14 @@ class vec4
     }
 }
 
-let vec2_tempVecs = [ new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2, new vec2 ];
+let vec2_tempPool = new Pool( vec2, 100, true );
+let vec2_tempsOutsideOfPool = new Array( 100 );
 let vec2_currentTempIndex = 0;
-let vec3_tempVecs = [
-    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
-    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
-    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
-    new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3, new vec3,
-];
+
+let vec3_tempPool = new Pool( vec3, 100, true );
+let vec3_tempsOutsideOfPool = new Array( 100 );
 let vec3_currentTempIndex = 0;
-let vec4_tempVecs = [ new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4, new vec4 ];
+
+let vec4_tempPool = new Pool( vec4, 100, true );
+let vec4_tempsOutsideOfPool = new Array( 100 );
 let vec4_currentTempIndex = 0;

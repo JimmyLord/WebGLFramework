@@ -45,6 +45,7 @@ class Camera
         this.zoom = state.zoom;
         this.desiredHeight = state.desiredHeight;
         this.position.setF32( state.position["x"], state.position["y"], state.position["z"] );
+        this.recalculateProjection();
     }
 
     toJSON()

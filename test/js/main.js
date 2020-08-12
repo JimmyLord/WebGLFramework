@@ -83,7 +83,7 @@ class MainProject
 
     update(deltaTime, runningTime)
     {
-        if( this.framework == null )
+        if( this.framework === null )
             return;
 
         this.scene.update( deltaTime, runningTime );
@@ -153,7 +153,15 @@ class MainProject
             this.scene.camera.recalculateProjection();
             this.stateIsDirty = true;
         }
-        [this.scene.orthoHeight] = imgui.dragNumber( "OrthoHeight:", this.scene.orthoHeight, 0.01, 2 );
+
+        let projectionChanged = false;
+        [this.scene.orthoHeight, projectionChanged] = imgui.dragNumber( "OrthoHeight:", this.scene.orthoHeight, 0.01, 2 );
+        if( projectionChanged )
+        {
+            this.scene.camera.recalculateProjection();
+            this.stateIsDirty = true;
+        }
+
         [this.scene.camera.position.z] = imgui.dragNumber( "Z:", this.scene.camera.position.z, 0.01, 2 );
         this.stateIsDirty = true;
         //imgui.endWindow( true );

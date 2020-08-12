@@ -4,6 +4,7 @@ copy index-min.html build\index.html
 
 java -jar closure.jar ^
 --compilation_level ADVANCED_OPTIMIZATIONS ^
+--js ..\js\datatypes\pool.js ^
 --js ..\js\datatypes\color.js ^
 --js ..\js\datatypes\vector.js ^
 --js ..\js\datatypes\matrix.js ^
