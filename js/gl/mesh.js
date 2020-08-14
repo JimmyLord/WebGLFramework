@@ -10,6 +10,7 @@ class Mesh
         this.primitiveType = gl.POINTS;
 
         // Only stored if using startShape/addVertex/endShape until endShape is called.
+        // Also stored if requested when calling "create" method.
         this.sizeAllocated = 0;
         this.vertexAttributes = null;
         this.vertexAttributesAsFloats = null;
@@ -52,6 +53,17 @@ class Mesh
         this.primitiveType = gl.POINTS;
     }
 
+    getVertexPosition(vertexIndex)
+    {
+        if( this.vertexAttributesAsFloats === null )
+            return null;
+
+        let x = this.vertexAttributesAsFloats[vertexIndex*9 + 0];
+        let y = this.vertexAttributesAsFloats[vertexIndex*9 + 1];
+        let z = this.vertexAttributesAsFloats[vertexIndex*9 + 2];
+        return vec3.getTemp( x, y, z );
+    }
+
     createTriangle(width, height)
     {
         let gl = this.gl;
@@ -86,7 +98,7 @@ class Mesh
         this.primitiveType = gl.TRIANGLES;
     }
 
-    createBox(width, height)
+    createBox(width, height, storeVerticesLocally = false)
     {
         let gl = this.gl;
 
@@ -108,27 +120,28 @@ class Mesh
 
         // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
         let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
-        let vertexAttributes = new ArrayBuffer( numVerts * sizeofVertex );
-        let vertexAttributesAsFloats = new Float32Array( vertexAttributes );
+        this.sizeAllocated = numVerts * sizeofVertex;
+        this.vertexAttributes = new ArrayBuffer( this.sizeAllocated );
+        this.vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
         for( let i=0; i<numVerts; i++ )
         {
-            vertexAttributesAsFloats[i*9 + 0] = vertexPosUVColor[i*9 + 0];
-            vertexAttributesAsFloats[i*9 + 1] = vertexPosUVColor[i*9 + 1];
-            vertexAttributesAsFloats[i*9 + 2] = vertexPosUVColor[i*9 + 2];
-            vertexAttributesAsFloats[i*9 + 3] = vertexPosUVColor[i*9 + 3];
-            vertexAttributesAsFloats[i*9 + 4] = vertexPosUVColor[i*9 + 4];
-            vertexAttributesAsFloats[i*9 + 5] = 0;
-            vertexAttributesAsFloats[i*9 + 6] = 0;
-            vertexAttributesAsFloats[i*9 + 7] = -1;
+            this.vertexAttributesAsFloats[i*9 + 0] = vertexPosUVColor[i*9 + 0];
+            this.vertexAttributesAsFloats[i*9 + 1] = vertexPosUVColor[i*9 + 1];
+            this.vertexAttributesAsFloats[i*9 + 2] = vertexPosUVColor[i*9 + 2];
+            this.vertexAttributesAsFloats[i*9 + 3] = vertexPosUVColor[i*9 + 3];
+            this.vertexAttributesAsFloats[i*9 + 4] = vertexPosUVColor[i*9 + 4];
+            this.vertexAttributesAsFloats[i*9 + 5] = 0;
+            this.vertexAttributesAsFloats[i*9 + 6] = 0;
+            this.vertexAttributesAsFloats[i*9 + 7] = -1;
         }
 
-        let vertexAttributesAsUint8s = new Uint8Array( vertexAttributes );
+        this.vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
         for( let i=0; i<numVerts; i++ )
         {
-            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 0] = vertexPosUVColor[i*9 + 5];
-            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 1] = vertexPosUVColor[i*9 + 6];
-            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 2] = vertexPosUVColor[i*9 + 7];
-            vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 3] = vertexPosUVColor[i*9 + 8];
+            this.vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 0] = vertexPosUVColor[i*9 + 5];
+            this.vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 1] = vertexPosUVColor[i*9 + 6];
+            this.vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 2] = vertexPosUVColor[i*9 + 7];
+            this.vertexAttributesAsUint8s[i*sizeofVertex + 8*4 + 3] = vertexPosUVColor[i*9 + 8];
         }
 
         // Indices: Uint16.
@@ -141,7 +154,7 @@ class Mesh
 
         this.VBO = gl.createBuffer();
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
-        gl.bufferData( gl.ARRAY_BUFFER, vertexAttributes, gl.STATIC_DRAW );
+        gl.bufferData( gl.ARRAY_BUFFER, this.vertexAttributes, gl.STATIC_DRAW );
 
         this.IBO = gl.createBuffer();
         gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
@@ -150,6 +163,14 @@ class Mesh
         this.numVerts = numVerts;
         this.numIndices = numIndices;
         this.primitiveType = gl.TRIANGLES;
+
+        if( storeVerticesLocally === false )
+        {
+            this.sizeAllocated = 0;
+            this.vertexAttributes = null;
+            this.vertexAttributesAsFloats = null;
+            this.vertexAttributesAsUInt8s = null;
+        }
     }
 
     createCube(width, height, depth)

@@ -18,10 +18,10 @@
     {
         if( this.numInPool === 0 )
         {
-            console.log( "Pool empty!" );
+            //console.log( "Pool empty!" );
             if( this.allowGrowth )
             {
-                console.log( "Allocating more!" );
+                //console.log( "Allocating more!" );
                 let obj = new this.type();
                 return obj;
             }
