@@ -15,6 +15,13 @@ class Mesh
         this.vertexAttributes = null;
         this.vertexAttributesAsFloats = null;
         this.vertexAttributesAsUInt8s = null;
+        this.indices16 = null;
+        this.indicesAsUint16s = null;
+        
+        // Edges, only stored for CreateBox for now, can be used for collision checks.
+        // Can easily be expanded to other convex shapes.
+        // TODO: Move colliders into their own class.
+        this.edgeList = null;
     }
 
     free()
@@ -64,6 +71,31 @@ class Mesh
         return vec3.getTemp( x, y, z );
     }
 
+    getVertexPositionsAtEdge(edgeIndex, outVert1, outVert2)
+    {
+        if( this.vertexAttributesAsFloats === null )
+            return null;
+        console.assert( outVert1 !== null, "getVertexPositionAtEdge: no valid vec3 reference in outVert1." );
+        console.assert( outVert2 !== null, "getVertexPositionAtEdge: no valid vec3 reference in outVert2." );
+
+        if( this.edgeList === null )
+        {
+            console.assert( false, "getVertexPositionAtEdge: Mesh doesn't have an edge list." );
+        }
+        else
+        {
+            console.assert( edgeIndex < this.edgeList.length )
+            
+            outVert1.x = this.vertexAttributesAsFloats[this.edgeList[edgeIndex][0]*9 + 0];
+            outVert1.y = this.vertexAttributesAsFloats[this.edgeList[edgeIndex][0]*9 + 1];
+            outVert1.z = this.vertexAttributesAsFloats[this.edgeList[edgeIndex][0]*9 + 2];
+
+            outVert2.x = this.vertexAttributesAsFloats[this.edgeList[edgeIndex][1]*9 + 0];
+            outVert2.y = this.vertexAttributesAsFloats[this.edgeList[edgeIndex][1]*9 + 1];
+            outVert2.z = this.vertexAttributesAsFloats[this.edgeList[edgeIndex][1]*9 + 2];
+        }
+    }
+
     createTriangle(width, height)
     {
         let gl = this.gl;
@@ -108,15 +140,17 @@ class Mesh
         let sizeofUint8 = 1;
         let sizeofUnsignedShort = 2;
         let vertexPosUVColor = [
-                -width/2, -height/2, 0,    0, 0,   0, 0, 128, 255,
-                -width/2,  height/2, 0,    0, 1,   0, 0, 128, 255,
-                 width/2,  height/2, 0,    1, 1,   0, 0, 128, 255,
-                 width/2, -height/2, 0,    1, 0,   0, 0, 128, 255,
+                -width/2, -height/2, 0,    0, 0,   0, 0, 128, 255, // BL
+                -width/2,  height/2, 0,    0, 1,   0, 0, 128, 255, // TL
+                 width/2,  height/2, 0,    1, 1,   0, 0, 128, 255, // TR
+                 width/2, -height/2, 0,    1, 0,   0, 0, 128, 255, // BR
             ];
 
         let indices = [
                  0, 1, 2,  0, 2, 3,
             ];
+
+        this.edgeList = [ [0,1], [1,2], [2,3], [3,0] ];
 
         // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
         let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
@@ -145,11 +179,11 @@ class Mesh
         }
 
         // Indices: Uint16.
-        let indices16 = new ArrayBuffer( numIndices * sizeofUnsignedShort );
-        let indicesAsUint16s = new Uint16Array( indices16 );
+        this.indices16 = new ArrayBuffer( numIndices * sizeofUnsignedShort );
+        this.indicesAsUint16s = new Uint16Array( this.indices16 );
         for( let i=0; i<numIndices; i++ )
         {
-            indicesAsUint16s[i] = indices[i];
+            this.indicesAsUint16s[i] = indices[i];
         }
 
         this.VBO = gl.createBuffer();
@@ -158,7 +192,7 @@ class Mesh
 
         this.IBO = gl.createBuffer();
         gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
-        gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices16, gl.STATIC_DRAW );
+        gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, this.indices16, gl.STATIC_DRAW );
 
         this.numVerts = numVerts;
         this.numIndices = numIndices;
@@ -170,6 +204,8 @@ class Mesh
             this.vertexAttributes = null;
             this.vertexAttributesAsFloats = null;
             this.vertexAttributesAsUInt8s = null;
+            this.indices16 = null;
+            this.indicesAsUint16s = null;
         }
     }
 
