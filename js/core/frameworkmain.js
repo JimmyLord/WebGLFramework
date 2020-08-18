@@ -635,6 +635,12 @@ class FrameworkMain
         }
 
         this.imgui.keyBuffer.push( event.key );
+
+        if( this.imgui.controlInEditMode !== null )
+        {
+            event.preventDefault();
+            return false;
+        }
     }
 
     onKeyUp(event)

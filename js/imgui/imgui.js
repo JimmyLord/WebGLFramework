@@ -31,7 +31,7 @@
         this.mouseChange = new vec2(0);
         this.mouseChangeUnscaled = new vec2(0);
         this.lastMousePosition = new vec2(0);
-        this.unusedKeyBuffer = null;
+        this.unusedKeyBuffer = [];
         this.mainMenuBarHeight = 0; // How tall is the main menu bar (0 if no bar is active).
         this.activeWindow = null;
         this.previousMenu = null;
@@ -407,7 +407,9 @@
         this.mainMenuBarHeight = 0;
 
         // Backup our keyBuffer for use this frame and clear the array.
-        this.unusedKeyBuffer = this.keyBuffer;
+        this.unusedKeyBuffer.length = 0;
+        for( let i=0; i<this.keyBuffer.length; i++ )
+            this.unusedKeyBuffer.push( this.keyBuffer[i] );
         this.keyBuffer.length = 0;
 
         this.windowHovered = null;
