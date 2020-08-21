@@ -197,9 +197,10 @@ class FrameworkMain
             this.imgui.saveState( this.storage, "imguiState" );
         }
 
+        let forceRefresh = false;
         if( this.imgui.needsRefresh )
         {
-            this.autoRefresh = true;
+            forceRefresh = true;
         }
 
         // Don't refresh if we're not in focus.
@@ -210,7 +211,7 @@ class FrameworkMain
         }
 
         // Restart the update/draw cycle.
-        if( this.autoRefresh )
+        if( this.autoRefresh || forceRefresh )
         {
             this.lastTimeRefreshCalled = this.lastTime;
             requestAnimationFrame( this.updateThis );
