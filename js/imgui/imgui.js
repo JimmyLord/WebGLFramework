@@ -1108,7 +1108,10 @@
                     this.addBoxToDrawListItem( drawListItem, x,    y, t,h, this.color["BGBorder"] ); // Border left.
                     this.addBoxToDrawListItem( drawListItem, x+w-t,y, t,h, this.color["BGBorder"] ); // Border right.
                     this.addBoxToDrawListItem( drawListItem, x,y,     w,t, this.color["BGBorder"] ); // Border top.
-                    //this.addBoxToDrawListItem( drawListItem, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
+                    if( this.activeWindow.expanded === false )
+                    {
+                        this.addBoxToDrawListItem( drawListItem, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
+                    }
                 }
                 this.activeWindow.rect.set( x, y, w, titleH );
 
