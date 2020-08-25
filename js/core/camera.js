@@ -130,6 +130,8 @@ class Camera
             this.position.add( at.times( change ) );
         }
 
+        this.recalculateProjection();
+
         return true;
     }
 
