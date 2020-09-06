@@ -342,7 +342,7 @@ class Mesh
             this.primitiveType = gl.TRIANGLE_FAN;
     }
 
-    startShape(primitiveType, numVerts)
+    startShape(primitiveType, numVerts, numIndices = 0)
     {
         this.clear();
 
@@ -351,12 +351,19 @@ class Mesh
 
         let sizeofFloat32 = 4;
         let sizeofUint8 = 1;
+        let sizeofUnsignedShort = 2;
 
         // VertexFormat: XYZ UV XYZ RGBA. (8 floats + 4 uint8s or 9 floats or 36 bytes)
         let sizeofVertex = (8*sizeofFloat32 + 4*sizeofUint8);
         this.vertexAttributes = new ArrayBuffer( numVerts * sizeofVertex );
         this.vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
         this.vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
+
+        if( numIndices > 0 )
+        {
+            this.indices16 = new ArrayBuffer( numIndices * sizeofUnsignedShort );
+            this.indicesAsUint16s = new Uint16Array( this.indices16 );
+        }
     }
 
     addVertex(pos, uv, normal, color)
@@ -401,6 +408,20 @@ class Mesh
         this.numVerts++;
     }
 
+    addIndex(i)
+    {
+        this.indicesAsUint16s[this.numIndices] = i;
+        this.numIndices++;
+    }
+
+    addEdge(index0, index1)
+    {
+        if( this.edgeList === null )
+            this.edgeList = [];
+
+        this.edgeList.push( [index0, index1] );
+    }
+
     addSprite(bottomLeftPos, size, bottomLeftUV, uvSize)
     {
         this.addSpriteF( bottomLeftPos.x, bottomLeftPos.y, size.x, size.y, bottomLeftUV.x, bottomLeftUV.y, uvSize.x, uvSize.y );
@@ -425,9 +446,18 @@ class Mesh
         gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
         gl.bufferData( gl.ARRAY_BUFFER, this.vertexAttributes, gl.STATIC_DRAW );
 
+        if( this.numIndices > 0 )
+        {
+            this.IBO = gl.createBuffer();
+            gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
+            gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, this.indices16, gl.STATIC_DRAW );
+        }
+
         // Free our copy of the vertices.
-        this.vertexAttributes = null;
-        this.vertexAttributesAsFloats = null;
+        //this.vertexAttributes = null;
+        //this.vertexAttributesAsFloats = null;
+        //this.indices16 = null;
+        //this.indicesAsUint16s = null;
     }
 
     draw(camera, matWorld, material, lights = null)
