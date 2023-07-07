@@ -96,6 +96,11 @@ class vec2
     {
         return this.x*o.x + this.y*o.y;
     }
+
+    cross(o)
+    {
+        return this.x*o.y - this.y*o.x;
+    }
 }
 
 class vec3
