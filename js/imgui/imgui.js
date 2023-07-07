@@ -23,6 +23,7 @@
         this.FGDrawList = [];
         this.drawList = this.BGDrawList;
         this.windows = {};
+        this.nextWindowZOrder = 0; // z-order isn't fully implemented, it's only used to give the main menu focus over the windows.
         this.frameCount = 0;
         this.currentTime = 0;
         this.ownsMouse = false;
@@ -412,6 +413,7 @@
             this.unusedKeyBuffer.push( this.keyBuffer[i] );
         this.keyBuffer.length = 0;
 
+        this.nextWindowZOrder = 0;
         this.windowHovered = null;
         this.isHoveringWindow = false;
 
@@ -439,33 +441,18 @@
         // Loop through all windows.
         for( let key in this.windows )
         {
-            // Find which window is hovered and if it was clicked.
+            // Find which window is hovered and if it was clicked. Pick the one with the highest z-order.
+            let highestZOrder = -1;
             if( this.windows[key].activeThisFrame && this.windows[key].takesInput &&
                 this.windows[key].rect.contains( this.mousePosition ) )
             {
-                this.windowHovered = this.windows[key];
-
-                if( this.mouseButtons[0] === false || this.ownsMouse === true )
+                if( this.windows[key].zOrder > highestZOrder )
                 {
-                    this.isHoveringWindow = true;
-                    this.ownsMouse = true;
+                    this.windowHovered = this.windows[key];
+                    highestZOrder = this.windows[key].zOrder;
                 }
 
-                if( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
-                {
-                    if( key.startsWith( "__Popup__" ) )
-                    {
-                        popupClicked = true;
-                    }
-
-                    this.windowBeingMoved = this.windows[key];
-                }
-
-                if( this.mouseButtons[1] === true && this.oldMouseButtons[1] === false ) // Middle button clicked.
-                {
-                    this.forceResize( this.windows[key] );
-                    this.markStateDirty();
-                }
+                this.windows[key].zOrder = -1;
             }
 
             // If this window didn't have a size, resize it to the biggest size it's been.
@@ -479,6 +466,31 @@
             this.windows[key].activeThisFrame = false;
             this.windows[key].cursor.set( this.windows[key].position );
             this.windows[key].previousLineEndPosition.setF32( 0, 0 );
+        }
+
+        if( this.windowHovered !== null )
+        {
+            if( this.mouseButtons[0] === false || this.ownsMouse === true )
+            {
+                this.isHoveringWindow = true;
+                this.ownsMouse = true;
+            }
+
+            if( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
+            {
+                if( this.windowHovered.name.startsWith( "__Popup__" ) )
+                {
+                    popupClicked = true;
+                }
+
+                this.windowBeingMoved = this.windowHovered;
+            }
+
+            if( this.mouseButtons[1] === true && this.oldMouseButtons[1] === false ) // Middle button clicked.
+            {
+                this.forceResize( this.windowHovered );
+                this.markStateDirty();
+            }
         }
 
         if( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
@@ -834,6 +846,9 @@
         this.activeWindow.activeThisFrame = true;
         this.activeWindow.cursor.setF32( this.activeWindow.position.x, this.activeWindow.position.y + 1 );
 
+        // Partial implementation of z-ordering, main menu is always in foreground.
+        this.activeWindow.zOrder = 9999999;
+
         // Draw the main menu bg.
         {
             let drawListItem = DrawListItem.getFromPool();
@@ -1066,6 +1081,10 @@
         
         this.activeWindow = this.windows[name];
         this.activeWindow.activeThisFrame = true;
+
+        // Partial implementation of z-ordering, windows are sorted by the order they're added.
+        if( this.activeWindow.zOrder === -1 )
+            this.activeWindow.zOrder = this.nextWindowZOrder++;
 
         // If the window is offscreen, force it back to 0,0.
         if( this.activeWindow.position.x + this.activeWindow.size.x < 0 || this.activeWindow.position.x >= this.canvas.width / this.scale ||
@@ -1685,6 +1704,7 @@ class ImGuiWindow
         this.name = null;
         this.position = new vec2( 0, 0 );
         this.size = new vec2( 0, 0 );
+        this.zOrder = -1;
     
         this.activeThisFrame = false;
         this.cursor = new vec2(0);
