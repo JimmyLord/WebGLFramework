@@ -28,9 +28,15 @@ class Texture
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
 
         // Start load of texture requested.
+        let tex = this;
         this.image = new Image();
         this.image.src = filename;
-        this.image.addEventListener( "load", this.onLoad, false );
+        this.image.onload = function()
+        {
+            gl.bindTexture( gl.TEXTURE_2D, tex.textureID );
+            gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.image );
+            delete tex.image;
+        }
     }
 
     createFromUInt8Array(pixels, width, height)
@@ -57,18 +63,5 @@ class Texture
         this.textureID = null;
         this.image = null;
         this.gl = null;
-    }
-
-    onLoad(event)
-    {
-        let gl = this.gl;
-
-        gl.bindTexture( gl.TEXTURE_2D, this.textureID );
-        gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image );
-
-        // TODO: debug this, does it actually remove the event listener.
-        //debugger;
-        this.image.removeEventListener( "load", this.onLoad, false );
-        this.image = null;
     }
 }

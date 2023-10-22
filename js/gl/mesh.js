@@ -505,6 +505,7 @@ class Mesh
         gl.uniformMatrix4fv( shader.u_MatWorld, false, matWorld.m )
         gl.uniformMatrix4fv( shader.u_MatView, false, camera.matView.m )
         gl.uniformMatrix4fv( shader.u_MatProj, false, camera.matProj.m )
+        gl.uniform4f( shader.u_UVTransform, material.uvTransform.x, material.uvTransform.y, material.uvTransform.z, material.uvTransform.w );
         gl.uniform4f( shader.u_Color, material.color.r, material.color.g, material.color.b, material.color.a );
 
         if( shader.u_TextureAlbedo !== null )

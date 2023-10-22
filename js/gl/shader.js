@@ -11,6 +11,7 @@ class Shader
         this.u_MatWorld = null;
         this.u_MatView = null;
         this.u_MatProj = null;
+        this.u_UVTransform = null;
         this.u_Color = null;
 
         this.u_TextureAlbedo = null;
@@ -101,6 +102,7 @@ class Shader
         this.u_MatWorld = gl.getUniformLocation( program, "u_MatWorld" );
         this.u_MatView = gl.getUniformLocation( program, "u_MatView" );
         this.u_MatProj = gl.getUniformLocation( program, "u_MatProj" );
+        this.u_UVTransform = gl.getUniformLocation( program, "u_UVTransform" );
         this.u_Color = gl.getUniformLocation( program, "u_Color" );
 
         this.u_TextureAlbedo = gl.getUniformLocation( program, "u_TextureAlbedo" );

@@ -6,23 +6,27 @@ class ResourceManager
         this.materials = {};
         this.meshes = {};
         this.textures = {};
+        this.spritesheets = {};
 
         this.createSomeShaders( gl );
     }
 
     free()
     {
-        for( let key in this.shaders )   { this.shaders[key].free();   delete this.shaders[key]; };
+        for( let key in this.shaders ) { this.shaders[key].free(); delete this.shaders[key]; };
         this.shaders = null;
 
         for( let key in this.materials ) { this.materials[key].free(); delete this.materials[key]; };
         this.materials = null;
 
-        for( let key in this.meshes )    { this.meshes[key].free();    delete this.meshes[key]; };
+        for( let key in this.meshes ) { this.meshes[key].free(); delete this.meshes[key]; };
         this.meshes = null;
 
-        for( let key in this.textures )  { this.textures[key].free();  delete this.textures[key]; };
+        for( let key in this.textures ) { this.textures[key].free(); delete this.textures[key]; };
         this.textures = null;
+
+        for( let key in this.spritesheets ) { this.spritesheets[key].free(); delete this.spritesheets[key]; };
+        this.spritesheets = null;
     }
 
     createSomeShaders(gl)
@@ -66,6 +70,7 @@ class ResourceManager
             uniform mat4 u_MatWorld;
             uniform mat4 u_MatView;
             uniform mat4 u_MatProj;
+            uniform vec4 u_UVTransform; // xy = scale, zw = offset.
 
             varying vec2 v_UV;
             varying vec4 v_Color;
@@ -76,7 +81,7 @@ class ResourceManager
             {
                 gl_Position = u_MatProj * u_MatView * u_MatWorld * a_Position;
 
-                v_UV = a_UV;
+                v_UV = a_UV * u_UVTransform.xy + u_UVTransform.zw;
                 v_Color = a_Color;
                 v_WSNormal = (u_MatWorld * vec4(a_Normal, 0)).xyz; // TODO: Pass in a rotation matrix.
                 v_WSPosition = (u_MatWorld * a_Position).xyz;
