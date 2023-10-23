@@ -1,19 +1,14 @@
 class ResourceManager
 {
-    shaders: { [key: string]: Shader };
-    materials: { [key: string]: Material };
-    meshes: { [key: string]: Mesh };
-    textures: { [key: string]: Texture };
-    spritesheets: { [key: string]: SpriteSheet };
+    shaders: { [key: string]: Shader } = {};
+    materials: { [key: string]: Material } = {};
+    meshes: { [key: string]: Mesh } = {};
+    textures: { [key: string]: Texture } = {};
+    spritesheets: { [key: string]: SpriteSheet } = {};
+    animations: { [key: string]: AnimationSetData } = {};
     
     constructor(gl: WebGL2RenderingContext)
     {
-        this.shaders = {};
-        this.materials = {};
-        this.meshes = {};
-        this.textures = {};
-        this.spritesheets = {};
-
         this.createSomeShaders( gl );
     }
 
@@ -24,6 +19,7 @@ class ResourceManager
         for( let key in this.meshes ) { this.meshes[key].free(); delete this.meshes[key]; };
         for( let key in this.textures ) { this.textures[key].free(); delete this.textures[key]; };
         for( let key in this.spritesheets ) { this.spritesheets[key].free(); delete this.spritesheets[key]; };
+        for( let key in this.animations ) { this.animations[key].free(); delete this.animations[key]; };
     }
 
     createSomeShaders(gl: WebGL2RenderingContext)
