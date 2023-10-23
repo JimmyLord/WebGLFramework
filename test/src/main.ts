@@ -29,10 +29,7 @@ class MainProject
 
     init()
     {
-        if( this.framework.gl == null ) return;
-
         let resources = this.framework.resources;
-        if( resources == null ) return;
 
         this.scene.init( true );
         
@@ -72,7 +69,7 @@ class MainProject
 
     loadState()
     {
-        if( this.framework.storage != null && this.scene.camera != null )
+        if( this.framework.storage != null )
         {
             this.scene.camera.fromJSON( this.framework.storage["cameraState"] );
         }
@@ -96,10 +93,6 @@ class MainProject
 
     update(deltaTime: number, runningTime: number)
     {
-        if( this.framework == null ) return;
-        if( this.framework.resources == null ) return;
-        if( this.scene.camera == null ) return;
-
         this.scene.update( deltaTime, runningTime );
 
         this.scene.entities[1].position.x = Math.cos( runningTime );
@@ -139,7 +132,6 @@ class MainProject
         this.framework.drawImGuiTestWindow();
 
         let imgui = this.framework.imgui;
-        if( imgui == null ) return;
 
         imgui.window( "ImGui Test" );
         if( imgui.checkbox( "Auto refresh", this.framework.autoRefresh ) )
@@ -197,8 +189,6 @@ class MainProject
 
     draw()
     {
-        if( this.scene.camera == null ) return;
-
         this.scene.draw( this.scene.camera );
 
         // Draw the particles.
@@ -220,9 +210,6 @@ class MainProject
 
     onMouseMove(x: number, y: number)
     {
-        if( this.scene.camera == null ) return;
-        if( this.framework.canvas == null ) return;
-
         if( this.objectFollowsMouse )
         {
             let worldPos: vec2 = this.scene.camera.convertScreenToWorld( this.framework.canvas, x, y );
@@ -237,21 +224,18 @@ class MainProject
 
     onMouseDown(buttonID: number, x: number, y: number)
     {
-        if( this.scene.camera == null ) return;
         this.stateIsDirty = this.scene.camera.onMouseDown( buttonID, x, y );
         this.framework.refresh();
     }
 
     onMouseUp(buttonID: number, x: number, y: number)
     {
-        if( this.scene.camera == null ) return;
         this.stateIsDirty = this.scene.camera.onMouseUp( buttonID, x, y );
         this.framework.refresh();
     }
 
     onMouseWheel(direction: number)
     {
-        if( this.scene.camera == null ) return;
         this.stateIsDirty = this.scene.camera.onMouseWheel( direction );
         this.framework.refresh();
     }

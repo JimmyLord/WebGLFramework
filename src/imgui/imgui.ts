@@ -91,8 +91,6 @@ class ImGui
 
     constructor(gl: WebGL2RenderingContext, canvas: HTMLCanvasElement)
     {
-        if( gl == null ) throw new Error( "ImGui constructor: gl is null." );
-
         this.gl = gl;
         this.canvas = canvas;
 

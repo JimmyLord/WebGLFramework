@@ -13,10 +13,10 @@ let modifierKeyFlag =
 
 class FrameworkMain
 {
-    canvas: HTMLCanvasElement | null = null;
-    gl: WebGL2RenderingContext | null = null;
-    resources: ResourceManager | null = null;
-    imgui: ImGui | null = null;
+    canvas: HTMLCanvasElement;
+    gl: WebGL2RenderingContext;
+    resources: ResourceManager;
+    imgui: ImGui;
     storage: Storage | null = null;
     runnableObject: any;
     showFPSCounter: boolean;
@@ -41,6 +41,18 @@ class FrameworkMain
     
     constructor()
     {
+        if( document.currentScript == null ) { throw( "Failed to find current script." ); }
+
+        let canvasName = document.currentScript.getAttribute( "canvasName" );
+        if( canvasName == null ) { throw( "Failed to find canvasName attribute on current script." ); }
+
+        this.canvas = <HTMLCanvasElement> document.getElementById( canvasName );
+        if( this.canvas == null ) { throw( "Failed to find canvas with name: " + canvasName ); }
+
+        let gl = this.canvas.getContext( "webgl2" );
+        if( gl == null ) { throw( "Failed to get WebGL context from canvas." ); }
+        this.gl = gl;
+
         // Main object receiving update/draw/input calls.
         this.runnableObject = null;
 
@@ -80,27 +92,6 @@ class FrameworkMain
             }
         }
 
-        if( document.currentScript )
-        {
-            let canvasName = document.currentScript.getAttribute( "canvasName" );
-            if( canvasName )
-            {
-                this.canvas = <HTMLCanvasElement> document.getElementById( canvasName );
-                if( this.canvas )
-                {
-                    let gl = this.canvas.getContext( "webgl2" );
-                    if( gl == null )
-                    {
-                        console.log( "Failed to get WebGL context from canvas." );
-                        return;
-                    }
-                    this.gl = gl;
-                }
-            }
-        }
-
-        let gl = this.gl;
-
         // Get local storage.
         try { this.storage = window.localStorage }
         catch( e ) { this.storage = null; }
@@ -136,39 +127,33 @@ class FrameworkMain
         }
 
         // Correct the canvas size for requested pixel ratio.
-        if( this.canvas && gl )
+        this.canvas.width *= window.devicePixelRatio;
+        this.canvas.height *= window.devicePixelRatio;
+        this.canvas.style.width = (this.canvas.width / window.devicePixelRatio) + 'px';
+        this.canvas.style.height = (this.canvas.height / window.devicePixelRatio) + 'px';
+        
+        // Create an imgui instance.
+        this.imgui = new ImGui( gl, this.canvas );
+        if( this.storage !== null )
         {
-            this.canvas.width *= window.devicePixelRatio;
-            this.canvas.height *= window.devicePixelRatio;
-            this.canvas.style.width = (this.canvas.width / window.devicePixelRatio) + 'px';
-            this.canvas.style.height = (this.canvas.height / window.devicePixelRatio) + 'px';
-            
-            // Create an imgui instance.
-            this.imgui = new ImGui( gl, this.canvas );
-            if( this.storage !== null )
-            {
-                this.imgui.loadState( this.storage[ "imguiState" ] );
-            }
+            this.imgui.loadState( this.storage[ "imguiState" ] );
+        }
 
-            if( iPad )
-            {
-                this.imgui.scale = 4;
-            }
+        if( iPad )
+        {
+            this.imgui.scale = 4;
         }
     
+        // Set up some base common resources.
+        let resources = new ResourceManager( gl );
+        this.resources = resources;
+        
         // Set up some basic GL state.
-        if( gl )
-        {
-            // Set up some base common resources.
-            let resources = new ResourceManager( gl );
-            this.resources = resources;
-
-            gl.enable( gl.DEPTH_TEST );
-            gl.depthFunc( gl.LEQUAL );
-            gl.enable( gl.CULL_FACE );
-            gl.cullFace( gl.BACK );
-            gl.frontFace( gl.CW );
-        }
+        gl.enable( gl.DEPTH_TEST );
+        gl.depthFunc( gl.LEQUAL );
+        gl.enable( gl.CULL_FACE );
+        gl.cullFace( gl.BACK );
+        gl.frontFace( gl.CW );
 
         // Bound functions for callbacks.
         this.updateThis = this.update.bind( this );
@@ -188,9 +173,6 @@ class FrameworkMain
     
     update(currentTime: number)
     {
-        if( this.canvas == null ) return;
-        if( this.imgui == null ) return;
-
         vec2.resetTemps();
         vec3.resetTemps();
         vec4.resetTemps();
@@ -235,10 +217,6 @@ class FrameworkMain
     
     draw()
     {
-        if( this.canvas == null ) return;
-        if( this.gl == null ) return;
-        if( this.imgui == null ) return;
-
         let gl = this.gl;
         
         gl.viewport( 0, 0, this.canvas.width, this.canvas.height );
@@ -292,8 +270,6 @@ class FrameworkMain
 
     drawImGuiTestWindow()
     {
-        if( this.imgui == null ) return;
-
         this.imgui.window( "ImGui Test" );
         //this.imgui.windows["ImGui Test"].size.setF32( 143, 120 );
         this.imgui.text( "Te" );
@@ -354,8 +330,6 @@ class FrameworkMain
     
     onResize(event: UIEvent)
     {
-        if( this.canvas == null ) return;
-
         if( this.fullFrame )
         {
             this.canvas.width = window.innerWidth;
@@ -428,8 +402,6 @@ class FrameworkMain
 
     onTouchStart(event: TouchEvent)
     {
-        if( this.imgui == null ) return;
-
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
         {
@@ -591,8 +563,6 @@ class FrameworkMain
 
     onMouseOver(event: MouseEvent)
     {
-        if( this.canvas == null ) return;
-
         // Should fire when page is loaded... but seems inconsistant on FireFox.
         // Mainly needed to prevent a bug if mouseDown is sent before mouseMove.
         //    Imgui won't have had a chance to check if the mouse is hovering over any window or control
@@ -609,8 +579,6 @@ class FrameworkMain
 
     onMouseMove(event: any)
     {
-        if( this.canvas == null ) return;
-
         let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
         let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
 
@@ -628,8 +596,6 @@ class FrameworkMain
 
     onMouseDown(event: any)
     {
-        if( this.canvas == null ) return;
-
         //console.log( "onMouseDown" );
 
         let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
@@ -650,8 +616,6 @@ class FrameworkMain
 
     onMouseUp(event: any)
     {
-        if( this.canvas == null ) return;
-
         //console.log( "onMouseUp" );
 
         let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
@@ -672,8 +636,6 @@ class FrameworkMain
 
     onMouseWheel(event: WheelEvent)
     {
-        if( this.canvas == null ) return;
-
         let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
         let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
 
@@ -707,7 +669,7 @@ class FrameworkMain
         {
             this.imgui.keyBuffer.push( event.key );
 
-            if( this.imgui.controlInEditMode !== null )
+            if( this.imgui.controlInEditMode != null )
             {
                 event.preventDefault();
                 return false;
@@ -738,7 +700,6 @@ class FrameworkMain
         if( this.resources )
         {
             this.resources.free();
-            this.resources = null;
         }
 
         if( this.gl )
@@ -746,7 +707,6 @@ class FrameworkMain
             this.gl.disableVertexAttribArray( 0 );
             this.gl.canvas.width = 1;
             this.gl.canvas.height = 1;
-            this.gl = null;
         }
 
         if( this.runnableObject.shutdown )

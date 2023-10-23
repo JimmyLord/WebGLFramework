@@ -3,27 +3,30 @@ class Scene
     framework: FrameworkMain;
     entities: Entity[] = [];
     lights: Light[];
-    camera: Camera | null = null;
+    camera: Camera;
     orthoHeight: number;
 
-    constructor(framework: FrameworkMain)
+    constructor(framework: FrameworkMain, camera: Camera | null = null)
     {
         this.framework = framework;
         this.entities = [];
         this.lights = [];
-        this.camera = null;
         this.orthoHeight = 0;
-    }
 
-    init(loadDefaultResources: boolean)
-    {
         // Create a default camera if one isn't made before the call to init.
-        if( this.camera == null )
+        if( camera == null )
         {
             this.orthoHeight = 2;
             this.camera = new Camera( new vec3(0, 0, -3), true, this.orthoHeight, this.framework );
         }
+        else
+        {
+            this.camera = camera;
+        }
+    }
 
+    init(loadDefaultResources: boolean)
+    {
         if( loadDefaultResources && this.framework.resources && this.framework.gl )
         {
             let resources = this.framework.resources;
@@ -65,7 +68,6 @@ class Scene
         if( this.camera )
         {
             this.camera.free();
-            this.camera = null;
         }
     }
 
