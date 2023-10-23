@@ -1,12 +1,17 @@
 class color
 {
+    r: number = 1;
+    g: number = 1;
+    b: number = 1;
+    a: number = 1;
+
     // Temp vars to avoid GC.
     // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
     // Bigger warning: This is a terrible idea and will lead to very hard to debug issues.
     //                 I'm keeping it for now since I'm trying to minimize garbage collection.
     //static tempColors = [ new color, new color, new color, new color, new color, new color, new color, new color, new color, new color ];
     //static currentTempIndex = 0;
-    static getTemp(r = 255, g = r, b = r, a = 255)
+    static getTemp(r: number = 255, g: number = r, b: number = r, a: number = 255)
     {
         let t = color_tempVecs[color_currentTempIndex];
         t.r = r;
@@ -19,26 +24,26 @@ class color
         return t;
     }
 
-    constructor(r,g=undefined,b=undefined,a=undefined)
+    constructor(r: any, g: number = 0, b: number = 0, a: number = 0)
     {
-        if( g === undefined ) // r is a color class.
+        if( r instanceof color )
         {
             this.r = r.r; this.g = r.g; this.b = r.b; this.a = r.a;
         }
-        else // rgba separate.
+        else if( typeof r === "number" )
         {
             this.r = r; this.g = g; this.b = b; this.a = a;
         }
     }
 
-    set(r,g,b,a)
+    set(r: number, g: number, b: number, a: number)
     {
         this.r = r; this.g = g; this.b = b; this.a = a;
     }
 
-    setFromColor(color)
+    setFromColor(o: color)
     {
-        this.r = color.r; this.g = color.g; this.b = color.b; this.a = color.a;
+        this.r = o.r; this.g = o.g; this.b = o.b; this.a = o.a;
     }
 }
 

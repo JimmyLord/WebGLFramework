@@ -1,6 +1,12 @@
 class ResourceManager
 {
-    constructor(gl)
+    shaders: { [key: string]: Shader };
+    materials: { [key: string]: Material };
+    meshes: { [key: string]: Mesh };
+    textures: { [key: string]: Texture };
+    spritesheets: { [key: string]: SpriteSheet };
+    
+    constructor(gl: WebGL2RenderingContext)
     {
         this.shaders = {};
         this.materials = {};
@@ -14,22 +20,13 @@ class ResourceManager
     free()
     {
         for( let key in this.shaders ) { this.shaders[key].free(); delete this.shaders[key]; };
-        this.shaders = null;
-
         for( let key in this.materials ) { this.materials[key].free(); delete this.materials[key]; };
-        this.materials = null;
-
         for( let key in this.meshes ) { this.meshes[key].free(); delete this.meshes[key]; };
-        this.meshes = null;
-
         for( let key in this.textures ) { this.textures[key].free(); delete this.textures[key]; };
-        this.textures = null;
-
         for( let key in this.spritesheets ) { this.spritesheets[key].free(); delete this.spritesheets[key]; };
-        this.spritesheets = null;
     }
 
-    createSomeShaders(gl)
+    createSomeShaders(gl: WebGL2RenderingContext)
     {
         let shaderSourceMediumP = `
             precision mediump float;

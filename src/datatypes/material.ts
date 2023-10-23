@@ -3,19 +3,20 @@ let material_defaultUVTransform = new vec4(1,1,0,0); // xy = scale, zw = offset.
 
 class Material
 {
-    constructor(shader, color, texture, uvTransform = material_defaultUVTransform)
+    shader: Shader;
+    uvTransform: vec4;
+    col: color;
+    texture: Texture | null = null;
+
+    constructor(shader: Shader, col: color, texture: Texture | null = null, uvTransform: vec4 = material_defaultUVTransform)
     {
         this.shader = shader;
         this.uvTransform = uvTransform;
-        this.color = color;
+        this.col = col;
         this.texture = texture;
     }
 
     free()
     {
-        this.shader = null;
-        this.uvTransform = null;
-        this.color = null;
-        this.texture = null;
     }
 }

@@ -1,6 +1,10 @@
 class Light
 {
-    constructor(position, color, radius)
+    position: vec3;
+    color: color;
+    radius: number;
+
+    constructor(position: vec3, color: color, radius: number)
     {
         this.position = position;
         this.color = color;
@@ -9,8 +13,5 @@ class Light
 
     free()
     {
-        this.position = null;
-        this.color = null;
-        this.radius = null;
     }
 }

@@ -1,6 +1,13 @@
 class SpriteSheet
 {
-    constructor(jsonUrl, shader, texture)
+    shader: Shader;
+    texture: Texture;
+    jsonUrl: string;
+    defaultMaterial: Material;
+    materials: { [key: string]: Material };
+    loaded: boolean;
+
+    constructor(jsonUrl: string, shader: Shader, texture: Texture)
     {
         this.shader = shader;
         this.texture = texture;
@@ -10,6 +17,15 @@ class SpriteSheet
         this.loaded = false;
 
         this.load();
+    }
+
+    free()
+    {
+        for( let key in this.materials )
+        {
+            this.materials[key].free();
+            delete this.materials[key];
+        }
     }
 
     load()
@@ -63,7 +79,7 @@ class SpriteSheet
         });
     }
 
-    getMaterial(spriteName)
+    getMaterial(spriteName: string)
     {
         // If the spriteName doesn't exist, create a new material for each requested sprite.
         // The correct UV transform will be set once the spritesheet is loaded, if ever.

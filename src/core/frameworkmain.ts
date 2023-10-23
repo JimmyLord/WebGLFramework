@@ -13,6 +13,32 @@ let modifierKeyFlag =
 
 class FrameworkMain
 {
+    canvas: HTMLCanvasElement | null = null;
+    gl: WebGL2RenderingContext | null = null;
+    resources: ResourceManager | null = null;
+    imgui: ImGui | null = null;
+    storage: Storage | null = null;
+    runnableObject: any;
+    showFPSCounter: boolean;
+    autoRefresh: boolean;
+    maxDeltaTime: number;
+    clearColor: color;
+    pauseOnFocusLoss: boolean;
+    runningTime: number;
+    FPS: number;
+    isVisible: boolean;
+    frameCountInLastSecond: number;
+    timeToNextFPSUpdate: number;
+    lastTimeRefreshCalled: number;
+    lastTime: number;
+    keyStates: any;
+    mousePosition: vec2;
+    mouseButtons: boolean[];
+    simulateMouseWithFirstFinger: boolean;
+    touches: TouchPoint[];
+    fullFrame: boolean = false;
+    updateThis: any;
+    
     constructor()
     {
         // Main object receiving update/draw/input calls.
@@ -54,15 +80,26 @@ class FrameworkMain
             }
         }
 
-        // Get the canvas and the OpenGL context.
-        this.canvas = document.getElementById( document.currentScript.getAttribute( "canvasName" ) );
-        let gl = this.canvas.getContext( "webgl2" );
-        if( gl === 0 )
+        if( document.currentScript )
         {
-            console.log( "Failed to get WebGL context from canvas." );
-            return;
+            let canvasName = document.currentScript.getAttribute( "canvasName" );
+            if( canvasName )
+            {
+                this.canvas = <HTMLCanvasElement> document.getElementById( canvasName );
+                if( this.canvas )
+                {
+                    let gl = this.canvas.getContext( "webgl2" );
+                    if( gl == null )
+                    {
+                        console.log( "Failed to get WebGL context from canvas." );
+                        return;
+                    }
+                    this.gl = gl;
+                }
+            }
         }
-        this.gl = gl;
+
+        let gl = this.gl;
 
         // Get local storage.
         try { this.storage = window.localStorage }
@@ -76,53 +113,68 @@ class FrameworkMain
 
         // Set the size of the canvas.
         this.fullFrame = false;
-        if( document.currentScript.getAttribute( "fullFrame" ) === "true" ||
-            document.currentScript.getAttribute( "fullFrame" ) === "1" )
+        if( document.currentScript && this.canvas )
         {
-            this.fullFrame = true;
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
-        }
-        else
-        {
-            this.canvas.width = document.currentScript.getAttribute( "width" );
-            this.canvas.height = document.currentScript.getAttribute( "height" );
+            if( document.currentScript.getAttribute( "fullFrame" ) === "true" ||
+                document.currentScript.getAttribute( "fullFrame" ) === "1" )
+            {
+                this.fullFrame = true;
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            else
+            {
+                let strWidth = document.currentScript.getAttribute( "width" );
+                let strHeight = document.currentScript.getAttribute( "height" );
+
+                if( strWidth && strHeight )
+                {
+                    this.canvas.width = Number( strWidth );
+                    this.canvas.height = Number( strHeight );
+                }
+            }
         }
 
         // Correct the canvas size for requested pixel ratio.
-        this.canvas.width *= window.devicePixelRatio;
-        this.canvas.height *= window.devicePixelRatio;
-        this.canvas.style.width = (this.canvas.width / window.devicePixelRatio) + 'px';
-        this.canvas.style.height = (this.canvas.height / window.devicePixelRatio) + 'px';
-        
-        // Create an imgui instance.
-        this.imgui = new ImGui( this.gl, this.canvas );
-        if( this.storage !== null )
+        if( this.canvas && gl )
         {
-            this.imgui.loadState( this.storage[ "imguiState" ] );
-        }
+            this.canvas.width *= window.devicePixelRatio;
+            this.canvas.height *= window.devicePixelRatio;
+            this.canvas.style.width = (this.canvas.width / window.devicePixelRatio) + 'px';
+            this.canvas.style.height = (this.canvas.height / window.devicePixelRatio) + 'px';
+            
+            // Create an imgui instance.
+            this.imgui = new ImGui( gl, this.canvas );
+            if( this.storage !== null )
+            {
+                this.imgui.loadState( this.storage[ "imguiState" ] );
+            }
 
-        if( iPad )
-        {
-            this.imgui.scale = 4;
+            if( iPad )
+            {
+                this.imgui.scale = 4;
+            }
         }
     
-        // Set up some base common resources.
-        let resources = new ResourceManager( gl );
-        this.resources = resources;
-
         // Set up some basic GL state.
-        gl.enable( gl.DEPTH_TEST );
-        gl.depthFunc( gl.LEQUAL );
-        gl.enable( gl.CULL_FACE );
-        gl.cullFace( gl.BACK );
-        gl.frontFace( gl.CW );
+        if( gl )
+        {
+            // Set up some base common resources.
+            let resources = new ResourceManager( gl );
+            this.resources = resources;
+
+            gl.enable( gl.DEPTH_TEST );
+            gl.depthFunc( gl.LEQUAL );
+            gl.enable( gl.CULL_FACE );
+            gl.cullFace( gl.BACK );
+            gl.frontFace( gl.CW );
+        }
 
         // Bound functions for callbacks.
         this.updateThis = this.update.bind( this );
     }
 
-    run(runnableObject)
+    run(runnableObject: MainProject)
     {
         // Initial state for running.
         this.runnableObject = runnableObject;
@@ -134,8 +186,11 @@ class FrameworkMain
         this.refresh( true );
     }
     
-    update(currentTime)
+    update(currentTime: number)
     {
+        if( this.canvas == null ) return;
+        if( this.imgui == null ) return;
+
         vec2.resetTemps();
         vec3.resetTemps();
         vec4.resetTemps();
@@ -180,6 +235,10 @@ class FrameworkMain
     
     draw()
     {
+        if( this.canvas == null ) return;
+        if( this.gl == null ) return;
+        if( this.imgui == null ) return;
+
         let gl = this.gl;
         
         gl.viewport( 0, 0, this.canvas.width, this.canvas.height );
@@ -233,13 +292,16 @@ class FrameworkMain
 
     drawImGuiTestWindow()
     {
+        if( this.imgui == null ) return;
+
         this.imgui.window( "ImGui Test" );
         //this.imgui.windows["ImGui Test"].size.setF32( 143, 120 );
         this.imgui.text( "Te" );
         this.imgui.sameLine();
         this.imgui.text( "st" );
-        this.imgui.text( "Pos:   " + Math.trunc( this.imgui.windows["ImGui Test"].position.x ) + "," + Math.trunc( this.imgui.windows["ImGui Test"].position.y ) );
-        this.imgui.text( "Size:  " + Math.trunc( this.imgui.windows["ImGui Test"].size.x ) + "," + Math.trunc( this.imgui.windows["ImGui Test"].size.y ) );
+        let window = this.imgui.windows["ImGui Test"];
+        this.imgui.text( "Pos:   " + Math.trunc( window.position.x ) + "," + Math.trunc( window.position.y ) );
+        this.imgui.text( "Size:  " + Math.trunc( window.size.x ) + "," + Math.trunc( window.size.y ) );
         this.imgui.text( "Mouse: " + this.mousePosition.x + "," + this.mousePosition.y );
 
         this.imgui.window( "ImGui Test" );
@@ -277,7 +339,7 @@ class FrameworkMain
         document.addEventListener( "focus",            (event) => this.onFocus(event),            false );
     }
 
-    onBeforeUnload(event)
+    onBeforeUnload(event: BeforeUnloadEvent)
     {
         if( this.runnableObject.onBeforeUnload )
         {
@@ -285,13 +347,15 @@ class FrameworkMain
         }
     }
 
-    onUnload(event)
+    onUnload(event: Event)
     {
         this.shutdown();
     }
     
-    onResize(event)
+    onResize(event: UIEvent)
     {
+        if( this.canvas == null ) return;
+
         if( this.fullFrame )
         {
             this.canvas.width = window.innerWidth;
@@ -311,7 +375,7 @@ class FrameworkMain
         }
     }
 
-    onPopState(event)
+    onPopState(event: PopStateEvent)
     {
         if( this.runnableObject.onPopState )
         {
@@ -319,7 +383,7 @@ class FrameworkMain
         }
     }
 
-    onHashChange(event)
+    onHashChange(event: HashChangeEvent)
     {
         if( this.runnableObject.onHashChange )
         {
@@ -339,7 +403,7 @@ class FrameworkMain
         return null;
     }
 
-    getTouchPointByID(id)
+    getTouchPointByID(id: number)
     {
         for( let i=0; i<this.touches.length; i++ )
         {
@@ -350,7 +414,7 @@ class FrameworkMain
         return null;
     }
 
-    removeTouch(id)
+    removeTouch(id: number)
     {
         for( let i=0; i<this.touches.length; i++ )
         {
@@ -362,8 +426,10 @@ class FrameworkMain
         }
     }
 
-    onTouchStart(event)
+    onTouchStart(event: TouchEvent)
     {
+        if( this.imgui == null ) return;
+
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
         {
@@ -382,8 +448,8 @@ class FrameworkMain
                 // TODO: Fix for GC.
                 let fakeMouseEvent = {
                     which: 1,
-                    layerX: firstTouch.x,
-                    layerY: firstTouch.y,
+                    offsetX: firstTouch.x,
+                    offsetY: firstTouch.y,
                 }
 
                 this.onMouseMove( fakeMouseEvent );
@@ -395,12 +461,11 @@ class FrameworkMain
         }
 
         //// Cancel default event action.
-        //if( event.preventDefault ) event.preventDefault();
-        //else event.returnValue = false;
+        //event.preventDefault();
         //return false;
     }
 
-    onTouchMove(event)
+    onTouchMove(event: TouchEvent)
     {
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
@@ -408,7 +473,7 @@ class FrameworkMain
             let t = this.getTouchPointByID( changedTouches[i].identifier );
             if( t !== null )
             {
-                t.set( changedTouches[i].clientX, changedTouches[i].clientY );
+                t.set( changedTouches[i].clientX, changedTouches[i].clientY, i, false );
             }
         }
 
@@ -422,8 +487,8 @@ class FrameworkMain
                 // TODO: Fix for GC.
                 let fakeMouseEvent = {
                     which: 1,
-                    layerX: firstTouch.x,
-                    layerY: firstTouch.y,
+                    offsetX: firstTouch.x,
+                    offsetY: firstTouch.y,
                 }
 
                 this.onMouseMove( fakeMouseEvent );
@@ -433,12 +498,11 @@ class FrameworkMain
         }
 
         //// Cancel default event action.
-        //if( event.preventDefault ) event.preventDefault();
-        //else event.returnValue = false;
+        //event.preventDefault();
         //return false;
     }
 
-    onTouchEnd(event)
+    onTouchEnd(event: TouchEvent)
     {
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
@@ -446,7 +510,7 @@ class FrameworkMain
             let t = this.getTouchPointByID( changedTouches[i].identifier );
             if( t !== null )
             {
-                t.set( changedTouches[i].clientX, changedTouches[i].clientY );
+                t.set( changedTouches[i].clientX, changedTouches[i].clientY, i, false );
             }
         }
 
@@ -460,8 +524,8 @@ class FrameworkMain
                 // TODO: Fix for GC.
                 let fakeMouseEvent = {
                     which: 1,
-                    layerX: firstTouch.x,
-                    layerY: firstTouch.y,
+                    offsetX: firstTouch.x,
+                    offsetY: firstTouch.y,
                 }
 
                 this.onMouseMove( fakeMouseEvent );
@@ -478,12 +542,11 @@ class FrameworkMain
         }
 
         //// Cancel default event action.
-        //if( event.preventDefault ) event.preventDefault();
-        //else event.returnValue = false;
+        //event.preventDefault();
         //return false;
     }
 
-    onTouchCancel(event)
+    onTouchCancel(event: TouchEvent)
     {
         // Remove these touches from the list.
         let changedTouches = event.changedTouches;
@@ -493,12 +556,11 @@ class FrameworkMain
         }
 
         //// Cancel default event action.
-        //if( event.preventDefault ) event.preventDefault();
-        //else event.returnValue = false;
+        //event.preventDefault();
         //return false;
     }
 
-    onBlur(event)
+    onBlur(event: FocusEvent)
     {
         //console.log( "Focus lost" );
 
@@ -511,7 +573,7 @@ class FrameworkMain
         }
     }
 
-    onFocus(event)
+    onFocus(event: FocusEvent)
     {
         //console.log( "Focus gained" );
 
@@ -527,27 +589,30 @@ class FrameworkMain
         this.refresh( true );
     }
 
-    onMouseOver(event)
+    onMouseOver(event: MouseEvent)
     {
+        if( this.canvas == null ) return;
+
         // Should fire when page is loaded... but seems inconsistant on FireFox.
         // Mainly needed to prevent a bug if mouseDown is sent before mouseMove.
         //    Imgui won't have had a chance to check if the mouse is hovering over any window or control
         //    since it doesn't know the mouse position until it's too late.
-        let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
-        let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
+        let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
+        let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
 
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
 
         // Cancel default event action.
-        if( event.preventDefault ) event.preventDefault();
-        else event.returnValue = false;
+        event.preventDefault();
         return false;
     }
 
-    onMouseMove(event)
+    onMouseMove(event: any)
     {
-        let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
-        let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
+        if( this.canvas == null ) return;
+
+        let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
+        let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
 
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
 
@@ -557,17 +622,18 @@ class FrameworkMain
         }
 
         // Cancel default event action.
-        if( event.preventDefault ) event.preventDefault();
-        else event.returnValue = false;
+        event.preventDefault();
         return false;
     }
 
-    onMouseDown(event)
+    onMouseDown(event: any)
     {
+        if( this.canvas == null ) return;
+
         //console.log( "onMouseDown" );
 
-        let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
-        let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
+        let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
+        let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
 
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
         this.mouseButtons[ event.which-1 ] = true;
@@ -578,36 +644,38 @@ class FrameworkMain
         }
 
         // Cancel default event action.
-        if( event.preventDefault ) event.preventDefault();
-        else event.returnValue = false;
+        event.preventDefault();
         return false;
     }
 
-    onMouseUp(event)
+    onMouseUp(event: any)
     {
+        if( this.canvas == null ) return;
+
         //console.log( "onMouseUp" );
 
-        let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
-        let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
+        let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
+        let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
 
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
         this.mouseButtons[ event.which-1 ] = false;
 
         if( this.runnableObject.onMouseUp )
         {
-            this.runnableObject.onMouseUp( event.which-1, x, y );
+            this.runnableObject.onMouseUp( event.which-1, this.mousePosition.x, this.mousePosition.y );
         }
 
         // Cancel default event action.
-        if( event.preventDefault ) event.preventDefault();
-        else event.returnValue = false;
+        event.preventDefault();
         return false;
     }
 
-    onMouseWheel(event)
+    onMouseWheel(event: WheelEvent)
     {
-        let x = (event.layerX - this.canvas.offsetLeft) * window.devicePixelRatio;
-        let y = (event.layerY - this.canvas.offsetTop) * window.devicePixelRatio;
+        if( this.canvas == null ) return;
+
+        let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
+        let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
 
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
         let direction = Math.sign( event.deltaY );
@@ -618,7 +686,7 @@ class FrameworkMain
         }
     }
 
-    onKeyDown(event)
+    onKeyDown(event: KeyboardEvent)
     {
         this.keyStates[event.key] = 1;
 
@@ -635,16 +703,19 @@ class FrameworkMain
             this.runnableObject.onKeyDown( event.key, event.keyCode, modifierKeys );
         }
 
-        this.imgui.keyBuffer.push( event.key );
-
-        if( this.imgui.controlInEditMode !== null )
+        if( this.imgui )
         {
-            event.preventDefault();
-            return false;
+            this.imgui.keyBuffer.push( event.key );
+
+            if( this.imgui.controlInEditMode !== null )
+            {
+                event.preventDefault();
+                return false;
+            }
         }
     }
 
-    onKeyUp(event)
+    onKeyUp(event: KeyboardEvent)
     {
         this.keyStates[event.key] = 0;
 
@@ -664,13 +735,19 @@ class FrameworkMain
 
     shutdown()
     {
-        this.gl.disableVertexAttribArray( 0 );
+        if( this.resources )
+        {
+            this.resources.free();
+            this.resources = null;
+        }
 
-        this.resources.free();
-        this.resources = null;
-
-        this.gl.canvas.width = 1;
-        this.gl.canvas.height = 1;
+        if( this.gl )
+        {
+            this.gl.disableVertexAttribArray( 0 );
+            this.gl.canvas.width = 1;
+            this.gl.canvas.height = 1;
+            this.gl = null;
+        }
 
         if( this.runnableObject.shutdown )
         {
@@ -683,7 +760,12 @@ class FrameworkMain
 
 class TouchPoint
 {
-    constructor(x, y, id, wasFirst)
+    x: number;
+    y: number;
+    id: number;
+    wasFirstFinger: boolean;
+
+    constructor(x: number, y: number, id: number, wasFirst: boolean)
     {
         this.x = x;
         this.y = y;
@@ -691,7 +773,7 @@ class TouchPoint
         this.wasFirstFinger = wasFirst;
     }
 
-    set(x, y, id, wasFirst)
+    set(x: number, y: number, id: number, wasFirst: boolean)
     {
         this.x = x;
         this.y = y;

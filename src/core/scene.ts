@@ -1,6 +1,12 @@
 class Scene
 {
-    constructor(framework)
+    framework: FrameworkMain;
+    entities: Entity[] = [];
+    lights: Light[];
+    camera: Camera | null = null;
+    orthoHeight: number;
+
+    constructor(framework: FrameworkMain)
     {
         this.framework = framework;
         this.entities = [];
@@ -9,16 +15,16 @@ class Scene
         this.orthoHeight = 0;
     }
 
-    init(loadDefaultResources)
+    init(loadDefaultResources: boolean)
     {
         // Create a default camera if one isn't made before the call to init.
-        if( this.camera === null )
+        if( this.camera == null )
         {
             this.orthoHeight = 2;
             this.camera = new Camera( new vec3(0, 0, -3), true, this.orthoHeight, this.framework );
         }
 
-        if( loadDefaultResources )
+        if( loadDefaultResources && this.framework.resources && this.framework.gl )
         {
             let resources = this.framework.resources;
             let gl = this.framework.gl;
@@ -54,31 +60,39 @@ class Scene
     {
         this.entities.forEach( entity => entity.free() );
         this.entities.length = 0;
-        this.entities = null;
+        this.entities = [];
 
-        this.camera.free();
-        this.camera = null;
+        if( this.camera )
+        {
+            this.camera.free();
+            this.camera = null;
+        }
     }
 
-    update(deltaTime, currentTime)
+    update(deltaTime: number, currentTime: number)
     {
-        this.camera.desiredHeight = this.orthoHeight;
-
-        this.camera.update();
+        if( this.camera )
+        {
+            this.camera.desiredHeight = this.orthoHeight;
+            this.camera.update();
+        }
     }
 
-    draw(camera)
+    draw(camera: Camera)
     {
         this.entities.forEach( entity => entity.draw( camera, this.lights ) );
     }
 
-    add(entity)
+    add(entity: Entity)
     {
         this.entities.push( entity );
     }
 
     onResize()
     {
-        this.camera.onResize();
+        if( this.camera )
+        {
+            this.camera.onResize();
+        }
     }
 }

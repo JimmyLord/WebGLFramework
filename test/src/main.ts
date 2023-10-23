@@ -1,9 +1,20 @@
 class MainProject
 {
-    constructor(framework)
+    framework: FrameworkMain;
+    scene: Scene;
+    objectFollowsMouse: boolean;
+    cubeRotates: boolean;
+
+    stateIsDirty: boolean;
+
+    maxParticles: number = 10000;
+    particles: any[] = [];
+    particleObject: Entity | null = null;
+
+    constructor(framework: FrameworkMain)
     {
         this.framework = framework;
-        this.scene = null;
+        this.scene = new Scene( this.framework );
         this.objectFollowsMouse = true;
         this.cubeRotates = true;
 
@@ -18,9 +29,10 @@ class MainProject
 
     init()
     {
-        let resources = this.framework.resources;
+        if( this.framework.gl == null ) return;
 
-        this.scene = new Scene( this.framework );
+        let resources = this.framework.resources;
+        if( resources == null ) return;
 
         this.scene.init( true );
         
@@ -39,8 +51,6 @@ class MainProject
         this.scene.lights.push( new Light( new vec3(-4,0, 9), new color(0,0,1,1), 6 ) );
 
         // Testing particle rendering.
-        this.maxParticles = 10000;
-        this.particles = [];
         resources.meshes["particles"] = new MeshDynamic( this.framework.gl );
         resources.meshes["particles"].startShape( this.framework.gl.TRIANGLES, this.maxParticles*6 ); // Max 1000 sprites
         this.particleObject = new Entity( new vec3(0), new vec3(0), new vec3(1), resources.meshes["particles"], resources.materials["red"] );
@@ -51,15 +61,18 @@ class MainProject
             this.particles[i].vel = new vec3( Math.random() * 2 - 1, Math.random() * 2 - 1, 0 );
         }
 
-        this.scene.camera.isOrtho = false;
-        this.scene.camera.recalculateProjection();
+        if( this.scene.camera )
+        {
+            this.scene.camera.isOrtho = false;
+            this.scene.camera.recalculateProjection();
+        }
 
         this.loadState();
     }
 
     loadState()
     {
-        if( this.framework.storage != null )
+        if( this.framework.storage != null && this.scene.camera != null )
         {
             this.scene.camera.fromJSON( this.framework.storage["cameraState"] );
         }
@@ -81,10 +94,11 @@ class MainProject
         }
     }
 
-    update(deltaTime, runningTime)
+    update(deltaTime: number, runningTime: number)
     {
-        if( this.framework === null )
-            return;
+        if( this.framework == null ) return;
+        if( this.framework.resources == null ) return;
+        if( this.scene.camera == null ) return;
 
         this.scene.update( deltaTime, runningTime );
 
@@ -125,6 +139,8 @@ class MainProject
         this.framework.drawImGuiTestWindow();
 
         let imgui = this.framework.imgui;
+        if( imgui == null ) return;
+
         imgui.window( "ImGui Test" );
         if( imgui.checkbox( "Auto refresh", this.framework.autoRefresh ) )
         {
@@ -167,23 +183,29 @@ class MainProject
         //imgui.endWindow( true );
 
         // Testing particle rendering.
-        this.framework.resources.meshes["particles"].removeAllVerts();
+        let particleMesh: MeshDynamic = this.framework.resources.meshes["particles"] as MeshDynamic;
+        particleMesh.removeAllVerts();
         for( let i=0; i<this.maxParticles; i++ )
         {
             this.particles[i].pos.x += this.particles[i].vel.x * deltaTime;
             this.particles[i].pos.y += this.particles[i].vel.y * deltaTime;
-            this.framework.resources.meshes["particles"].addSpriteF( this.particles[i].pos.x, this.particles[i].pos.y,
-                                                                     0.01, 0.01, 0, 0, 1, 1 );
+            particleMesh.addSpriteF( this.particles[i].pos.x, this.particles[i].pos.y,
+                                     0.01, 0.01, 0, 0, 1, 1 );
         }
-        this.framework.resources.meshes["particles"].endShape();
+        particleMesh.endShape();
     }
 
     draw()
     {
+        if( this.scene.camera == null ) return;
+
         this.scene.draw( this.scene.camera );
 
         // Draw the particles.
-        this.particleObject.draw( this.scene.camera, null );
+        if( this.particleObject )
+        {
+            this.particleObject.draw( this.scene.camera, [] );
+        }
     }
 
     onResize()
@@ -196,11 +218,14 @@ class MainProject
         this.saveState();
     }
 
-    onMouseMove(x, y)
+    onMouseMove(x: number, y: number)
     {
+        if( this.scene.camera == null ) return;
+        if( this.framework.canvas == null ) return;
+
         if( this.objectFollowsMouse )
         {
-            let worldPos = this.scene.camera.convertScreenToWorld( this.framework.canvas, x, y );
+            let worldPos: vec2 = this.scene.camera.convertScreenToWorld( this.framework.canvas, x, y );
 
             this.scene.entities[0].position.x = worldPos.x;
             this.scene.entities[0].position.y = worldPos.y;
@@ -210,30 +235,33 @@ class MainProject
         this.framework.refresh();
     }
 
-    onMouseDown(buttonID, x, y)
+    onMouseDown(buttonID: number, x: number, y: number)
     {
+        if( this.scene.camera == null ) return;
         this.stateIsDirty = this.scene.camera.onMouseDown( buttonID, x, y );
         this.framework.refresh();
     }
 
-    onMouseUp(buttonID, x, y)
+    onMouseUp(buttonID: number, x: number, y: number)
     {
+        if( this.scene.camera == null ) return;
         this.stateIsDirty = this.scene.camera.onMouseUp( buttonID, x, y );
         this.framework.refresh();
     }
 
-    onMouseWheel(direction)
+    onMouseWheel(direction: number)
     {
+        if( this.scene.camera == null ) return;
         this.stateIsDirty = this.scene.camera.onMouseWheel( direction );
         this.framework.refresh();
     }
 
-    onKeyDown(key, keyCode, modifierKeys)
+    onKeyDown(key: string, keyCode: number, modifierKeys: number)
     {
         this.framework.refresh();
     }
 
-    onKeyUp(key, keyCode, modifierKeys)
+    onKeyUp(key: string, keyCode: number, modifierKeys: number)
     {
         this.framework.refresh();
     }

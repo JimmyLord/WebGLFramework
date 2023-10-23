@@ -1,11 +1,17 @@
 class MeshDynamic extends Mesh
 {
-    constructor(gl)
+    vertexAttributes: ArrayBuffer | null = null;
+    vertexAttributesAsFloats: Float32Array | null = null;
+    vertexAttributesAsUint8s: Uint8Array | null = null;
+    sizeAllocated: number = 0;
+    numVerts: number = 0;
+
+    constructor(gl: WebGL2RenderingContext)
     {
         super( gl );
     }
 
-    startShape(primitiveType, numVerts)
+    startShape(primitiveType: number, numVerts: number)
     {
         let gl = this.gl;
 
@@ -41,7 +47,10 @@ class MeshDynamic extends Mesh
     {
         let gl = this.gl;
 
-        gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
-        gl.bufferSubData( gl.ARRAY_BUFFER, 0, this.vertexAttributes );
+        if( this.vertexAttributes )
+        {
+            gl.bindBuffer( gl.ARRAY_BUFFER, this.VBO );
+            gl.bufferSubData( gl.ARRAY_BUFFER, 0, this.vertexAttributes );
+        }
     }
 }

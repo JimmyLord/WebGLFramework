@@ -1,6 +1,24 @@
 class Camera
 {
-    constructor(position, isOrtho, orthoWorldHeight, framework)
+    framework: FrameworkMain;
+
+    isOrtho: boolean;
+    
+    position: vec3;
+    rotation: vec3;
+    scale: vec3;
+    
+    desiredHeight: number;
+    aspectRatio: number;
+
+    matView: mat4;
+    matProj: mat4;
+
+    zoom: number;
+    panning: boolean;
+    oldMousePos: vec2;
+
+    constructor(position: vec3, isOrtho: boolean, orthoWorldHeight: number, framework: FrameworkMain)
     {
         this.framework = framework;
 
@@ -11,7 +29,11 @@ class Camera
         this.scale = new vec3( 1 );
 
         this.desiredHeight = orthoWorldHeight;
-        this.aspectRatio = this.framework.canvas.width / this.framework.canvas.height;
+        this.aspectRatio = 1;
+        if( this.framework.canvas )
+        {
+            this.aspectRatio = this.framework.canvas.width / this.framework.canvas.height;            
+        }
 
         this.matView = new mat4();
         this.matProj = new mat4();
@@ -28,17 +50,15 @@ class Camera
 
     free()
     {
-        this.matView = null;
-        this.matProj = null;
     }
 
-    fromJSON(jsonString)
+    fromJSON(jsonString: string)
     {
         let state = null;
         try { state = JSON.parse( jsonString ); }
         catch( e ) { return; }
 
-        if( state === null )
+        if( state == null )
             return;
 
         this.isOrtho = state.isOrtho;
@@ -83,12 +103,15 @@ class Camera
 
     onResize()
     {
-        this.aspectRatio = this.framework.canvas.width / this.framework.canvas.height;
+        if( this.framework.canvas )
+        {
+            this.aspectRatio = this.framework.canvas.width / this.framework.canvas.height;
+        }
 
         this.recalculateProjection();
     }
 
-    onMouseMove(x, y)
+    onMouseMove(x: number, y: number): boolean
     {
         let changed = false;
 
@@ -103,19 +126,23 @@ class Camera
         return changed;
     }
 
-    onMouseDown(buttonID, x, y)
+    onMouseDown(buttonID: number, x: number, y: number): boolean
     {
         if( buttonID === 1 )
             this.panning = true;
+
+        return false;
     }
 
-    onMouseUp(buttonID, x, y)
+    onMouseUp(buttonID: number, x: number, y: number): boolean
     {
         if( buttonID === 1 )
             this.panning = false;
+
+        return false;
     }
 
-    onMouseWheel(direction)
+    onMouseWheel(direction: number): boolean
     {
         if( this.isOrtho )
         {
@@ -135,7 +162,7 @@ class Camera
         return true;
     }
 
-    convertScreenToWorld(canvas, screenX, screenY)
+    convertScreenToWorld(canvas: HTMLCanvasElement, screenX: number, screenY: number): vec2
     {
         if( this.isOrtho === false )
             return vec2.getTemp( 0, 0 );
@@ -157,7 +184,7 @@ class Camera
         return vec2.getTemp( worldX, worldY );
     }
 
-    convertWorldToScreen(canvas, worldX, worldY)
+    convertWorldToScreen(canvas: HTMLCanvasElement, worldX: number, worldY: number)
     {
         if( this.isOrtho === false )
             return vec2.getTemp( 0, 0 );

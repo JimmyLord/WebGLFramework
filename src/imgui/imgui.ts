@@ -1,13 +1,104 @@
-﻿class ImGui
+﻿type stackColorEntry =
+[
+    name: string, color: color
+]
+
+class activeMenuEntry
 {
-    constructor(gl, canvas)
+    parentWindow: ImGuiWindow | null = null;
+}
+
+class ImGui
+{
+    gl: WebGL2RenderingContext;
+    canvas: HTMLCanvasElement;
+
+    // Temp vars to avoid GC.
+    matProj: mat4;
+    buttonString: string;
+    largeRect: ImGuiRect;
+
+    vertexAttributesBufferSize: number;
+    vertexAttributes: ArrayBuffer | null = null;
+    vertexAttributesAsFloats: Float32Array | null = null;
+    vertexAttributesAsUint8s: Uint8Array | null = null;
+    indicesBufferSize: number;
+    indices16: ArrayBuffer | null = null;;
+    indicesAsUint16s: Uint16Array | null = null;;
+
+    // Persistent values.
+    BGDrawList: DrawListItem[];
+    FGDrawList: DrawListItem[];
+    drawList: DrawListItem[];
+    windows: { [key: string]: ImGuiWindow }
+    nextWindowZOrder: number; // z-order isn't fully implemented, it's only used to give the main menu focus over the windows.
+    frameCount: number;
+    currentTime: number;
+    ownsMouse: boolean;
+    lastTimeMouseClicked: number[];
+    mouseDoubleClickedThisFrame: boolean[];
+    mouseChange: vec2;
+    mouseChangeUnscaled: vec2;
+    lastMousePosition: vec2;
+    unusedKeyBuffer: string[];
+    mainMenuBarHeight: number; // How tall is the main menu bar (0 if no bar is active).
+    activeWindow: ImGuiWindow | null = null;;
+    previousMenu: ImGuiWindow | null = null;
+    activeControl: string | null = null;;
+    buttonHeld: string | null = null;;
+    controlInEditMode: string | null = null;;
+    activeControlTextBuffer: string[];
+    activeControlTextBufferSelected: boolean; // TODO: Allow only parts of text to be selected and overwritten. and display something.
+    windowHovered: ImGuiWindow | null = null;
+    windowBeingMoved: ImGuiWindow | null = null;
+    windowBeingResized: ImGuiWindow | null = null;
+    windowResizeOffset: vec2;
+    windowMoved: boolean;
+    oldMouseButtons: boolean[];
+    stateIsDirty: boolean;
+    font: FontDef | null = null;
+    fontSize: vec2;
+    activeMenus: { [key: string]: activeMenuEntry } | null = null;
+
+    // Colors.
+    colors: { [key: string]: color };
+    colorChangeStack: stackColorEntry[]; // Will hold a pair of ["name", "previous color"] for each overwrite.
+
+    // Persistent values within single frame.
+
+    // Settings.
+    scale: number;
+    padding: vec2;
+    popupPadding: vec2;
+    doubleClickTime: number;
+    minDragBoxWidth: number;
+
+    // Inputs.
+    mousePosition: vec2;
+    mouseButtons: boolean[];
+    keyBuffer: string[];
+
+    // Outputs.
+    isHoveringWindow: boolean;
+    isHoveringControl: boolean;
+    needsRefresh: boolean;
+
+    // Resources.
+    VBO: WebGLBuffer | null = null;
+    IBO: WebGLBuffer | null = null;
+
+    shader: Shader | null = null;
+
+    constructor(gl: WebGL2RenderingContext, canvas: HTMLCanvasElement)
     {
+        if( gl == null ) throw new Error( "ImGui constructor: gl is null." );
+
         this.gl = gl;
         this.canvas = canvas;
 
         // Temp vars to avoid GC.
         this.matProj = new mat4();
-        this.buttonString = new String(" ");
+        this.buttonString = " ";
         this.largeRect = new ImGuiRect( 0, 0, 10000, 10000 );
 
         this.vertexAttributesBufferSize = 0;
@@ -53,21 +144,21 @@
         this.activeMenus = {};
 
         // Colors.
-        this.color = {};
-        this.color["Title"] =           new color(   0,   0,  50, 255 );
-        this.color["BG"] =              new color(   0,   0,  25, 200 );
-        this.color["BGBorder"] =        new color( 100, 100, 100, 255 );
-        this.color["ButtonNormal"] =    new color(  50,  50, 200, 255 );
-        this.color["ButtonHovered"] =   new color(  80,  80, 230, 255 );
-        this.color["ButtonPressed"] =   new color( 120, 120, 255, 255 );
-        this.color["MenuBar"] =         new color(  30, 100, 200, 255 );
-        this.color["MenuPopupBG"] =     new color(   0,   0,   0, 255 );
-        this.color["MenuItemNormal"] =  new color(   0,   0,   0,   0 );
-        this.color["MenuItemHovered"] = new color(  80,  80,  80, 255 );
-        this.color["MenuItemPressed"] = new color( 120, 120, 120, 255 );
-        this.color["Checkbox"] =        new color( 196, 196, 196, 255 );
-        this.color["TextBoxSelected"] = new color( 100,   0,   0, 255 );
-        this.color["TextSelected"] =    new color( 200,  60,   0, 255 );
+        this.colors = {};
+        this.colors["Title"] =           new color(   0,   0,  50, 255 );
+        this.colors["BG"] =              new color(   0,   0,  25, 200 );
+        this.colors["BGBorder"] =        new color( 100, 100, 100, 255 );
+        this.colors["ButtonNormal"] =    new color(  50,  50, 200, 255 );
+        this.colors["ButtonHovered"] =   new color(  80,  80, 230, 255 );
+        this.colors["ButtonPressed"] =   new color( 120, 120, 255, 255 );
+        this.colors["MenuBar"] =         new color(  30, 100, 200, 255 );
+        this.colors["MenuPopupBG"] =     new color(   0,   0,   0, 255 );
+        this.colors["MenuItemNormal"] =  new color(   0,   0,   0,   0 );
+        this.colors["MenuItemHovered"] = new color(  80,  80,  80, 255 );
+        this.colors["MenuItemPressed"] = new color( 120, 120, 120, 255 );
+        this.colors["Checkbox"] =        new color( 196, 196, 196, 255 );
+        this.colors["TextBoxSelected"] = new color( 100,   0,   0, 255 );
+        this.colors["TextSelected"] =    new color( 200,  60,   0, 255 );
         this.colorChangeStack = []; // Will hold a pair of ["name", "previous color"] for each overwrite.
 
         // Persistent values within single frame.
@@ -294,7 +385,7 @@
         this.font = new FontDef( texture, firstChar, charSize, gridSize, padding, textureRes );
     }
 
-    loadState(imguiState)
+    loadState(imguiState: string)
     {
         //return;
         let state = null;
@@ -333,7 +424,7 @@
         this.stateIsDirty = true;
     }
 
-    saveState(storage, name)
+    saveState(storage: Storage, name: string)
     {
         if( this.stateIsDirty )
         {
@@ -346,19 +437,25 @@
 
     toJSON()
     {
-        let state = {
+        type stateType = {
+            scale: number,
+            doubleClickTime: number,
+            minDragBoxWidth: number,
+            windows: {[key: string]: ImGuiWindow}
+        }
+
+        let state: stateType = {
             scale: this.scale,
             doubleClickTime: this.doubleClickTime,
             minDragBoxWidth: this.minDragBoxWidth,
+            windows: {}
         }
-
-        state.windows = {};
         
         for( let key in this.windows )
         {
             if( this.windows[key].saveState === true )
             {
-                state.windows[key] = {};
+                state.windows[key] = new ImGuiWindow;
                 state.windows[key].position = this.windows[key].position;
                 state.windows[key].size = this.windows[key].size;
                 state.windows[key].isMovable = this.windows[key].isMovable;
@@ -371,13 +468,13 @@
         return state;
     }
 
-    setIfBigger(vec, nx, ny)
+    setIfBigger(vec: vec2, nx: number, ny: number)
     {
         if( nx > vec.x ) vec.x = nx;
         if( ny > vec.y ) vec.y = ny;
     }
 
-    setLastMousePosition(x, y)
+    setLastMousePosition(x: number, y: number)
     {
         this.mousePosition.setF32( x/this.scale, y/this.scale );
         this.lastMousePosition.setF32( x/this.scale, y/this.scale );
@@ -398,7 +495,7 @@
         }
     }
 
-    newFrame(deltaTime)
+    newFrame(deltaTime: number)
     {
         this.frameCount++;
         this.currentTime += deltaTime;
@@ -478,7 +575,7 @@
 
             if( this.mouseButtons[0] === true && this.oldMouseButtons[0] === false ) // Left button clicked.
             {
-                if( this.windowHovered.name.startsWith( "__Popup__" ) )
+                if( this.windowHovered && this.windowHovered.name.startsWith( "__Popup__" ) )
                 {
                     popupClicked = true;
                 }
@@ -635,7 +732,7 @@
         this.isHoveringControl = false;
     }
     
-    drawItem(item)
+    drawItem(item: DrawListItem)
     {
         let gl = this.gl;
 
@@ -664,6 +761,9 @@
                 this.vertexAttributesAsFloats = new Float32Array( this.vertexAttributes );
                 this.vertexAttributesAsUint8s = new Uint8Array( this.vertexAttributes );
             }
+
+            if( this.vertexAttributesAsFloats == null ) return;
+            if( this.vertexAttributesAsUint8s == null ) return;
 
             for( let i=0; i<vertCount; i++ )
             {
@@ -698,6 +798,8 @@
                 this.indicesAsUint16s = new Uint16Array( this.indices16 );
             }
 
+            if( this.indicesAsUint16s == null ) return;
+
             for( let i=0; i<indexCount; i++ )
             {
                 this.indicesAsUint16s[i] = indices[i];
@@ -715,6 +817,7 @@
         gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.IBO );
 
         let shader = this.shader;
+        if( shader == null ) return;
 
         gl.enableVertexAttribArray( shader.a_Position );
         gl.vertexAttribPointer( shader.a_Position, 2, gl.FLOAT, false, sizeofVertex, 0 )
@@ -739,7 +842,7 @@
 
         gl.uniformMatrix4fv( shader.u_MatProj, false, this.matProj.m )
 
-        if( shader.u_TextureAlbedo !== null )
+        if( shader.u_TextureAlbedo !== null && this.font !== null )
         {
             let textureUnit = 0;
             gl.activeTexture( gl.TEXTURE0 + textureUnit );
@@ -762,10 +865,13 @@
 
     sameLine()
     {
-        this.activeWindow.cursor.set( this.activeWindow.previousLineEndPosition );
+        if( this.activeWindow )
+        {
+            this.activeWindow.cursor.set( this.activeWindow.previousLineEndPosition );
+        }
     }
 
-    initWindow(name, onlySetIfNew, position, size, hasFrame, takesInput, hasTitle)
+    initWindow(name: string, onlySetIfNew: boolean, position: vec2, size: vec2, hasFrame: boolean, takesInput: boolean, hasTitle: boolean)
     {
         let existed = true;
 
@@ -802,10 +908,10 @@
         }
     }
 
-    pushColorChange(name, newColor)
+    pushColorChange(name: string, newColor: color)
     {
-        this.colorChangeStack.push( [ name, new color(this.color[name]) ] );
-        this.color[name].setFromColor( newColor );
+        this.colorChangeStack.push( [ name, new color(this.colors[name]) ] );
+        this.colors[name].setFromColor( newColor );
     }
 
     popColorChange(numPops = 1)
@@ -813,7 +919,10 @@
         for( let i=0; i<numPops; i++ )
         {
             let entry = this.colorChangeStack.pop();
-            this.color[entry[0]].setFromColor( entry[1] );
+            if( entry !== undefined)
+            {
+                this.colors[entry[0]].setFromColor( entry[1] );
+            }
         }
     }
 
@@ -859,22 +968,22 @@
             
             this.activeWindow.rect.set( 0, 0, w, h );
 
-            this.addBoxToDrawListItem( drawListItem, 0,0,w,h, this.color["MenuBar"] );
+            this.addBoxToDrawListItem( drawListItem, 0,0,w,h, this.colors["MenuBar"] );
 
             drawListItem.set( gl.TRIANGLES, this.activeWindow.rect );
             this.drawList.push( drawListItem );
         }
     }
 
-    menu(name)
+    menu(name: string)
     {
         this.activeWindow = this.windows["__mainMenuBar__"];
 
         let menuItemPosition = this.activeWindow.cursor.x;
 
-        this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
-        this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
-        this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
+        this.pushColorChange( "ButtonNormal", this.colors["MenuItemNormal"] );
+        this.pushColorChange( "ButtonHovered", this.colors["MenuItemHovered"] );
+        this.pushColorChange( "ButtonPressed", this.colors["MenuItemPressed"] );
         let pressed = this.button( name, true, true, false );
         this.popColorChange( 3 );
 
@@ -888,56 +997,61 @@
             this.closeAllMenusWithParent( this.windows["__Popup__" + name] );
         }
 
-        if( pressed || this.activeMenus[name] !== undefined )
+        if( this.activeMenus )
         {
-            this.closeAllMenusWithParent( this.activeWindow );
-            this.activeMenus[name] = {};
-            this.activeMenus[name].parentWindow = this.activeWindow;
-            
-            // Pop up a menu window below this.
-            let popupName = "__Popup__" + name;
-
-            // Clear all old popups.
-            this.FGDrawList.length = 0;
-            this.drawList = this.FGDrawList;
-
-            let x = menuItemPosition;
-            let y = this.activeWindow.position.y + this.activeWindow.size.y;
-
-            let size = vec2.getTemp( 0, 0 );
-            if( this.windows[popupName] )
+            if( pressed || this.activeMenus[name] !== undefined )
             {
-                size.setF32( this.windows[popupName].size.x, this.windows[popupName].size.y );
+                this.closeAllMenusWithParent( this.activeWindow );
+                this.activeMenus[name] = new activeMenuEntry;
+                this.activeMenus[name].parentWindow = this.activeWindow;
+                
+                // Pop up a menu window below this.
+                let popupName = "__Popup__" + name;
+
+                // Clear all old popups.
+                this.FGDrawList.length = 0;
+                this.drawList = this.FGDrawList;
+
+                let x = menuItemPosition;
+                let y = this.activeWindow.position.y + this.activeWindow.size.y;
+
+                let size = vec2.getTemp( 0, 0 );
+                if( this.windows[popupName] )
+                {
+                    size.setF32( this.windows[popupName].size.x, this.windows[popupName].size.y );
+                }
+                else
+                {
+                    this.needsRefresh = true;
+                }
+
+                this.initWindow( popupName, false, vec2.getTemp( x, y ), size, true, true, false );
+
+                this.pushColorChange( "BG", this.colors["MenuPopupBG"] );
+                if( this.window( popupName ) )
+                {
+                    this.activeWindow.cursor.y += this.popupPadding.y;
+                    expanded = true;
+                }
+                this.popColorChange();
+
+                this.windows[popupName].isMovable = false;
+                this.windows[popupName].saveState = false;
+                this.forceResize( this.activeWindow );
+
+                this.markStateDirty();
             }
-            else
-            {
-                this.needsRefresh = true;
-            }
-
-            this.initWindow( popupName, false, vec2.getTemp( x, y ), size, true, true, false );
-
-            this.pushColorChange( "BG", this.color["MenuPopupBG"] );
-            if( this.window( popupName ) )
-            {
-                this.activeWindow.cursor.y += this.popupPadding.y;
-                expanded = true;
-            }
-            this.popColorChange();
-
-            this.windows[popupName].isMovable = false;
-            this.windows[popupName].saveState = false;
-            this.forceResize( this.activeWindow );
-
-            this.markStateDirty();
         }
 
         this.drawList = this.BGDrawList;
         return expanded;
     }
 
-    submenu(name)
+    submenu(name: string)
     {
         this.previousMenu = this.activeWindow;
+
+        if( this.activeWindow == null ) return;
 
         let menuItemPositionX = this.activeWindow.cursor.x + this.activeWindow.size.x;
         let menuItemPositionY = this.activeWindow.cursor.y;
@@ -965,52 +1079,55 @@
         label += ">";
 
         // Show the button.
-        this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
-        this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
-        this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
+        this.pushColorChange( "ButtonNormal", this.colors["MenuItemNormal"] );
+        this.pushColorChange( "ButtonHovered", this.colors["MenuItemHovered"] );
+        this.pushColorChange( "ButtonPressed", this.colors["MenuItemPressed"] );
         let pressed = this.button( label, true, true, true );
         this.popColorChange( 3 );
 
         let expanded = false;
 
-        if( pressed || this.activeMenus[name] !== undefined )
+        if( this.activeMenus )
         {
-            this.closeAllMenusWithParent( this.activeWindow );
-            this.activeMenus[name] = {};
-            this.activeMenus[name].parentWindow = this.activeWindow;
+            if( pressed || this.activeMenus[name] !== undefined )
+            {
+                this.closeAllMenusWithParent( this.activeWindow );
+                this.activeMenus[name] = new activeMenuEntry;
+                this.activeMenus[name].parentWindow = this.activeWindow;
 
-            // Pop up a menu window below this.
-            let popupName = "__Popup__" + name;
-            
-            let x = menuItemPositionX;
-            let y = menuItemPositionY;
-            
-            let size = vec2.getTemp( 0, 0 );
-            if( this.windows[popupName] )
-            {
-                size.setF32( this.windows[popupName].size.x, this.windows[popupName].size.y );
+                // Pop up a menu window below this.
+                let popupName = "__Popup__" + name;
+                
+                let x = menuItemPositionX;
+                let y = menuItemPositionY;
+                
+                let size = vec2.getTemp( 0, 0 );
+                if( this.windows[popupName] )
+                {
+                    size.setF32( this.windows[popupName].size.x, this.windows[popupName].size.y );
+                }
+                else
+                {
+                    this.needsRefresh = true;
+                }
+                
+                this.initWindow( popupName, false, vec2.getTemp( x, y ), size, true, true, false );
+                
+                this.pushColorChange( "BG", this.colors["MenuPopupBG"] );
+                if( this.window( popupName ) )
+                {
+                    this.activeWindow.cursor.y += this.popupPadding.y;
+                    this.activeWindow.parentWindow = this.previousMenu;
+                    expanded = true;
+                }
+                this.popColorChange();
+                
+                this.windows[popupName].isMovable = false;
+                this.windows[popupName].saveState = false;
+                this.forceResize( this.activeWindow );
+                
+                this.markStateDirty();
             }
-            else
-            {
-                this.needsRefresh = true;
-            }
-            
-            this.initWindow( popupName, false, vec2.getTemp( x, y ), size, true, true, false );
-            
-            this.pushColorChange( "BG", this.color["MenuPopupBG"] );
-            if( this.window( popupName ) )
-            {
-                this.activeWindow.cursor.y += this.popupPadding.y;
-                this.activeWindow.parentWindow = this.previousMenu;
-                expanded = true;
-            }
-            this.popColorChange();
-            
-            this.windows[popupName].isMovable = false;
-            this.windows[popupName].saveState = false;
-            this.forceResize( this.activeWindow );
-            
-            this.markStateDirty();
         }
 
         this.drawList = this.BGDrawList;
@@ -1019,20 +1136,25 @@
 
     endSubmenu()
     {
-        this.activeWindow = this.activeWindow.parentWindow;
+        if( this.activeWindow )
+        {
+            this.activeWindow = this.activeWindow.parentWindow;
+        }
     }
 
-    menuItem(label)
+    menuItem(label: string)
     {
         this.drawList = this.FGDrawList;
+
+        if( this.activeWindow == null ) return;
 
         if( this.activeWindow.cursor.x === this.activeWindow.position.x )
         {
             this.activeWindow.cursor.x += this.popupPadding.x;
         }
-        this.pushColorChange( "ButtonNormal", this.color["MenuItemNormal"] );
-        this.pushColorChange( "ButtonHovered", this.color["MenuItemHovered"] );
-        this.pushColorChange( "ButtonPressed", this.color["MenuItemPressed"] );
+        this.pushColorChange( "ButtonNormal", this.colors["MenuItemNormal"] );
+        this.pushColorChange( "ButtonHovered", this.colors["MenuItemHovered"] );
+        this.pushColorChange( "ButtonPressed", this.colors["MenuItemPressed"] );
         let pressed = this.button( label, false, true, false );
         this.popColorChange( 3 );
 
@@ -1048,10 +1170,10 @@
 
     closeAllMenus()
     {
-        this.activeMenus = [];
+        this.activeMenus = {};
     }
 
-    closeAllMenusWithParent( parentWindow )
+    closeAllMenusWithParent(parentWindow: ImGuiWindow)
     {
         for( let key in this.activeMenus )
         {
@@ -1063,7 +1185,7 @@
     }
 
     // Return true is window is expanded.
-    window(name)
+    window(name: string)
     {
         let gl = this.gl;
 
@@ -1122,14 +1244,14 @@
                 {
                     titleH = this.fontSize.y + this.padding.y*2;
                     let h = titleH;
-                    this.addBoxToDrawListItem( drawListItem, x,y,w,h, this.color["Title"] );
+                    this.addBoxToDrawListItem( drawListItem, x,y,w,h, this.colors["Title"] );
                     let t = 1/this.scale; // Border thickness, essentially 1 pixel regardless of UI scale.
-                    this.addBoxToDrawListItem( drawListItem, x,    y, t,h, this.color["BGBorder"] ); // Border left.
-                    this.addBoxToDrawListItem( drawListItem, x+w-t,y, t,h, this.color["BGBorder"] ); // Border right.
-                    this.addBoxToDrawListItem( drawListItem, x,y,     w,t, this.color["BGBorder"] ); // Border top.
+                    this.addBoxToDrawListItem( drawListItem, x,    y, t,h, this.colors["BGBorder"] ); // Border left.
+                    this.addBoxToDrawListItem( drawListItem, x+w-t,y, t,h, this.colors["BGBorder"] ); // Border right.
+                    this.addBoxToDrawListItem( drawListItem, x,y,     w,t, this.colors["BGBorder"] ); // Border top.
                     if( this.activeWindow.expanded === false )
                     {
-                        this.addBoxToDrawListItem( drawListItem, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
+                        this.addBoxToDrawListItem( drawListItem, x,y+h-t, w,t, this.colors["BGBorder"] ); // Border bottom.
                     }
                 }
                 this.activeWindow.rect.set( x, y, w, titleH );
@@ -1139,13 +1261,13 @@
                     // Draw the BG box.
                     y += titleH;
                     let h = this.activeWindow.size.y - titleH;
-                    this.addBoxToDrawListItem( drawListItem, x,y,w,h, this.color["BG"] ); // BG filled.
+                    this.addBoxToDrawListItem( drawListItem, x,y,w,h, this.colors["BG"] ); // BG filled.
                     let t = 1/this.scale; // Border thickness, essentially 1 pixel regardless of UI scale.
-                    this.addBoxToDrawListItem( drawListItem, x,    y, t,h, this.color["BGBorder"] ); // Border left.
-                    this.addBoxToDrawListItem( drawListItem, x+w-t,y, t,h, this.color["BGBorder"] ); // Border right.
+                    this.addBoxToDrawListItem( drawListItem, x,    y, t,h, this.colors["BGBorder"] ); // Border left.
+                    this.addBoxToDrawListItem( drawListItem, x+w-t,y, t,h, this.colors["BGBorder"] ); // Border right.
                     if( this.activeWindow.hasTitle === false )
-                        this.addBoxToDrawListItem( drawListItem, x,y,     w,t, this.color["BGBorder"] ); // Border top.
-                    this.addBoxToDrawListItem( drawListItem, x,y+h-t, w,t, this.color["BGBorder"] ); // Border bottom.
+                        this.addBoxToDrawListItem( drawListItem, x,y,     w,t, this.colors["BGBorder"] ); // Border top.
+                    this.addBoxToDrawListItem( drawListItem, x,y+h-t, w,t, this.colors["BGBorder"] ); // Border bottom.
 
                     // Define scissor rect, y is lower left.
                     let rx = this.activeWindow.position.x;
@@ -1204,14 +1326,14 @@
         return this.activeWindow.expanded;
     }
 
-    forceResize(window)
+    forceResize(window: ImGuiWindow)
     {
         window.size.set( window.maxExtents.minus( window.position ) );
         window.size.x += this.padding.x;
         window.size.y += this.padding.y + this.fontSize.y + this.padding.y;
     }
 
-    addBoxToDrawListItem(drawListItem, x, y, w, h, color)
+    addBoxToDrawListItem(drawListItem: DrawListItem, x: number, y: number, w: number, h: number, color: color)
     {
         let numVerts = drawListItem.numVertComponents/8;
         drawListItem.pushVert( x+0,y+h,   0,0,   color.r,color.g,color.b,color.a );
@@ -1226,8 +1348,10 @@
         drawListItem.pushIndex( numVerts+3 );
     }
 
-    addStringToDrawList(str, x, y, rect = undefined)
+    addStringToDrawList(str: string, x: number, y: number, rect: ImGuiRect | undefined = undefined)
     {
+        if( this.font == null ) return;
+
         let gl = this.gl;
 
         let w = this.fontSize.x;
@@ -1284,8 +1408,10 @@
         return vec2.getTemp( x, y );
     }
 
-    text(str)
+    text(str: string)
     {
+        if( this.activeWindow == null ) return;
+
         // if( this.activeWindow.expanded == false )
         //     return;
 
@@ -1307,8 +1433,10 @@
         this.activeWindow.cursor.x = this.activeWindow.position.x;
     }
 
-    button(label, returnTrueIfButtonIsHeldDown = false, allowPressIfMouseAlreadyHeld = false, returnTrueIfButtonIsHovered = false)
+    button(label: string, returnTrueIfButtonIsHeldDown: boolean = false,
+           allowPressIfMouseAlreadyHeld: boolean = false, returnTrueIfButtonIsHovered: boolean = false)
     {
+        if( this.activeWindow == null ) return;
         // if( this.activeWindow.expanded == false )
         //     return;
 
@@ -1325,14 +1453,14 @@
 
         // Check if we're hovering over this button inside this window.
         let isHovering = false;
-        let color = this.color["ButtonNormal"];
+        let color = this.colors["ButtonNormal"];
         let rect = ImGuiRect.getFromPool( x, y, w, h );
         if( rect.contains( this.mousePosition ) )
         {
             if( this.activeWindow === this.windowHovered )
             {
                 isHovering = true;
-                color = this.color["ButtonHovered"];
+                color = this.colors["ButtonHovered"];
 
                 // Store if the button was clicked this frame.
                 if( (this.mouseButtons[0] === true && this.oldMouseButtons[0] === false) ||
@@ -1346,7 +1474,7 @@
 
                 if( this.buttonHeld === label )
                 {
-                    color = this.color["ButtonPressed"];
+                    color = this.colors["ButtonPressed"];
                 }
             }
         }
@@ -1407,8 +1535,10 @@
         return false;
     }
 
-    checkbox(label, isChecked)
+    checkbox(label: string, isChecked: boolean)
     {
+        if( this.activeWindow == null ) return;
+
         // if( this.activeWindow.expanded == false )
         //     return;
 
@@ -1428,18 +1558,18 @@
         let y = this.activeWindow.cursor.y + buttonTopPadding;
 
         let isHovering = false;
-        let color = this.color["ButtonNormal"];
+        let color = this.colors["ButtonNormal"];
         let rect = ImGuiRect.getFromPool( x, y, w, h );
         if( rect.contains( this.mousePosition ) ) // is hovering.
         {
             if( this.activeWindow === this.windowHovered )
             {
                 isHovering = true;
-                color = this.color["ButtonHovered"];
+                color = this.colors["ButtonHovered"];
 
                 if( this.mouseButtons[0] === true ) // is pressing.
                 {
-                    color = this.color["ButtonPressed"];
+                    color = this.colors["ButtonPressed"];
                 }
             }
         }
@@ -1449,7 +1579,7 @@
 
         if( isChecked )
         {
-            color = this.color["Checkbox"];
+            color = this.colors["Checkbox"];
             this.addBoxToDrawListItem( drawListItem, x+2,y+2,w-5,h-5, color );
         }
 
@@ -1476,8 +1606,10 @@
         return false;
     }
 
-    dragNumber(label, value, increment, decimalPlaces, minLimit, maxLimit)
+    dragNumber(label: string, value: number, increment: number, decimalPlaces: number, minLimit?: number, maxLimit?: number): [number, boolean]
     {
+        if( this.activeWindow == null ) return [0, false];
+
         // if( this.activeWindow.expanded == false )
         //     return;
 
@@ -1509,7 +1641,7 @@
 
         // Draw background and determine if mouse if hovering over it.
         {
-            let color = this.color["ButtonNormal"];
+            let color = this.colors["ButtonNormal"];
             let rect = ImGuiRect.getFromPool( x, y, w, h );
             if( rect.contains( this.mousePosition ) ) // is hovering.
             {
@@ -1522,15 +1654,15 @@
 
             if( this.controlInEditMode === label )
             {
-                color = this.color["TextBoxSelected"];
+                color = this.colors["TextBoxSelected"];
             }
             else if( isHovering )
             {
-                color = this.color["ButtonHovered"];
+                color = this.colors["ButtonHovered"];
 
                 if( this.mouseButtons[0] === true ) // is pressing.
                 {
-                    color = this.color["ButtonPressed"];
+                    color = this.colors["ButtonPressed"];
                 }
             }
 
@@ -1550,7 +1682,7 @@
         {
             let h = buttonTopPadding + this.fontSize.y + this.padding.y;
 
-            let color = this.color["TextSelected"];
+            let color = this.colors["TextSelected"];
 
             this.addBoxToDrawListItem( drawListItem, x + textStartPoint,y,textWidth,h, color );
         }
@@ -1699,9 +1831,31 @@
 
 class ImGuiWindow
 {
+    name: string;
+    position: vec2;
+    size: vec2;
+    zOrder: number;
+    
+    activeThisFrame: boolean;
+    cursor: vec2;
+    previousLineEndPosition: vec2;
+    rect: ImGuiRect;
+
+    expanded: boolean;
+    maxExtents: vec2;
+
+    saveState: boolean;
+
+    hasTitle: boolean;
+    hasFrame: boolean;
+    isMovable: boolean;
+    takesInput: boolean;
+
+    parentWindow: ImGuiWindow | null = null;
+
     constructor()
     {
-        this.name = null;
+        this.name = "";
         this.position = new vec2( 0, 0 );
         this.size = new vec2( 0, 0 );
         this.zOrder = -1;
@@ -1725,6 +1879,14 @@ class ImGuiWindow
 
 class DrawListItem
 {
+    primitiveType: number;
+    rect: ImGuiRect;
+
+    vertComponents: number[];
+    indices: number[];
+    numVertComponents: number;
+    numIndices: number;
+
     //static pool = new Pool( DrawListItem, 100, true );
     static getFromPool(primitiveType = null, rect = null)
     {
@@ -1734,15 +1896,15 @@ class DrawListItem
             obj.set( primitiveType, rect ); 
         return obj;
     }
-    static returnToPool(obj) { return DrawListItem_pool.returnToPool( obj ); }
+    static returnToPool(obj: DrawListItem) { return DrawListItem_pool.returnToPool( obj ); }
 
-    constructor(primitiveType, rect)
+    constructor(primitiveType: number, rect: ImGuiRect)
     {
         if( primitiveType !== undefined )
             this.set( primitiveType, rect );
 
         this.primitiveType = 0;
-        this.rect = null;
+        this.rect = new ImGuiRect(0,0,0,0);
 
         // Set verts and indices sizes to the worst case imgui currently needs.
         this.vertComponents = new Array( 56 * 8 );
@@ -1751,7 +1913,7 @@ class DrawListItem
         this.numIndices = 0;
     }
 
-    set(primitiveType, rect)
+    set(primitiveType: number, rect: ImGuiRect)
     {
         this.primitiveType = primitiveType;
         this.rect = rect;
@@ -1763,7 +1925,7 @@ class DrawListItem
         this.numIndices = 0;
     }
 
-    pushVert(x,y,u,v,r,g,b,a)
+    pushVert(x: number, y: number, u: number, v: number, r: number, g: number, b: number, a: number)
     {
         let spaceNeeded = (this.numVertComponents + 8) - this.vertComponents.length;
         //if( spaceNeeded > 0 )
@@ -1788,7 +1950,7 @@ class DrawListItem
         this.numVertComponents += 8;
     }
 
-    pushIndex(index)
+    pushIndex(index: number)
     {
         if( this.numIndices === this.indices.length )
         {
@@ -1805,16 +1967,21 @@ class DrawListItem
 
 class ImGuiRect
 {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+
     //static pool = new Pool( ImGuiRect, 1000, true );
-    static getFromPool(x,y,w,h)
+    static getFromPool(x: number, y: number, w: number, h: number)
     {
         let obj = ImGuiRect_pool.getFromPool();
         obj.set(x,y,w,h); 
         return obj;
     }
-    static returnToPool(obj) { return ImGuiRect_pool.returnToPool( obj ); }
+    static returnToPool(obj: ImGuiRect) { return ImGuiRect_pool.returnToPool( obj ); }
 
-    constructor(x,y,w,h)
+    constructor(x: number, y: number, w: number, h: number)
     {
         this.x = x;
         this.y = y;
@@ -1822,7 +1989,7 @@ class ImGuiRect
         this.h = h;
     }
 
-    set(x,y,w,h)
+    set(x: number, y: number, w: number, h: number)
     {
         this.x = x;
         this.y = y;
@@ -1830,7 +1997,7 @@ class ImGuiRect
         this.h = h;
     }
 
-    contains(pos)
+    contains(pos: vec2)
     {
         if( pos.x > this.x && pos.x < this.x + this.w &&
             pos.y > this.y && pos.y < this.y + this.h )
@@ -1844,7 +2011,15 @@ class ImGuiRect
 
 class FontDef
 {
-    constructor(texture, firstChar, charSize, gridSize, padding, textureRes)
+    texture: Texture;
+    firstChar: number;
+    gridSize: vec2;
+    stepU: number;
+    stepV: number;
+    charW: number;
+    charH: number;
+
+    constructor(texture: Texture, firstChar: number, charSize: vec2, gridSize: vec2, padding: vec2, textureRes: vec2)
     {
         this.texture = texture;
         this.firstChar = firstChar;

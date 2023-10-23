@@ -1,13 +1,17 @@
 class Texture
 {
-    constructor(gl)
+    gl: WebGL2RenderingContext;
+    textureID: WebGLTexture | null;
+    image: HTMLImageElement | null;
+
+    constructor(gl: WebGL2RenderingContext)
     {
         this.gl = gl;
-        this.textureID = 0;
+        this.textureID = null;
         this.image = null;
     }
 
-    loadFromFile(filename)
+    loadFromFile(filename: string)
     {
         let gl = this.gl;
 
@@ -33,13 +37,14 @@ class Texture
         this.image.src = filename;
         this.image.onload = function()
         {
+            if( tex.image == null ) return;
             gl.bindTexture( gl.TEXTURE_2D, tex.textureID );
             gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.image );
-            delete tex.image;
+            tex.image = null;
         }
     }
 
-    createFromUInt8Array(pixels, width, height)
+    createFromUInt8Array(pixels: any, width: number, height: number)
     {
         let gl = this.gl;
 
@@ -62,6 +67,5 @@ class Texture
         gl.deleteTexture( this.textureID );
         this.textureID = null;
         this.image = null;
-        this.gl = null;
     }
 }

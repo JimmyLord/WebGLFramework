@@ -1,6 +1,12 @@
 ﻿class Pool
 {
-    constructor(type, numberToAllocate = 1, allowGrowth = true)
+    type: any;
+    numAllocated: number;
+    allowGrowth: boolean;
+    numInPool: number;
+    objects: any[];
+
+    constructor(type: any, numberToAllocate: number = 1, allowGrowth: boolean = true)
     {
         this.type = type;
         this.numAllocated = numberToAllocate;
@@ -35,7 +41,7 @@
         return this.objects[this.numInPool];
     }
 
-    returnToPool(obj)
+    returnToPool(obj: any)
     {
         this.objects[this.numInPool] = obj;
         this.numInPool++;

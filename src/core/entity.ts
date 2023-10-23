@@ -4,7 +4,13 @@ class Entity
     // Temp moved to bottom of file as globals until closure compiler supports static properties.
     //static matWorld = new mat4();
 
-    constructor(position, rotation, scale, mesh, material)
+    position: vec3;
+    rotation: vec3;
+    scale: vec3;
+    mesh: Mesh;
+    material: Material;
+
+    constructor(position: vec3, rotation: vec3, scale: vec3, mesh: Mesh, material: Material)
     {
         this.position = position;
         this.rotation = rotation;
@@ -15,12 +21,9 @@ class Entity
 
     free()
     {
-        this.position = null;
-        this.mesh = null;
-        this.material = null;
     }
 
-    draw(camera, lights)
+    draw(camera: Camera, lights: Light[])
     {
         Entity_matWorld.setIdentity();
         Entity_matWorld.createSRT( this.scale, this.rotation, this.position );

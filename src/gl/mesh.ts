@@ -1,6 +1,22 @@
 class Mesh
 {
-    constructor(gl)
+    gl: WebGL2RenderingContext;
+    VBO: WebGLBuffer | null = null;
+    IBO: WebGLBuffer | null = null;
+    numVerts: number;
+    numIndices: number;
+    primitiveType: number;
+
+    sizeAllocated: number;
+    vertexAttributes: ArrayBuffer | null = null;
+    vertexAttributesAsFloats: Float32Array | null = null;
+    vertexAttributesAsUint8s: Uint8Array | null = null;
+    indices16: ArrayBuffer | null = null;
+    indicesAsUint16s: Uint16Array | null = null;
+
+    edgeList: Array<Array<number>> | null = null;
+
+    constructor(gl: WebGL2RenderingContext)
     {
         this.gl = gl;
         this.VBO = null;
@@ -14,7 +30,7 @@ class Mesh
         this.sizeAllocated = 0;
         this.vertexAttributes = null;
         this.vertexAttributesAsFloats = null;
-        this.vertexAttributesAsUInt8s = null;
+        this.vertexAttributesAsUint8s = null;
         this.indices16 = null;
         this.indicesAsUint16s = null;
         
@@ -27,13 +43,11 @@ class Mesh
     free()
     {
         this.clear();
-
-        this.gl = null;
     }
 
     clear()
     {
-        if( this.VBO === null )
+        if( this.VBO == null )
             return;
 
         let gl = this.gl;
@@ -60,9 +74,9 @@ class Mesh
         this.primitiveType = gl.POINTS;
     }
 
-    getVertexPosition(vertexIndex)
+    getVertexPosition(vertexIndex: number)
     {
-        if( this.vertexAttributesAsFloats === null )
+        if( this.vertexAttributesAsFloats == null )
             return null;
 
         let x = this.vertexAttributesAsFloats[vertexIndex*9 + 0];
@@ -71,14 +85,14 @@ class Mesh
         return vec3.getTemp( x, y, z );
     }
 
-    getVertexPositionsAtEdge(edgeIndex, outVert1, outVert2)
+    getVertexPositionsAtEdge(edgeIndex: number, outVert1: vec3, outVert2: vec3)
     {
-        if( this.vertexAttributesAsFloats === null )
+        if( this.vertexAttributesAsFloats == null )
             return null;
         console.assert( outVert1 !== null, "getVertexPositionAtEdge: no valid vec3 reference in outVert1." );
         console.assert( outVert2 !== null, "getVertexPositionAtEdge: no valid vec3 reference in outVert2." );
 
-        if( this.edgeList === null )
+        if( this.edgeList == null )
         {
             console.assert( false, "getVertexPositionAtEdge: Mesh doesn't have an edge list." );
         }
@@ -96,7 +110,7 @@ class Mesh
         }
     }
 
-    createTriangle(width, height)
+    createTriangle(width: number, height: number)
     {
         let gl = this.gl;
 
@@ -130,7 +144,7 @@ class Mesh
         this.primitiveType = gl.TRIANGLES;
     }
 
-    createBox(width, height, storeVerticesLocally = false)
+    createBox(width: number, height: number, storeVerticesLocally: boolean = false)
     {
         let gl = this.gl;
 
@@ -203,13 +217,13 @@ class Mesh
             this.sizeAllocated = 0;
             this.vertexAttributes = null;
             this.vertexAttributesAsFloats = null;
-            this.vertexAttributesAsUInt8s = null;
+            this.vertexAttributesAsUint8s = null;
             this.indices16 = null;
             this.indicesAsUint16s = null;
         }
     }
 
-    createCube(width, height, depth)
+    createCube(width: number, height: number, depth: number)
     {
         let gl = this.gl;
 
@@ -306,7 +320,7 @@ class Mesh
         this.primitiveType = gl.TRIANGLES;
     }
 
-    createCircle(numSides, radius, outline)
+    createCircle(numSides: number, radius: number, outline: boolean = false)
     {
         let gl = this.gl;
 
@@ -342,7 +356,7 @@ class Mesh
             this.primitiveType = gl.TRIANGLE_FAN;
     }
 
-    startShape(primitiveType, numVerts, numIndices = 0)
+    startShape(primitiveType: number, numVerts: number, numIndices: number = 0)
     {
         this.clear();
 
@@ -366,8 +380,11 @@ class Mesh
         }
     }
 
-    addVertex(pos, uv, normal, color)
+    addVertex(pos: vec3, uv: vec2, normal: vec3, color: color)
     {
+        if( this.vertexAttributesAsFloats == null ) return;
+        if( this.vertexAttributesAsUint8s == null ) return;
+        
         let vertexFloatIndex = this.numVerts*9;
 
         this.vertexAttributesAsFloats[vertexFloatIndex + 0] = pos.x;
@@ -387,8 +404,14 @@ class Mesh
         this.numVerts++;
     }
 
-    addVertexF(x,y,z, u,v, nx,ny,nz, r,g,b,a)
+    addVertexF(x: number, y: number, z: number,
+               u: number, v: number,
+               nx: number, ny: number, nz: number,
+               r: number, g: number, b: number, a: number)
     {
+        if( this.vertexAttributesAsFloats == null ) return;
+        if( this.vertexAttributesAsUint8s == null ) return;
+
         let vertexFloatIndex = this.numVerts*9;
 
         this.vertexAttributesAsFloats[vertexFloatIndex + 0] = x;
@@ -408,26 +431,29 @@ class Mesh
         this.numVerts++;
     }
 
-    addIndex(i)
+    addIndex(i: number)
     {
+        if( this.indicesAsUint16s == null ) return;
+
         this.indicesAsUint16s[this.numIndices] = i;
         this.numIndices++;
     }
 
-    addEdge(index0, index1)
+    addEdge(index0: number, index1: number)
     {
-        if( this.edgeList === null )
+        if( this.edgeList == null )
             this.edgeList = [];
 
         this.edgeList.push( [index0, index1] );
     }
 
-    addSprite(bottomLeftPos, size, bottomLeftUV, uvSize)
+    addSprite(bottomLeftPos: vec2, size: vec2, bottomLeftUV: vec2, uvSize: vec2)
     {
         this.addSpriteF( bottomLeftPos.x, bottomLeftPos.y, size.x, size.y, bottomLeftUV.x, bottomLeftUV.y, uvSize.x, uvSize.y );
     }
 
-    addSpriteF(blX, blY, sizeX, sizeY, blUVx, blUVy, uvSizeX, uvSizeY)
+    addSpriteF(blX: number, blY: number, sizeX: number, sizeY: number,
+               blUVx: number, blUVy: number, uvSizeX: number, uvSizeY: number)
     {
         this.addVertexF( blX,       blY,       0, blUVx,         blUVy,          0,0,0,  255,255,255,255 );
         this.addVertexF( blX,       blY+sizeY, 0, blUVx,         blUVy+uvSizeY,  0,0,0,  255,255,255,255 );
@@ -460,16 +486,19 @@ class Mesh
         //this.indicesAsUint16s = null;
     }
 
-    draw(camera, matWorld, material, lights = null)
+    draw(camera: Camera, matWorld: mat4, material: Material, lights: Light[] | null = null)
     {
-        let shader = material.shader;
+        if( material.shader == null ) return;
+        
+        let shader = material.shader;        
+        if( shader.a_Position == null ) return;
 
         let gl = this.gl;
 
-        if( this.VBO === null )
+        if( this.VBO == null )
             return;
 
-        if( material === null )
+        if( material == null )
             return;
 
         // Set up VBO and attributes.
@@ -506,9 +535,9 @@ class Mesh
         gl.uniformMatrix4fv( shader.u_MatView, false, camera.matView.m )
         gl.uniformMatrix4fv( shader.u_MatProj, false, camera.matProj.m )
         gl.uniform4f( shader.u_UVTransform, material.uvTransform.x, material.uvTransform.y, material.uvTransform.z, material.uvTransform.w );
-        gl.uniform4f( shader.u_Color, material.color.r, material.color.g, material.color.b, material.color.a );
+        gl.uniform4f( shader.u_Color, material.col.r, material.col.g, material.col.b, material.col.a );
 
-        if( shader.u_TextureAlbedo !== null )
+        if( shader.u_TextureAlbedo !== null && material.texture !== null )
         {
             let textureUnit = 0;
             gl.activeTexture( gl.TEXTURE0 + textureUnit );
@@ -519,19 +548,22 @@ class Mesh
         // Lights.
         if( lights !== null && lights.length > 0 )
         {
-            let i=0;
-            for( ; i<lights.length; i++ )
+            if( shader.u_LightPos && shader.u_LightColor && shader.u_LightRadius )
             {
-                gl.uniform3f( shader.u_LightPos[i], lights[i].position.x, lights[i].position.y, lights[i].position.z );
-                gl.uniform3f( shader.u_LightColor[i], lights[i].color.r, lights[i].color.g, lights[i].color.b );
-                gl.uniform1f( shader.u_LightRadius[i], lights[i].radius );
-            }
-            
-            for( ; i<4; i++ )
-            {
-                gl.uniform3f( shader.u_LightPos[i], 0, 0, 0 );
-                gl.uniform3f( shader.u_LightColor[i], 0, 0, 0 );
-                gl.uniform1f( shader.u_LightRadius[i], 1 );
+                let i=0;
+                for( ; i<lights.length; i++ )
+                {
+                    gl.uniform3f( shader.u_LightPos[i], lights[i].position.x, lights[i].position.y, lights[i].position.z );
+                    gl.uniform3f( shader.u_LightColor[i], lights[i].color.r, lights[i].color.g, lights[i].color.b );
+                    gl.uniform1f( shader.u_LightRadius[i], lights[i].radius );
+                }
+                
+                for( ; i<4; i++ )
+                {
+                    gl.uniform3f( shader.u_LightPos[i], 0, 0, 0 );
+                    gl.uniform3f( shader.u_LightColor[i], 0, 0, 0 );
+                    gl.uniform1f( shader.u_LightRadius[i], 1 );
+                }
             }
         }
 

@@ -6,6 +6,8 @@
 
 class mat4
 {
+    m: Float32Array = new Float32Array(16);
+
     // Temp vars to avoid GC.
     // Warning: This will cause issues if operations are chained since new values will overwrite old ones.
     // Temp moved to bottom of file as globals until closure compiler supports static properties.
@@ -15,15 +17,13 @@ class mat4
 
     constructor()
     {
-        this.m = new Float32Array(16);
     }
 
     free()
     {
-        this.m = null;
     }
 
-    set(o)
+    set(o: mat4)
     {
         this.m[ 0] = o.m[ 0]; this.m[ 4] = o.m[ 4]; this.m[ 8] = o.m[ 8]; this.m[12] = o.m[12];
         this.m[ 1] = o.m[ 1]; this.m[ 5] = o.m[ 5]; this.m[ 9] = o.m[ 9]; this.m[13] = o.m[13];
@@ -39,21 +39,21 @@ class mat4
         this.m[ 3] = 0; this.m[ 7] = 0; this.m[11] = 0; this.m[15] = 1;
     }
 
-    translate(pos)
+    translate(pos: vec3)
     {
         this.m[12] += pos.x;
         this.m[13] += pos.y;
         this.m[14] += pos.z;
     }
 
-    translateF32(x, y, z)
+    translateF32(x: number, y: number, z: number)
     {
         this.m[12] += x;
         this.m[13] += y;
         this.m[14] += z;
     }
 
-    rotate(angleDegrees, x, y, z)
+    rotate(angleDegrees: number, x: number, y: number, z: number)
     {
         let sinAngle = Math.sin( angleDegrees * Math.PI / 180 )
         let cosAngle = Math.cos( angleDegrees * Math.PI / 180 )
@@ -104,21 +104,21 @@ class mat4
         }
     }
     
-    scale(scaleVector)
+    scale(scaleVector: vec3)
     {
         this.m[ 0] *= scaleVector.x; this.m[ 4] *= scaleVector.x; this.m[ 8] *= scaleVector.x; this.m[12] *= scaleVector.x;
         this.m[ 1] *= scaleVector.y; this.m[ 5] *= scaleVector.y; this.m[ 9] *= scaleVector.y; this.m[13] *= scaleVector.y;
         this.m[ 2] *= scaleVector.z; this.m[ 6] *= scaleVector.z; this.m[10] *= scaleVector.z; this.m[14] *= scaleVector.z;
     }
 
-    scaleF32(x, y=x, z=x)
+    scaleF32(x: number, y: number = x, z: number = x)
     {
         this.m[ 0] *= x; this.m[ 4] *= x; this.m[ 8] *= x; this.m[12] *= x;
         this.m[ 1] *= y; this.m[ 5] *= y; this.m[ 9] *= y; this.m[13] *= y;
         this.m[ 2] *= z; this.m[ 6] *= z; this.m[10] *= z; this.m[14] *= z;
     }
 
-    timesScalar(o)
+    timesScalar(o: number)
     {
         this.m[ 0] *= o; this.m[ 4] *= o; this.m[ 8] *= o; this.m[12] *= o;
         this.m[ 1] *= o; this.m[ 5] *= o; this.m[ 9] *= o; this.m[13] *= o;
@@ -126,7 +126,7 @@ class mat4
         this.m[ 3] *= o; this.m[ 7] *= o; this.m[11] *= o; this.m[15] *= o;
     }
 
-    multiplyByScalar(o)
+    multiplyByScalar(o: number)
     {
         let tempMat = mat4_tempMat4;
 
@@ -138,7 +138,7 @@ class mat4
         return tempMat;
     }
 
-    multiplyByMatrix(o)
+    multiplyByMatrix(o: mat4)
     {
         let tempMat = mat4_tempMat4;
 
@@ -162,7 +162,7 @@ class mat4
         return tempMat;
     }
 
-    transformVec4(o)
+    transformVec4(o: vec4)
     {
         return vec4.getTemp( this.m[ 0] * o.x + this.m[ 4] * o.y + this.m[ 8] * o.z + this.m[12] * o.w,
                              this.m[ 1] * o.x + this.m[ 5] * o.y + this.m[ 9] * o.z + this.m[13] * o.w,
@@ -170,7 +170,7 @@ class mat4
                              this.m[ 3] * o.x + this.m[ 7] * o.y + this.m[11] * o.z + this.m[15] * o.w );
     }
 
-    createScale(scale)
+    createScale(scale: vec3)
     {
         this.m[ 0] = scale.x; this.m[ 4] = 0;       this.m[ 8] = 0;       this.m[12] = 0;
         this.m[ 1] = 0;       this.m[ 5] = scale.y; this.m[ 9] = 0;       this.m[13] = 0;
@@ -178,7 +178,7 @@ class mat4
         this.m[ 3] = 0;       this.m[ 7] = 0;       this.m[11] = 0;       this.m[15] = 1;
     }
 
-    createScaleF32(x, y, z)
+    createScaleF32(x: number, y: number, z: number)
     {
         this.m[ 0] = x; this.m[ 4] = 0; this.m[ 8] = 0; this.m[12] = 0;
         this.m[ 1] = 0; this.m[ 5] = y; this.m[ 9] = 0; this.m[13] = 0;
@@ -186,7 +186,7 @@ class mat4
         this.m[ 3] = 0; this.m[ 7] = 0; this.m[11] = 0; this.m[15] = 1;
     }
 
-    createSRT(scale, rotation, translation)
+    createSRT(scale: vec3, rotation: vec3, translation: vec3)
     {
         this.createScale( scale );
         this.rotate( rotation.z, 0, 0, 1 ); // roll
@@ -195,7 +195,7 @@ class mat4
         this.translate( translation );
     }
 
-    createView2D(cameraPosition)
+    createView2D(cameraPosition: vec3)
     {
         this.setIdentity();
 
@@ -204,7 +204,7 @@ class mat4
         this.m[14] = -cameraPosition.z;
     }
 
-    createViewSRT(scale, rotation, translation)
+    createViewSRT(scale: vec3, rotation: vec3, translation: vec3)
     {
         this.setIdentity();
         this.translate( translation.times( -1 ) );
@@ -214,7 +214,7 @@ class mat4
         this.scaleF32( 1.0/scale.x, 1.0/scale.y, 1.0/scale.z );
     }
 
-    createOrthoInfiniteZ(left, right, bottom, top)
+    createOrthoInfiniteZ(left: number, right: number, bottom: number, top: number)
     {
         this.m[ 0] = 2 / (right-left);
                         this.m[ 4] = 0; this.m[ 8] = 0; this.m[12] = -((right+left)/(right-left));
@@ -224,7 +224,7 @@ class mat4
         this.m[ 3] = 0; this.m[ 7] = 0; this.m[11] = 0; this.m[15] = 1;
     }
 
-    createOrtho(left, right, bottom, top, near, far)
+    createOrtho(left: number, right: number, bottom: number, top: number, near: number, far: number)
     {
         this.m[ 0] = 2 / (right-left);
                         this.m[ 4] = 0; this.m[ 8] = 0; this.m[12] = -((right+left)/(right-left));
@@ -234,7 +234,7 @@ class mat4
         this.m[ 3] = 0; this.m[ 7] = 0; this.m[11] = 0; this.m[15] = 1;
     }
 
-    createPerspectiveVFoV(fovDegrees, aspect, near, far)
+    createPerspectiveVFoV(fovDegrees: number, aspect: number, near: number, far: number)
     {
         let fov = 1.0 / Math.tan( fovDegrees/2.0 * Math.PI/180.0 );
         let inverseRange = 1.0 / (near - far);
@@ -269,7 +269,7 @@ class mat4
         return vec3.getTemp( this.m[ 8], this.m[ 9], this.m[10] );
     }
 
-    inverse(tolerance = 0.0001)
+    inverse(tolerance: number = 0.0001)
     {
         // Determinants of 2x2 submatrices.
         let S0 = this.m[ 0] * this.m[ 5] - this.m[ 1] * this.m[ 4];
@@ -319,7 +319,7 @@ class mat4
         return true;
     }
 
-    getInverse(tolerance = 0.0001)
+    getInverse(tolerance: number = 0.0001)
     {
         let invMat = mat4_tempMat4;
         invMat.set( this );
