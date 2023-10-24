@@ -1,13 +1,11 @@
 class SingleAnimationData
 {
-    spriteSheet: SpriteSheet;
     frames: Material[] = [];
     frameTime: number = 0;
     loop: boolean = false;
 
-    constructor(spriteSheet: SpriteSheet, frames: Material[], frameTime: number, loop: boolean)
+    constructor(frameTime: number, loop: boolean, frames: Material[])
     {
-        this.spriteSheet = spriteSheet;
         this.frames = frames;
         this.frameTime = frameTime;
         this.loop = loop;
@@ -25,9 +23,9 @@ class AnimationSetData
 
     constructor() {}
 
-    addAnimation(name: string, spriteSheet: SpriteSheet, frames: Material[], frameTime: number, loop: boolean): void
+    addAnimation(name: string, frameTime: number, loop: boolean, frames: Material[]): void
     {
-        let animation = new SingleAnimationData( spriteSheet, frames, frameTime, loop );
+        let animation = new SingleAnimationData( frameTime, loop, frames );
         this.animations[name] = animation;
     }
     
