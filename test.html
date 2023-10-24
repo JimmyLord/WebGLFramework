@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <title>WebGL Test</title>
+        <style>
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;                
+                overflow: hidden;
+            }
+        </style>
+    </head>
+
+    <body>
+        <canvas id="MainCanvas"></canvas>
+
+        <!-- Framework classes -->
+        <script src="../build/src/datatypes/pool.js"></script>
+        <script src="../build/src/datatypes/color.js"></script>
+        <script src="../build/src/datatypes/vector.js"></script>
+        <script src="../build/src/datatypes/matrix.js"></script>
+        <script src="../build/src/gl/shader.js"></script>
+        <script src="../build/src/gl/texture.js"></script>
+        <script src="../build/src/datatypes/material.js"></script>
+        <script src="../build/src/gl/mesh.js"></script>
+        <script src="../build/src/gl/meshdynamic.js"></script>
+        <script src="../build/src/core/resourcemanager.js"></script>
+        <script src="../build/src/core/camera.js"></script>
+        <script src="../build/src/datatypes/light.js"></script>
+        <script src="../build/src/core/entity.js"></script>
+        <script src="../build/src/core/scene.js"></script>
+        <script src="../build/src/imgui/imgui.js"></script>
+        <script src="../build/src/core/frameworkmain.js"></script>
+
+        <!-- Main entry point -->
+        <script src="build/test/src/main.js" canvasName="MainCanvas" width=900 height=600 fullFrame=0></script>
+    </body>
+
+</html>

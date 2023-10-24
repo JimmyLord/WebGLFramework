@@ -14,7 +14,10 @@
     </head>
 
     <body>
-        <canvas id="MainCanvas"></canvas>
+        <center>
+            <canvas id="Canvas1"></canvas><br/>
+            <canvas id="Canvas2"></canvas><br/>
+        </center>
 
         <!-- Framework classes -->
         <script src="../build/src/datatypes/pool.js"></script>
@@ -35,7 +38,8 @@
         <script src="../build/src/core/frameworkmain.js"></script>
 
         <!-- Main entry point -->
-        <script src="../build/test/src/main.js" canvasName="MainCanvas" width=900 height=600 fullFrame=0></script>
+        <script src="build/test/src/main.js" canvasName="Canvas1" width=600 height=400 fullFrame=0></script>
+        <script src="build/test/src/canvas2.js" canvasName="Canvas2" width=500 height=350 focus=0 fullFrame=0></script>
     </body>
 
 </html>

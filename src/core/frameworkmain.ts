@@ -1,8 +1,9 @@
 // Params:
 //    canvasName="MainCanvas"
-//    width=600
-//    height=400
-//    fullFrame="true" or 1
+//    width=600                       // Defaults to canvas size.
+//    height=400                      // Defaults to canvas size.
+//    focus="true"                    // Defaults to true. // Keyboard focus, useful for multi-canvas.
+//    fullFrame="true"/"false" or 1/0 // Defaults to false.
 
 let modifierKeyFlag =
 {
@@ -18,25 +19,39 @@ class FrameworkMain
     resources: ResourceManager;
     imgui: ImGui;
     storage: Storage | null = null;
+
     runnableObject: any;
+
+    // Settings.
     showFPSCounter: boolean;
     autoRefresh: boolean;
     maxDeltaTime: number;
     clearColor: color;
     pauseOnFocusLoss: boolean;
+
+    // Public members.
     runningTime: number;
     FPS: number;
     isVisible: boolean;
+
+    // Internal members.
     frameCountInLastSecond: number;
     timeToNextFPSUpdate: number;
     lastTimeRefreshCalled: number;
     lastTime: number;
+
+    // Input state.
+    hasKeyboardFocus = true; // Used for multi-canvas setup.
     keyStates: any;
     mousePosition: vec2;
     mouseButtons: boolean[];
     simulateMouseWithFirstFinger: boolean;
     touches: TouchPoint[];
+
+    // Canvas.
     fullFrame: boolean = false;
+
+    // Bound functions for callbacks.
     updateThis: any;
     
     constructor()
@@ -104,7 +119,6 @@ class FrameworkMain
 
         // Set the size of the canvas.
         this.fullFrame = false;
-        if( document.currentScript && this.canvas )
         {
             if( document.currentScript.getAttribute( "fullFrame" ) === "true" ||
                 document.currentScript.getAttribute( "fullFrame" ) === "1" )
@@ -118,11 +132,20 @@ class FrameworkMain
                 let strWidth = document.currentScript.getAttribute( "width" );
                 let strHeight = document.currentScript.getAttribute( "height" );
 
-                if( strWidth && strHeight )
+                if( strWidth )
                 {
                     this.canvas.width = Number( strWidth );
+                }
+                if( strHeight )
+                {
                     this.canvas.height = Number( strHeight );
                 }
+            }
+
+            if( document.currentScript.getAttribute( "focus" ) === "false" ||
+                document.currentScript.getAttribute( "focus" ) === "0" )
+            {
+                this.hasKeyboardFocus = false;
             }
         }
 
@@ -272,9 +295,9 @@ class FrameworkMain
     {
         this.imgui.window( "ImGui Test" );
         //this.imgui.windows["ImGui Test"].size.setF32( 143, 120 );
-        this.imgui.text( "Te" );
+        this.imgui.text( "Test" );
         this.imgui.sameLine();
-        this.imgui.text( "st" );
+        this.imgui.text( " Focus:" + this.hasKeyboardFocus );
         let window = this.imgui.windows["ImGui Test"];
         this.imgui.text( "Pos:   " + Math.trunc( window.position.x ) + "," + Math.trunc( window.position.y ) );
         this.imgui.text( "Size:  " + Math.trunc( window.size.x ) + "," + Math.trunc( window.size.y ) );
@@ -402,6 +425,9 @@ class FrameworkMain
 
     onTouchStart(event: TouchEvent)
     {
+        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        else { this.hasKeyboardFocus = true; }
+
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
         {
@@ -439,6 +465,9 @@ class FrameworkMain
 
     onTouchMove(event: TouchEvent)
     {
+        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        else { this.hasKeyboardFocus = true; }
+
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
         {
@@ -476,6 +505,9 @@ class FrameworkMain
 
     onTouchEnd(event: TouchEvent)
     {
+        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        else { this.hasKeyboardFocus = true; }
+
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
         {
@@ -520,6 +552,9 @@ class FrameworkMain
 
     onTouchCancel(event: TouchEvent)
     {
+        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        else { this.hasKeyboardFocus = true; }
+
         // Remove these touches from the list.
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
@@ -563,12 +598,14 @@ class FrameworkMain
 
     onMouseOver(event: MouseEvent)
     {
+        if( event.target != this.canvas ) { return; }
+
         // Should fire when page is loaded... but seems inconsistant on FireFox.
         // Mainly needed to prevent a bug if mouseDown is sent before mouseMove.
         //    Imgui won't have had a chance to check if the mouse is hovering over any window or control
         //    since it doesn't know the mouse position until it's too late.
-        let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
-        let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
+        let x = event.offsetX * window.devicePixelRatio;
+        let y = event.offsetY * window.devicePixelRatio;
 
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
 
@@ -579,8 +616,10 @@ class FrameworkMain
 
     onMouseMove(event: any)
     {
-        let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
-        let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
+        if( event.target != this.canvas ) { return; }
+
+        let x = event.offsetX * window.devicePixelRatio;
+        let y = event.offsetY * window.devicePixelRatio;
 
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
 
@@ -596,10 +635,13 @@ class FrameworkMain
 
     onMouseDown(event: any)
     {
+        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        else { this.hasKeyboardFocus = true; }
+
         //console.log( "onMouseDown" );
 
-        let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
-        let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
+        let x = event.offsetX * window.devicePixelRatio;
+        let y = event.offsetY * window.devicePixelRatio;
 
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
         this.mouseButtons[ event.which-1 ] = true;
@@ -616,10 +658,13 @@ class FrameworkMain
 
     onMouseUp(event: any)
     {
+        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        else { this.hasKeyboardFocus = true; }
+
         //console.log( "onMouseUp" );
 
-        let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
-        let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
+        let x = event.offsetX * window.devicePixelRatio;
+        let y = event.offsetY * window.devicePixelRatio;
 
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
         this.mouseButtons[ event.which-1 ] = false;
@@ -636,8 +681,11 @@ class FrameworkMain
 
     onMouseWheel(event: WheelEvent)
     {
-        let x = (event.offsetX - this.canvas.offsetLeft) * window.devicePixelRatio;
-        let y = (event.offsetY - this.canvas.offsetTop) * window.devicePixelRatio;
+        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        else { this.hasKeyboardFocus = true; }
+
+        let x = event.offsetX * window.devicePixelRatio;
+        let y = event.offsetY * window.devicePixelRatio;
 
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
         let direction = Math.sign( event.deltaY );
@@ -650,6 +698,8 @@ class FrameworkMain
 
     onKeyDown(event: KeyboardEvent)
     {
+        if( this.hasKeyboardFocus == false ) { return }
+
         this.keyStates[event.key] = 1;
 
         if( event.repeat === true )
@@ -679,6 +729,8 @@ class FrameworkMain
 
     onKeyUp(event: KeyboardEvent)
     {
+        if( this.hasKeyboardFocus == false ) { return }
+
         this.keyStates[event.key] = 0;
 
         if( event.repeat === true )

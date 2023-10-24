@@ -8,8 +8,10 @@
             "type": "firefox",
             "request": "launch",
             "name": "Launch Chrome against localhost",
-            "url": "http://localhost:8000/test/index.html",
-            "webRoot": "${workspaceFolder}"
-        }
+            "url": "http://localhost:8000/test.html",
+            //"url": "http://localhost:8000/test-2canvas.html",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "tsc: build",
+        },
     ]
 }
