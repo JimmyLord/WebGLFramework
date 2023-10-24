@@ -533,11 +533,10 @@ class ImGui
 
         let popupClicked = false;
 
-        // Loop through all windows.
+        // Find which window is hovered and if it was clicked. Pick the one with the highest z-order.
+        let highestZOrder = -1;
         for( let key in this.windows )
         {
-            // Find which window is hovered and if it was clicked. Pick the one with the highest z-order.
-            let highestZOrder = -1;
             if( this.windows[key].activeThisFrame && this.windows[key].takesInput &&
                 this.windows[key].rect.contains( this.mousePosition ) )
             {
@@ -546,10 +545,12 @@ class ImGui
                     this.windowHovered = this.windows[key];
                     highestZOrder = this.windows[key].zOrder;
                 }
-
-                this.windows[key].zOrder = -1;
             }
+        }
 
+        // Loop through all windows.
+        for( let key in this.windows )
+        {
             // If this window didn't have a size, resize it to the biggest size it's been.
             this.activeWindow = this.windows[key];
             if( this.activeWindow.size.x === 0 )
@@ -1029,10 +1030,13 @@ class ImGui
                 if( this.window( popupName ) )
                 {
                     this.activeWindow.cursor.y += this.popupPadding.y;
+                    // Partial implementation of z-ordering, main menu is always in foreground.
+                    this.windows[popupName].zOrder = 9999999;
                     expanded = true;
                 }
                 this.popColorChange();
 
+                this.windows[popupName].activeThisFrame = true;
                 this.windows[popupName].isMovable = false;
                 this.windows[popupName].saveState = false;
                 this.forceResize( this.activeWindow );
@@ -1116,10 +1120,13 @@ class ImGui
                 {
                     this.activeWindow.cursor.y += this.popupPadding.y;
                     this.activeWindow.parentWindow = this.previousMenu;
+                    // Partial implementation of z-ordering, main menu is always in foreground.
+                    this.windows[popupName].zOrder = 9999999;
                     expanded = true;
                 }
                 this.popColorChange();
                 
+                this.windows[popupName].activeThisFrame = true;
                 this.windows[popupName].isMovable = false;
                 this.windows[popupName].saveState = false;
                 this.forceResize( this.activeWindow );
