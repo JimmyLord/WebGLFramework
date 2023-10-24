@@ -38,25 +38,25 @@ class SpriteSheet
                 .then( response => response.json() )
                 .then( data =>
                 {
-                    let texWidth = data.size[0];
-                    let texHeight = data.size[1];
+                    let texWidth = data["size"][0];
+                    let texHeight = data["size"][1];
 
                     // Parse the JSON data and create sprites
-                    for( let spriteData of data.sprites )
+                    for( let spriteData of data["sprites"] )
                     {
-                        let scaleX = spriteData.size[0] / texWidth;
-                        let scaleY = spriteData.size[1] / texHeight;
-                        let offsetX = spriteData.pos[0] / texWidth;
-                        let offsetY = spriteData.pos[1] / texHeight;
+                        let scaleX = spriteData["size"][0] / texWidth;
+                        let scaleY = spriteData["size"][1] / texHeight;
+                        let offsetX = spriteData["pos"][0] / texWidth;
+                        let offsetY = spriteData["pos"][1] / texHeight;
 
                         // Create a new material for each sprite.
                         // or
                         // if this sprite was requested before the sheet was loaded,
                         //     update the material with the new UV transform.
-                        if( !this.materials[spriteData.name] )
+                        if( !this.materials[spriteData["name"]] )
                         {
                             // Create a new material.
-                            this.materials[spriteData.name] = new Material(
+                            this.materials[spriteData["name"]] = new Material(
                                 this.shader,
                                 new color( 1, 1, 1, 1 ),
                                 this.texture,
@@ -66,7 +66,7 @@ class SpriteSheet
                         else
                         {
                             // Update the old material with the correct values.
-                            this.materials[spriteData.name].uvTransform.setF32( scaleX, scaleY, offsetX, offsetY );
+                            this.materials[spriteData["name"]].uvTransform.setF32( scaleX, scaleY, offsetX, offsetY );
                         }
                     }
 
