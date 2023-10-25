@@ -184,14 +184,14 @@ class Camera
         return vec2.getTemp( worldX, worldY );
     }
 
-    convertWorldToScreen(canvas: HTMLCanvasElement, worldX: number, worldY: number)
+    convertWorldToScreen(canvas: HTMLCanvasElement, worldX: number, worldY: number): vec2
     {
         if( this.isOrtho === false )
             return vec2.getTemp( 0, 0 );
 
         let orthoScaleX = this.matProj.m[0];
-        let orthoOffsetX = this.matProj.m[12];
         let orthoScaleY = this.matProj.m[5];
+        let orthoOffsetX = this.matProj.m[12];
         let orthoOffsetY = this.matProj.m[13];
 
         // Transform from world space coordinates to view space coordinates.

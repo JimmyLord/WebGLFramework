@@ -32,6 +32,11 @@ class vec2
         this.y = y;
     }
 
+    cloneTemp() { return vec2.getTemp( this.x, this.y ); }
+    clone() { return new vec2( this.x, this.y ); }
+    asVec3Temp() { return vec3.getTemp( this.x, this.y, 0 ); }
+    asVec3() { return new vec3( this.x, this.y, 0 ); }
+    
     set(o: vec2) { this.x = o.x; this.y = o.y; }
     setF32(x: number, y: number) { this.x = x; this.y = y; }
 
@@ -142,6 +147,9 @@ class vec3
         else                                      { this.x = 0; this.y = 0; this.z = 0; }
     }
 
+    cloneTemp() { return vec3.getTemp( this.x, this.y, this.z ); }
+    clone() { return new vec3( this.x, this.y, this.z ); }
+
     set(o: vec3) { this.x = o.x; this.y = o.y; this.z = o.z; }
     setF32(x: number, y: number, z: number) { this.x = x; this.y = y; this.z = z; }
 
@@ -249,6 +257,9 @@ class vec4
         else if( x != null )                                   { this.x = x; this.y = x; this.z = x; this.w = 1; } // xxx1
         else                                                   { this.x = 0; this.y = 0; this.z = 0; this.w = 1; } // 0001
     }
+
+    cloneTemp() { return vec4.getTemp( this.x, this.y, this.z, this.w ); }
+    clone() { return new vec4( this.x, this.y, this.z, this.w ); }
 
     set(o: vec4) { this.x = o.x; this.y = o.y; this.z = o.z; this.w = o.w; }
     setF32(x: number, y: number, z: number, w: number) { this.x = x; this.y = y; this.z = z; this.w = w; }
