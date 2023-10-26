@@ -25,6 +25,8 @@ class Entity
 
     draw(camera: Camera, lights: Light[])
     {
+        if( this.mesh == null ) return;
+        
         Entity_matWorld.setIdentity();
         Entity_matWorld.createSRT( this.scale, this.rotation, this.position );
 

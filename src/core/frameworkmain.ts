@@ -12,6 +12,27 @@ let modifierKeyFlag =
     alt:    4,
 }
 
+interface Runnable
+{
+    shutdown?(): void;
+
+    update?(deltaTime: number, currentTime: number): void;
+    draw?(): void;
+
+    onResize?(): void;
+    onBeforeUnload?(): void;
+    onFocusChanged?(hasFocus: boolean): void;
+    onPopState?(event: PopStateEvent): void;
+    onHashChange?(hash: string): void;
+
+    onMouseMove?(x: number, y: number): void;
+    onMouseDown?(buttonID: number, x: number, y: number): void;
+    onMouseUp?(buttonID: number, x: number, y: number): void;
+    onMouseWheel?(direction: number): void;
+    onKeyDown?(key: string, keyCode: number, modifierKeys: number): void;
+    onKeyUp?(key: string, keyCode: number, modifierKeys: number): void;
+}
+
 class FrameworkMain
 {
     canvas: HTMLCanvasElement;
@@ -20,7 +41,7 @@ class FrameworkMain
     imgui: ImGui;
     storage: Storage | null = null;
 
-    runnableObject: any;
+    runnableObject: Runnable | null = null;
 
     // Settings.
     showFPSCounter: boolean;
@@ -182,7 +203,7 @@ class FrameworkMain
         this.updateThis = this.update.bind( this );
     }
 
-    run(runnableObject: MainProject)
+    run(runnableObject: Runnable)
     {
         // Initial state for running.
         this.runnableObject = runnableObject;
@@ -230,7 +251,7 @@ class FrameworkMain
             this.imgui.addStringToDrawList( "FPS " + this.FPS, this.canvas.width/this.imgui.scale - 8*6 - 2, 2 );
         }
 
-        if( this.runnableObject.update )
+        if( this.runnableObject?.update )
         {
             this.runnableObject.update( deltaTime, this.runningTime );
         }
@@ -246,7 +267,7 @@ class FrameworkMain
         gl.clearColor( this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a );
         gl.clear( gl.COLOR_BUFFER_BIT );
 
-        if( this.runnableObject.draw )
+        if( this.runnableObject?.draw )
         {
             this.runnableObject.draw();
         }
@@ -340,7 +361,7 @@ class FrameworkMain
 
     onBeforeUnload(event: BeforeUnloadEvent)
     {
-        if( this.runnableObject.onBeforeUnload )
+        if( this.runnableObject?.onBeforeUnload )
         {
             this.runnableObject.onBeforeUnload();
         }
@@ -366,7 +387,7 @@ class FrameworkMain
         }
 
         // Let app know the canvas was resized.
-        if( this.runnableObject.onResize )
+        if( this.runnableObject?.onResize )
         {
             this.runnableObject.onResize();
         }
@@ -374,7 +395,7 @@ class FrameworkMain
 
     onPopState(event: PopStateEvent)
     {
-        if( this.runnableObject.onPopState )
+        if( this.runnableObject?.onPopState )
         {
             this.runnableObject.onPopState( event );
         }
@@ -382,7 +403,7 @@ class FrameworkMain
 
     onHashChange(event: HashChangeEvent)
     {
-        if( this.runnableObject.onHashChange )
+        if( this.runnableObject?.onHashChange )
         {
             this.runnableObject.onHashChange( window.location.hash );
         }
@@ -573,7 +594,7 @@ class FrameworkMain
 
         this.isVisible = false;
 
-        if( this.runnableObject.onFocusChanged )
+        if( this.runnableObject?.onFocusChanged )
         {
             // Let app know focus was lost.
             this.runnableObject.onFocusChanged( false );
@@ -586,7 +607,7 @@ class FrameworkMain
 
         this.isVisible = true;
 
-        if( this.runnableObject.onFocusChanged )
+        if( this.runnableObject?.onFocusChanged )
         {
             // Let app know focus was gained.
             this.runnableObject.onFocusChanged( true );
@@ -623,7 +644,7 @@ class FrameworkMain
 
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
 
-        if( this.runnableObject.onMouseMove )
+        if( this.runnableObject?.onMouseMove )
         {
             this.runnableObject.onMouseMove( x, y );
         }
@@ -646,7 +667,7 @@ class FrameworkMain
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
         this.mouseButtons[ event.which-1 ] = true;
 
-        if( this.runnableObject.onMouseDown )
+        if( this.runnableObject?.onMouseDown )
         {
             this.runnableObject.onMouseDown( event.which-1, x, y );
         }
@@ -669,7 +690,7 @@ class FrameworkMain
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
         this.mouseButtons[ event.which-1 ] = false;
 
-        if( this.runnableObject.onMouseUp )
+        if( this.runnableObject?.onMouseUp )
         {
             this.runnableObject.onMouseUp( event.which-1, this.mousePosition.x, this.mousePosition.y );
         }
@@ -690,7 +711,7 @@ class FrameworkMain
         this.mousePosition.setF32( Math.trunc(x), Math.trunc(y) );
         let direction = Math.sign( event.deltaY );
 
-        if( this.runnableObject.onMouseWheel )
+        if( this.runnableObject?.onMouseWheel )
         {
             this.runnableObject.onMouseWheel( direction );
         }
@@ -710,7 +731,7 @@ class FrameworkMain
         if( event.ctrlKey ) modifierKeys |= modifierKeyFlag.ctrl;
         if( event.altKey ) modifierKeys |= modifierKeyFlag.alt;
 
-        if( this.runnableObject.onKeyDown )
+        if( this.runnableObject?.onKeyDown )
         {
             this.runnableObject.onKeyDown( event.key, event.keyCode, modifierKeys );
         }
@@ -741,7 +762,7 @@ class FrameworkMain
         if( event.ctrlKey ) modifierKeys |= modifierKeyFlag.ctrl;
         if( event.altKey ) modifierKeys |= modifierKeyFlag.alt;
 
-        if( this.runnableObject.onKeyUp )
+        if( this.runnableObject?.onKeyUp )
         {
             this.runnableObject.onKeyUp( event.key, event.keyCode, modifierKeys );
         }
@@ -761,7 +782,7 @@ class FrameworkMain
             this.gl.canvas.height = 1;
         }
 
-        if( this.runnableObject.shutdown )
+        if( this.runnableObject?.shutdown )
         {
             this.runnableObject.shutdown();
         }

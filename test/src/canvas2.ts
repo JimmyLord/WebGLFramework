@@ -1,4 +1,4 @@
-class MainProject2
+class MainProject2 implements Runnable
 {
     framework: FrameworkMain;
     scene: Scene;

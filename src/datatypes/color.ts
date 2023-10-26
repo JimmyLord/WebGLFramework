@@ -19,7 +19,7 @@ class color
         t.b = b;
         t.a = a;
         color_currentTempIndex++;
-        if( color_currentTempIndex === 10 )
+        if( color_currentTempIndex === color_tempVecs.length )
             color_currentTempIndex = 0;
         return t;
     }
@@ -35,6 +35,9 @@ class color
             this.r = r; this.g = g; this.b = b; this.a = a;
         }
     }
+
+    cloneTemp(): color { return color.getTemp( this.r, this.g, this.b, this.a ); }
+    clone(): color { return new color( this.r, this.g, this.b, this.a ); }
 
     set(r: number, g: number, b: number, a: number)
     {

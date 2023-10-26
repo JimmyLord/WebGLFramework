@@ -5,18 +5,23 @@ class Material
 {
     shader: Shader;
     uvTransform: vec4;
-    col: color;
+    color: color;
     texture: Texture | null = null;
 
-    constructor(shader: Shader, col: color, texture: Texture | null = null, uvTransform: vec4 = material_defaultUVTransform)
+    constructor(shader: Shader, color: color, texture: Texture | null = null, uvTransform: vec4 = material_defaultUVTransform)
     {
         this.shader = shader;
         this.uvTransform = uvTransform;
-        this.col = col;
+        this.color = color;
         this.texture = texture;
     }
 
     free()
     {
+    }
+
+    clone(): Material
+    {
+        return new Material( this.shader, this.color.clone(), this.texture, this.uvTransform.clone() );
     }
 }
