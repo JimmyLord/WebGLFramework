@@ -446,8 +446,8 @@ class FrameworkMain
 
     onTouchStart(event: TouchEvent)
     {
-        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
-        else { this.hasKeyboardFocus = true; }
+        //if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        //else { this.hasKeyboardFocus = true; }
 
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
@@ -469,6 +469,7 @@ class FrameworkMain
                     which: 1,
                     offsetX: firstTouch.x,
                     offsetY: firstTouch.y,
+                    target: event.target,
                 }
 
                 this.onMouseMove( fakeMouseEvent );
@@ -486,8 +487,8 @@ class FrameworkMain
 
     onTouchMove(event: TouchEvent)
     {
-        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
-        else { this.hasKeyboardFocus = true; }
+        // if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        // else { this.hasKeyboardFocus = true; }
 
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
@@ -495,7 +496,7 @@ class FrameworkMain
             let t = this.getTouchPointByID( changedTouches[i].identifier );
             if( t !== null )
             {
-                t.set( changedTouches[i].clientX, changedTouches[i].clientY, i, false );
+                t.set( changedTouches[i].clientX, changedTouches[i].clientY, i, t.wasFirstFinger );
             }
         }
 
@@ -511,6 +512,7 @@ class FrameworkMain
                     which: 1,
                     offsetX: firstTouch.x,
                     offsetY: firstTouch.y,
+                    target: event.target,
                 }
 
                 this.onMouseMove( fakeMouseEvent );
@@ -526,8 +528,8 @@ class FrameworkMain
 
     onTouchEnd(event: TouchEvent)
     {
-        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
-        else { this.hasKeyboardFocus = true; }
+        // if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        // else { this.hasKeyboardFocus = true; }
 
         let changedTouches = event.changedTouches;
         for( let i=0; i<changedTouches.length; i++ )
@@ -535,7 +537,7 @@ class FrameworkMain
             let t = this.getTouchPointByID( changedTouches[i].identifier );
             if( t !== null )
             {
-                t.set( changedTouches[i].clientX, changedTouches[i].clientY, i, false );
+                t.set( changedTouches[i].clientX, changedTouches[i].clientY, i, t.wasFirstFinger );
             }
         }
 
@@ -551,6 +553,7 @@ class FrameworkMain
                     which: 1,
                     offsetX: firstTouch.x,
                     offsetY: firstTouch.y,
+                    target: event.target,
                 }
 
                 this.onMouseMove( fakeMouseEvent );
@@ -573,11 +576,42 @@ class FrameworkMain
 
     onTouchCancel(event: TouchEvent)
     {
-        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
-        else { this.hasKeyboardFocus = true; }
+        // if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        // else { this.hasKeyboardFocus = true; }
 
         // Remove these touches from the list.
         let changedTouches = event.changedTouches;
+        for( let i=0; i<changedTouches.length; i++ )
+        {
+            let t = this.getTouchPointByID( changedTouches[i].identifier );
+            if( t !== null )
+            {
+                t.set( changedTouches[i].clientX, changedTouches[i].clientY, i, false );
+            }
+        }
+
+        if( this.simulateMouseWithFirstFinger )
+        {
+            // If this is the first finger down, then send out some mouse events to the runnableObject.
+            let firstTouch = this.getFirstTouchPoint();
+
+            if( firstTouch !== null )
+            {
+                // TODO: Fix for GC.
+                let fakeMouseEvent = {
+                    which: 1,
+                    offsetX: firstTouch.x,
+                    offsetY: firstTouch.y,
+                    target: event.target,
+                }
+
+                this.onMouseMove( fakeMouseEvent );
+                this.onMouseUp( fakeMouseEvent );
+
+                //console.log( "Mouse Up: " + firstTouch.y );
+            }
+        }
+
         for( let i=0; i<changedTouches.length; i++ )
         {
             this.removeTouch( changedTouches[i].identifier );
@@ -650,7 +684,7 @@ class FrameworkMain
         }
 
         // Cancel default event action.
-        event.preventDefault();
+        //event.preventDefault();
         return false;
     }
 
@@ -673,14 +707,14 @@ class FrameworkMain
         }
 
         // Cancel default event action.
-        event.preventDefault();
+        //event.preventDefault();
         return false;
     }
 
     onMouseUp(event: any)
     {
-        if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
-        else { this.hasKeyboardFocus = true; }
+        //if( event.target != this.canvas ) { this.hasKeyboardFocus = false; return; }
+        //else { this.hasKeyboardFocus = true; }
 
         //console.log( "onMouseUp" );
 
@@ -696,7 +730,7 @@ class FrameworkMain
         }
 
         // Cancel default event action.
-        event.preventDefault();
+        //event.preventDefault();
         return false;
     }
 
@@ -742,7 +776,7 @@ class FrameworkMain
 
             if( this.imgui.controlInEditMode != null )
             {
-                event.preventDefault();
+                //event.preventDefault();
                 return false;
             }
         }

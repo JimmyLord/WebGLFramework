@@ -13,7 +13,7 @@ class vec2
         }
         vec2_currentTempIndex = 0;
     }
-    static getTemp(x = 0, y = x)
+    static getTemp(x: number, y: number)
     {
         let t = vec2_tempPool.getFromPool();
         if( vec2_currentTempIndex < vec2_tempsOutsideOfPool.length )
@@ -125,7 +125,7 @@ class vec3
         }
         vec3_currentTempIndex = 0;
     }
-    static getTemp(x = 0, y = x, z = x)
+    static getTemp(x: number, y: number, z: number)
     {
         let t = vec3_tempPool.getFromPool();
         if( vec3_currentTempIndex < vec3_tempsOutsideOfPool.length )
@@ -234,7 +234,7 @@ class vec4
         }
         vec4_currentTempIndex = 0;
     }
-    static getTemp(x = 0, y = x, z = x, w = x)
+    static getTemp(x: number, y: number, z: number, w: number)
     {
         let t = vec4_tempPool.getFromPool();
         if( vec4_currentTempIndex < vec4_tempsOutsideOfPool.length )
