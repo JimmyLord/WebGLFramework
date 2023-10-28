@@ -1,17 +1,20 @@
-class Light
+namespace fw
 {
-    position: vec3;
-    color: color;
-    radius: number;
-
-    constructor(position: vec3, color: color, radius: number)
+    export class Light
     {
-        this.position = position;
-        this.color = color;
-        this.radius = radius;
-    }
+        position: vec3;
+        color: color;
+        radius: number;
 
-    free()
-    {
+        constructor(position: vec3, color: color, radius: number)
+        {
+            this.position = position;
+            this.color = color;
+            this.radius = radius;
+        }
+
+        free()
+        {
+        }
     }
 }

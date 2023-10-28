@@ -1,14 +1,17 @@
-function randomFloat(min: number, max: number)
+namespace fw
 {
-    return Math.random() * (max - min) + min;
-}
+    export function randomFloat(min: number, max: number)
+    {
+        return Math.random() * (max - min) + min;
+    }
 
-function randomInt(min: number, max: number)
-{
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+    export function randomInt(min: number, max: number)
+    {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
 
-function randomBool()
-{
-    return Math.random() < 0.5;
+    export function randomBool()
+    {
+        return Math.random() < 0.5;
+    }
 }

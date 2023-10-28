@@ -1,49 +1,52 @@
-﻿class Pool
+﻿namespace fw
 {
-    type: any;
-    numAllocated: number;
-    allowGrowth: boolean;
-    numInPool: number;
-    objects: any[];
-
-    constructor(type: any, numberToAllocate: number = 1, allowGrowth: boolean = true)
+    export class Pool
     {
-        this.type = type;
-        this.numAllocated = numberToAllocate;
-        this.allowGrowth = allowGrowth;
-        this.numInPool = numberToAllocate;
-        this.objects = new Array( numberToAllocate );
+        type: any;
+        numAllocated: number;
+        allowGrowth: boolean;
+        numInPool: number;
+        objects: any[];
 
-        for( let i=0; i<numberToAllocate; i++ )
+        constructor(type: any, numberToAllocate: number = 1, allowGrowth: boolean = true)
         {
-            this.objects[i] = new type;
-        }
-    }
+            this.type = type;
+            this.numAllocated = numberToAllocate;
+            this.allowGrowth = allowGrowth;
+            this.numInPool = numberToAllocate;
+            this.objects = new Array( numberToAllocate );
 
-    getFromPool()
-    {
-        if( this.numInPool === 0 )
-        {
-            //console.log( "Pool empty!" );
-            if( this.allowGrowth )
+            for( let i=0; i<numberToAllocate; i++ )
             {
-                //console.log( "Allocating more!" );
-                let obj = new this.type();
-                return obj;
-            }
-            else
-            {
-                return null;
+                this.objects[i] = new type;
             }
         }
 
-        this.numInPool--;
-        return this.objects[this.numInPool];
-    }
+        getFromPool()
+        {
+            if( this.numInPool === 0 )
+            {
+                //console.log( "Pool empty!" );
+                if( this.allowGrowth )
+                {
+                    //console.log( "Allocating more!" );
+                    let obj = new this.type();
+                    return obj;
+                }
+                else
+                {
+                    return null;
+                }
+            }
 
-    returnToPool(obj: any)
-    {
-        this.objects[this.numInPool] = obj;
-        this.numInPool++;
+            this.numInPool--;
+            return this.objects[this.numInPool];
+        }
+
+        returnToPool(obj: any)
+        {
+            this.objects[this.numInPool] = obj;
+            this.numInPool++;
+        }
     }
 }
