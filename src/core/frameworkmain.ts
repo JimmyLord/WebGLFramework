@@ -7,7 +7,7 @@ namespace fw
     //    focus="true"                    // Defaults to true. // Keyboard focus, useful for multi-canvas.
     //    fullFrame="true"/"false" or 1/0 // Defaults to false.
 
-    let modifierKeyFlag =
+    export let modifierKeyFlag =
     {
         shift:  1,
         ctrl:   2,
