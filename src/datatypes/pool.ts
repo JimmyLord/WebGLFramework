@@ -1,5 +1,5 @@
-﻿namespace fw
-{
+﻿//namespace fw
+//{
     export class Pool
     {
         type: any;
@@ -49,4 +49,4 @@
             this.numInPool++;
         }
     }
-}
+//}

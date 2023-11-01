@@ -1,5 +1,5 @@
-namespace fw
-{
+//namespace fw
+//{
     export function randomFloat(min: number, max: number)
     {
         return Math.random() * (max - min) + min;
@@ -14,4 +14,4 @@ namespace fw
     {
         return Math.random() < 0.5;
     }
-}
+//}

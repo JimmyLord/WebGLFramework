@@ -1,30 +1,32 @@
-namespace fw
+import { Shader } from "../gl/shader.js";
+import { Texture } from "../gl/texture.js";
+import { color } from "./color.js";
+import { vec4 } from "./vector.js";
+
+// Define global defaults for material properties.
+let material_defaultUVTransform = new vec4(1,1,0,0); // xy = scale, zw = offset.
+
+export class Material
 {
-    // Define global defaults for material properties.
-    let material_defaultUVTransform = new vec4(1,1,0,0); // xy = scale, zw = offset.
+    shader: Shader;
+    uvTransform: vec4;
+    color: color;
+    texture: Texture | null = null;
 
-    export class Material
+    constructor(shader: Shader, color: color, texture: Texture | null = null, uvTransform: vec4 = material_defaultUVTransform)
     {
-        shader: Shader;
-        uvTransform: vec4;
-        color: color;
-        texture: Texture | null = null;
+        this.shader = shader;
+        this.uvTransform = uvTransform;
+        this.color = color;
+        this.texture = texture;
+    }
 
-        constructor(shader: Shader, color: color, texture: Texture | null = null, uvTransform: vec4 = material_defaultUVTransform)
-        {
-            this.shader = shader;
-            this.uvTransform = uvTransform;
-            this.color = color;
-            this.texture = texture;
-        }
+    free()
+    {
+    }
 
-        free()
-        {
-        }
-
-        clone(): Material
-        {
-            return new Material( this.shader, this.color.clone(), this.texture, this.uvTransform.clone() );
-        }
+    clone(): Material
+    {
+        return new Material( this.shader, this.color.clone(), this.texture, this.uvTransform.clone() );
     }
 }

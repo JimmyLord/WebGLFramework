@@ -1,5 +1,5 @@
-namespace fw
-{
+//namespace fw
+//{
     export class color
     {
         r: number = 1;
@@ -57,4 +57,4 @@ namespace fw
                         new color(255,255,255,255), new color(255,255,255,255), new color(255,255,255,255),
                         new color(255,255,255,255), ];
     let color_currentTempIndex = 0;
-}
+//}

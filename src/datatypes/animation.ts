@@ -1,112 +1,111 @@
-namespace fw
+import { Material } from "./material.js";
+
+export class SingleAnimationData
 {
-    export class SingleAnimationData
+    frames: Material[] = [];
+    frameTime: number = 0;
+    loop: boolean = false;
+
+    constructor(frameTime: number, loop: boolean, frames: Material[])
     {
-        frames: Material[] = [];
-        frameTime: number = 0;
-        loop: boolean = false;
-
-        constructor(frameTime: number, loop: boolean, frames: Material[])
-        {
-            this.frames = frames;
-            this.frameTime = frameTime;
-            this.loop = loop;
-        }
-
-        free()
-        {
-            this.frames = [];
-        }
+        this.frames = frames;
+        this.frameTime = frameTime;
+        this.loop = loop;
     }
 
-    export class AnimationSetData
+    free()
     {
-        animations: { [key: string]: SingleAnimationData} = {};
+        this.frames = [];
+    }
+}
 
-        constructor() {}
+export class AnimationSetData
+{
+    animations: { [key: string]: SingleAnimationData} = {};
 
-        addAnimation(name: string, frameTime: number, loop: boolean, frames: Material[]): void
+    constructor() {}
+
+    addAnimation(name: string, frameTime: number, loop: boolean, frames: Material[]): void
+    {
+        let animation = new SingleAnimationData( frameTime, loop, frames );
+        this.animations[name] = animation;
+    }
+    
+    free(): void
+    {
+        for( let key in this.animations )
         {
-            let animation = new SingleAnimationData( frameTime, loop, frames );
-            this.animations[name] = animation;
+            this.animations[key].free();
         }
-        
-        free(): void
-        {
-            for( let key in this.animations )
-            {
-                this.animations[key].free();
-            }
-            this.animations = {};
-        }
+        this.animations = {};
+    }
+}
+
+export class AnimationPlayer
+{
+    animationSet: AnimationSetData;
+
+    currentAnimation: SingleAnimationData;
+    currentFrame: number = 0;
+    frameTimeLeft: number = 0;
+    finished: boolean = false;
+
+    constructor(animationSet: AnimationSetData, animationName: string)
+    {
+        this.animationSet = animationSet;
+        this.currentAnimation = this.animationSet.animations[animationName];
+        this.setAnimation( animationName );
     }
 
-    export class AnimationPlayer
+    resetCurrentAnimation(): void
     {
-        animationSet: AnimationSetData;
+        this.currentFrame = 0;
+        this.frameTimeLeft = this.currentAnimation.frameTime;
+        this.finished = false;
+    }
 
-        currentAnimation: SingleAnimationData;
-        currentFrame: number = 0;
-        frameTimeLeft: number = 0;
-        finished: boolean = false;
+    update(deltaTime: number): void
+    {
+        if( this.finished ) return;
 
-        constructor(animationSet: AnimationSetData, animationName: string)
+        this.frameTimeLeft -= deltaTime;
+        if( this.frameTimeLeft <= 0 )
         {
-            this.animationSet = animationSet;
-            this.currentAnimation = this.animationSet.animations[animationName];
-            this.setAnimation( animationName );
-        }
-
-        resetCurrentAnimation(): void
-        {
-            this.currentFrame = 0;
             this.frameTimeLeft = this.currentAnimation.frameTime;
-            this.finished = false;
-        }
-
-        update(deltaTime: number): void
-        {
-            if( this.finished ) return;
-
-            this.frameTimeLeft -= deltaTime;
-            if( this.frameTimeLeft <= 0 )
+            this.currentFrame++;
+            if( this.currentFrame >= this.currentAnimation.frames.length )
             {
-                this.frameTimeLeft = this.currentAnimation.frameTime;
-                this.currentFrame++;
-                if( this.currentFrame >= this.currentAnimation.frames.length )
+                if( this.currentAnimation.loop )
                 {
-                    if( this.currentAnimation.loop )
-                    {
-                        this.currentFrame = 0;
-                    }
-                    else
-                    {
-                        this.currentFrame = this.currentAnimation.frames.length - 1;
-                        this.finished = true;
-                    }
+                    this.currentFrame = 0;
+                }
+                else
+                {
+                    this.currentFrame = this.currentAnimation.frames.length - 1;
+                    this.finished = true;
                 }
             }
         }
+    }
 
-        getCurrentFrame(): Material
+    getCurrentFrame(): Material
+    {
+        return this.currentAnimation.frames[this.currentFrame];
+    }
+
+    setAnimation(animationName: string): void
+    {
+        let newAnim = this.animationSet.animations[animationName];
+        if( this.currentAnimation == newAnim ) return;
+
+        this.currentAnimation = newAnim;
+
+        if( this.currentAnimation == null )
         {
-            return this.currentAnimation.frames[this.currentFrame];
+            alert( "Invalid Animation: " + animationName );
+            debugger;
         }
 
-        setAnimation(animationName: string): void
-        {
-            let newAnim = this.animationSet.animations[animationName];
-            if( this.currentAnimation == newAnim ) return;
-
-            this.currentAnimation = newAnim;
-
-            if( this.currentAnimation == null )
-            {
-                alert( "Invalid Animation: " + animationName );
-                debugger;
-            }
-
-            this.resetCurrentAnimation();
-        }
+        this.resetCurrentAnimation();
     }
 }
