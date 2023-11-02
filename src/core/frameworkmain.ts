@@ -1,14 +1,8 @@
 import { color } from "../datatypes/color.js";
-import { vec2, vec3, vec4 } from "../datatypes/vector.js";
+import { FrameworkParams } from "./frameworkParams.js";
 import { ImGui } from "../imgui/imgui.js";
-import { ResourceManager } from "./resourcemanager.js";
-
-// Params:
-//    canvasName="MainCanvas"
-//    width=600                       // Defaults to canvas size.
-//    height=400                      // Defaults to canvas size.
-//    focus="true"                    // Defaults to true. // Keyboard focus, useful for multi-canvas.
-//    fullFrame="true"/"false" or 1/0 // Defaults to false.
+import { ResourceManager } from "./resourceManager.js";
+import { vec2, vec3, vec4 } from "../datatypes/vector.js";
 
 export let modifierKeyFlag =
 {
@@ -80,10 +74,11 @@ export class FrameworkMain
     // Bound functions for callbacks.
     updateThis: any;
     
-    constructor(canvasName: string, focus: boolean = true, fullFrame: boolean = false, width: number = 0, height: number = 0)
+    constructor(params: FrameworkParams)
     {
-        this.canvas = <HTMLCanvasElement> document.getElementById( canvasName );
-        if( this.canvas == null ) { throw( "Failed to find canvas with name: " + canvasName ); }
+        if( params.canvasName == null ) { throw( "Canvas name not supplied in meta tag" ); }
+        this.canvas = <HTMLCanvasElement>document.getElementById( params.canvasName );
+        if( this.canvas == null ) { throw( "Failed to find canvas with name: " + params.canvasName ); }
 
         let gl = this.canvas.getContext( "webgl2" );
         if( gl == null ) { throw( "Failed to get WebGL context from canvas." ); }
@@ -141,7 +136,7 @@ export class FrameworkMain
         // Set the size of the canvas.
         this.fullFrame = false;
         {
-            if( fullFrame == true )
+            if( params.fullFrame == true )
             {
                 this.fullFrame = true;
                 this.canvas.width = window.innerWidth;
@@ -149,13 +144,13 @@ export class FrameworkMain
             }
             else
             {
-                if( width > 0 )
-                    this.canvas.width = width;
-                if( height > 0 )
-                    this.canvas.height = height;
+                if( params.width > 0 )
+                    this.canvas.width = params.width;
+                if( params.height > 0 )
+                    this.canvas.height = params.height;
             }
 
-            if( focus )
+            if( params.focus == false )
             {
                 this.hasKeyboardFocus = false;
             }

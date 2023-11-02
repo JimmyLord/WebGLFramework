@@ -19,27 +19,11 @@
             <canvas id="Canvas2"></canvas><br/>
         </center>
 
-        <!-- Framework classes -->
-        <script src="../build/src/datatypes/pool.js"></script>
-        <script src="../build/src/datatypes/color.js"></script>
-        <script src="../build/src/datatypes/vector.js"></script>
-        <script src="../build/src/datatypes/matrix.js"></script>
-        <script src="../build/src/gl/shader.js"></script>
-        <script src="../build/src/gl/texture.js"></script>
-        <script src="../build/src/datatypes/material.js"></script>
-        <script src="../build/src/gl/mesh.js"></script>
-        <script src="../build/src/gl/meshdynamic.js"></script>
-        <script src="../build/src/core/resourcemanager.js"></script>
-        <script src="../build/src/core/camera.js"></script>
-        <script src="../build/src/datatypes/light.js"></script>
-        <script src="../build/src/core/entity.js"></script>
-        <script src="../build/src/core/scene.js"></script>
-        <script src="../build/src/imgui/imgui.js"></script>
-        <script src="../build/src/core/frameworkmain.js"></script>
+        <meta scriptID="testView1" canvasName="Canvas1" width=600 height=400 fullFrame=false />
+        <script type="module" src="build/test/src/main.js"></script>
 
-        <!-- Main entry point -->
-        <script src="build/test/src/main.js" canvasName="Canvas1" width=600 height=400 fullFrame=0></script>
-        <script src="build/test/src/canvas2.js" canvasName="Canvas2" width=500 height=350 focus=0 fullFrame=0></script>
+        <meta scriptID="testView2" canvasName="Canvas2" width=500 height=350 focus=0 fullFrame=false />
+        <script type="module" src="build/test/src/canvas2.js"></script>
     </body>
 
 </html>

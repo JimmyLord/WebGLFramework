@@ -1,4 +1,16 @@
-class MainProject2 implements Runnable
+import * as fw from "../../src/index.js";
+
+import color = fw.color;
+import FrameworkMain = fw.FrameworkMain;
+import MeshDynamic = fw.MeshDynamic;
+import Scene = fw.Scene;
+import Entity = fw.Entity;
+import Runnable = fw.Runnable;
+import vec2 = fw.vec2;
+import vec3 = fw.vec3;
+import Light = fw.Light;
+
+class MainProject implements Runnable
 {
     framework: FrameworkMain;
     scene: Scene;
@@ -256,14 +268,16 @@ class MainProject2 implements Runnable
     }
 }
 
-function main2()
+function main()
 {
-    let framework = new FrameworkMain();
-    let runnable = new MainProject2( framework );
+    let params = new fw.FrameworkParams( "testView2" );
+
+    let framework = new FrameworkMain( params );
+    let runnable = new MainProject( framework );
     
     //framework.init();
     runnable.init();
     framework.run( runnable );
 }
 
-main2()
+main()

@@ -1,6 +1,6 @@
 import { mat4 } from "../datatypes/matrix.js";
 import { vec2, vec3 } from "../datatypes/vector.js";
-import { FrameworkMain } from "./frameworkmain.js";
+import { FrameworkMain } from "./frameworkMain.js";
 
 export class Camera
 {

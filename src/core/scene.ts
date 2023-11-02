@@ -5,7 +5,7 @@ import { vec3 } from "../datatypes/vector.js";
 import { Mesh } from "../gl/mesh.js";
 import { Camera } from "./camera.js";
 import { Entity } from "./entity.js";
-import { FrameworkMain } from "./frameworkmain.js";
+import { FrameworkMain } from "./frameworkMain.js";
 
 export class Scene
 {
